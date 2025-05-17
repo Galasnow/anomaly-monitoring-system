@@ -56,23 +56,23 @@ export const constantRoutes: RouteRecordRaw[] = [
   },
 
   // 以下为自定义页面
-  // 我的页面
+  // 台海港口异常扩建动态监测
   {
     path: "/mypages",
     name: "mypages",
     component: Layout,
     redirect: "noredirect",
     meta: {
-      title: "我的页面",
+      title: "台海港口异常扩建动态监测",
       alwaysShow: true,
     },
     children: [
       {
         path: "page1",
         name: "page1",
-        component: () => import("@/views/test/cecium_加载本地wms服务.vue"),
+        component: () => import("@/views/mypages/page1_1.vue"),
         meta: {
-          title: "页面1",
+          title: "监测区域",
         },
       },
       {
@@ -80,7 +80,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         name: "page2",
         component: () => import("@/views/mypages/page2.vue"),
         meta: {
-          title: "页面2",
+          title: "台北港异常扩建动态监测",
         },
       },
       {
@@ -88,7 +88,23 @@ export const constantRoutes: RouteRecordRaw[] = [
         name: "page3",
         component: () => import("@/views/mypages/page3.vue"),
         meta: {
-          title: "页面3",
+          title: "高雄港异常扩建动态监测",
+        },
+      },
+      {
+        path: "page4",
+        name: "page4",
+        component: () => import("@/views/mypages/page2_copy.vue"),
+        meta: {
+          title: "读取文件夹内容",
+        },
+      },
+      {
+        path: "cesiumviewer",
+        name: "cesiumviewer",
+        component: () => import("@/views/mypages/page3_base.vue"),
+        meta: {
+          title: "Cesium",
         },
       },
     ],
@@ -101,7 +117,7 @@ export const constantRoutes: RouteRecordRaw[] = [
     component: Layout,
     redirect: "noredirect",
     meta: {
-      title: "测试页面",
+      title: "中印边境飞机异常进出库动态监测",
       icon: "",
       alwaysShow: true,
     },
@@ -173,7 +189,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         component: () => import("@/views/menus/数据库管理.vue"),
         name: "Database",
         meta: {
-          title: "数据库管理",
+          title: "中印边境机场异常扩建动态监测",
           hidden: false,
           roles: ["ADMIN"],
           keepAlive: true,
@@ -191,7 +207,7 @@ export const constantRoutes: RouteRecordRaw[] = [
     redirect: "noredirect",
     name: "Menu1",
     meta: {
-      title: "安全态势动态监测",
+      title: "中印边境营地异常扩建动态监测", //安全态势动态监测
       hidden: false,
       roles: ["ADMIN"],
       alwaysShow: false,
@@ -321,7 +337,7 @@ export const constantRoutes: RouteRecordRaw[] = [
     redirect: "noredirect",
     name: "Menu3",
     meta: {
-      title: "安全态势互联互通",
+      title: "南海船舶异常聚集动态监测", //安全态势互联互通
       hidden: false,
       roles: ["ADMIN"],
       alwaysShow: false,
@@ -393,7 +409,7 @@ export const constantRoutes: RouteRecordRaw[] = [
     redirect: "noredirect",
     name: "Menu2",
     meta: {
-      title: "安全态势分级与情势推演",
+      title: "南海岛礁异常扩建动态监测", //安全态势分级与情势推演
       hidden: false,
       roles: ["ADMIN"],
       alwaysShow: false,
@@ -402,10 +418,10 @@ export const constantRoutes: RouteRecordRaw[] = [
     children: [
       {
         path: "menu2-1",
-        component: () => import("@/views/menus/menu2/AHP.vue"),
+        component: () => import("@/views/mypages/page2_Daojiao.vue"),
         name: "Menu2-1",
         meta: {
-          title: "✅安全态势评价AHP",
+          title: "柏礁异常扩建动态监测",
           hidden: false,
           roles: ["ADMIN"],
           keepAlive: true,
@@ -418,7 +434,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         component: () => import("@/views/menus/menu2/SAVEE.vue"),
         name: "Menu2-2",
         meta: {
-          title: "✅安全情景推演SAVEE",
+          title: "南华礁异常扩建动态监测",
           hidden: false,
           roles: ["ADMIN"],
           keepAlive: true,
