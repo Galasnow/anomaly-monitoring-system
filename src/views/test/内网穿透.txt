@@ -1,0 +1,7 @@
+方案1：内部组网（无需公网ip、P2P或转发模式）
+	Tailscale、ZeroTier、Cloudflare Tunnel
+	国内的有蒲公英等
+
+方案2：内网穿透（需要公网ip、转发模式）
+	frp搭配云服务器使用
+	openVPN
