@@ -429,14 +429,14 @@ export const constantRoutes: RouteRecordRaw[] = [
     ],
   },
 
-  // 测试页面
+  // 海上油气平台
   {
-    path: "/menu5",
+    path: "/offshore_platform",
     component: Layout,
     redirect: "noredirect",
-    name: "Menu5",
+    name: "OffshorePlatform",
     meta: {
-      title: "空间管控模拟与优化",
+      title: "南海海上钻井平台异常动态监测",
       hidden: false,
       roles: ["ADMIN"],
       alwaysShow: false,
@@ -444,42 +444,23 @@ export const constantRoutes: RouteRecordRaw[] = [
     },
     children: [
       {
-        path: "menu5-1",
-        component: () => import("@/views/mypages/page3.vue"),
-        name: "Menu5-1",
+        path: "page_area_of_platform_monitoring",
+        name: "page_area_of_platform_monitoring",
+        component: () =>
+          import(
+            "@/views/offshore_platform/page_area_of_platform_monitoring.vue"
+          ),
         meta: {
-          title: "应用示范情景模拟",
-          hidden: false,
-          roles: ["ADMIN"],
-          keepAlive: true,
-          alwaysShow: false,
-          params: null,
+          title: "监测区域",
         },
       },
       {
-        path: "menu5-2",
-        component: () => import("@/views/mypages/page3.vue"),
-        name: "Menu5-2",
+        path: "page_sk10_platform",
+        name: "page_sk10_platform",
+        component: () =>
+          import("@/views/offshore_platform/page_sk10_platform.vue"),
         meta: {
-          title: "空间管控智能优化",
-          hidden: false,
-          roles: ["ADMIN"],
-          keepAlive: true,
-          alwaysShow: false,
-          params: null,
-        },
-      },
-      {
-        path: "menu5-3",
-        component: () => import("@/views/mypages/page3.vue"),
-        name: "Menu5-3",
-        meta: {
-          title: "动态决策规划",
-          hidden: false,
-          roles: ["ADMIN"],
-          keepAlive: true,
-          alwaysShow: false,
-          params: null,
+          title: "Sk10海上油气平台异常动态监测",
         },
       },
     ],
