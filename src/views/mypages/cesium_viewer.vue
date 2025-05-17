@@ -2,7 +2,7 @@
   <div class="container">
     <!-- 左上角的截止时间选择框 -->
     <div class="time-selector-box">
-      <h2 class="title">台北港异常扩建动态监测</h2>
+      <h2 class="title">高雄港异常扩建动态监测</h2>
       <h3>开始日期</h3>
       <input type="date" v-model="selectedDate" @change="onDateChange" />
       <h3>截止日期</h3>
@@ -21,12 +21,12 @@
       <div v-if="isSplit" class="right-panel">
         <!-- 上部分：监测结果 -->
         <div class="image-container">
-          <h2 class="title">台北港异常扩建动态监测结果</h2>
+          <h2 class="title">高雄港异常扩建动态监测结果</h2>
           <img :src="image1" alt="监测结果" class="responsive-image" />
         </div>
         <!-- 下部分：监测曲线 和 ECharts 图表 -->
         <div class="chart-container-box">
-          <h2 class="title">台北港异常扩建动态监测曲线</h2>
+          <h2 class="title">高雄港异常扩建动态监测曲线</h2>
           <div ref="chartContainer" class="chart-container"></div>
         </div>
       </div>
@@ -41,10 +41,13 @@ import * as echarts from "echarts";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import { cesium_token } from "../../../my_package.json";
 import * as d3 from "d3";
+import * as GeoTIFF from "geotiff";
+import proj4 from "proj4"; // 导入 proj4 用于坐标转换
 
 var date_list = [];
 var area_list = [];
 let cesium_viewer = null;
+
 // 解析 CSV 文件
 function decode_CSV(csv_path) {
   return new Promise((resolve, reject) => {
@@ -62,7 +65,7 @@ export default {
   data() {
     return {
       isSplit: false,
-      image1: "src/assets/Taibei_Port_Result.png", // 修改图片路径
+      image1: "src/assets/Gaoxiong_Port_Result.png", // 修改图片路径
       viewer: null,
       chartInstance: null,
     };
@@ -81,7 +84,7 @@ export default {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
-    initCesium() {
+    async initCesium() {
       // 初始化Cesium Viewer
       Cesium.Ion.defaultAccessToken = cesium_token;
       this.viewer = new Viewer(this.$refs.cesiumContainer, {
@@ -99,16 +102,108 @@ export default {
         navigationHelpButton: false,
         navigationInstructionsInitiallyVisible: false,
       });
+
       // 隐藏logo信息
       this.viewer._cesiumWidget._creditContainer.style.display = "none";
+
       // 设置初始视角
       this.viewer.camera.setView({
-        destination: Cesium.Cartesian3.fromDegrees(121.38277, 25.15883, 9000.0),
+        destination: Cesium.Cartesian3.fromDegrees(120.305, 22.534, 6800.0),
       });
     },
 
+    async loadTiffImage() {
+      try {
+        // 读取本地 .tif 文件并加载到 Cesium
+        const tiffUrl = "src/assets/Gaoxiong_Result.tif"; // 替换为实际文件路径
+        const response = await fetch(tiffUrl);
+        const arrayBuffer = await response.arrayBuffer();
+        const tiff = await GeoTIFF.fromArrayBuffer(arrayBuffer);
+
+        const image = await tiff.getImage();
+        const width = image.getWidth();
+        const height = image.getHeight();
+        const rasters = await image.readRasters();
+
+        console.log("Image width:", width, "height:", height);
+        console.log("Rasters data:", rasters);
+
+        // 获取影像的投影坐标（UTM）范围
+        const bbox = image.getBoundingBox(); // 获取影像的地理范围（UTM）
+        console.log("Bounding box (UTM):", bbox);
+
+        if (!bbox || bbox.length !== 4) {
+          throw new Error("Invalid bounding box retrieved from TIFF image.");
+        }
+
+        // 定义 UTM 和 WGS84 坐标系
+        const utmProjection = "EPSG:32650"; // WGS 1984 UTM Zone 50N
+        const wgs84Projection = "EPSG:4326"; // WGS 84 (经纬度)
+
+        // 使用 proj4 进行坐标转换
+        const lowerLeft = proj4(utmProjection, wgs84Projection, [
+          bbox[0],
+          bbox[1],
+        ]);
+        const upperRight = proj4(utmProjection, wgs84Projection, [
+          bbox[2],
+          bbox[3],
+        ]);
+
+        // 将投影坐标转换为经纬度
+        const minLon = lowerLeft[0];
+        const minLat = lowerLeft[1];
+        const maxLon = upperRight[0];
+        const maxLat = upperRight[1];
+
+        console.log("Converted Bounding box (WGS84):", [
+          minLon,
+          minLat,
+          maxLon,
+          maxLat,
+        ]);
+
+        // 将解码后的影像数据转换为图片 Blob
+        const rasterData = rasters[0]; // 取第一个波段的数据
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = width;
+        canvas.height = height;
+
+        const imageData = ctx.createImageData(width, height);
+        for (let i = 0; i < rasterData.length; i++) {
+          imageData.data[i * 4] = rasterData[i]; // R
+          imageData.data[i * 4 + 1] = rasterData[i]; // G
+          imageData.data[i * 4 + 2] = rasterData[i]; // B
+          imageData.data[i * 4 + 3] = 255; // A
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+
+        canvas.toBlob(async (blob) => {
+          // 使用 Blob 作为图像源
+          const blobUrl = URL.createObjectURL(blob);
+          const imageryProvider = new Cesium.SingleTileImageryProvider({
+            url: blobUrl,
+            rectangle: Cesium.Rectangle.fromDegrees(
+              minLon,
+              minLat,
+              maxLon,
+              maxLat
+            ),
+            tileWidth: width,
+            tileHeight: height,
+          });
+
+          this.viewer.imageryLayers.addImageryProvider(imageryProvider);
+        });
+      } catch (error) {
+        console.error("Error loading TIFF image:", error);
+      }
+    },
+
     initChart() {
-      decode_CSV("src/assets/Taibei_Port_Area.csv")
+      decode_CSV("src/assets/Gaoxiong_Port_Area.csv")
         .then((csv_data) => {
           // 提取日期、面积（保留4位小数）和abnormal值
           const date_list = csv_data.map((item) => item.date);
@@ -200,6 +295,10 @@ export default {
         if (this.isSplit && !this.chartInstance) {
           this.initChart();
         }
+        // 点击分析按钮时加载.tif影像
+        if (this.isSplit) {
+          this.loadTiffImage();
+        }
       });
     },
 
@@ -209,6 +308,10 @@ export default {
         this.adjustLayout();
         if (this.isSplit && !this.chartInstance) {
           this.initChart();
+        }
+        // 点击分析按钮时加载.tif影像
+        if (this.isSplit) {
+          this.loadTiffImage();
         }
       });
     },

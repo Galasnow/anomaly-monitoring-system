@@ -2,7 +2,7 @@
   <div class="container">
     <!-- 左上角的截止时间选择框 -->
     <div class="time-selector-box">
-      <h2 class="title">台北港异常扩建动态监测</h2>
+      <h2 class="title">柏礁异常扩建动态监测</h2>
       <h3>开始日期</h3>
       <input type="date" v-model="selectedDate" @change="onDateChange" />
       <h3>截止日期</h3>
@@ -21,12 +21,12 @@
       <div v-if="isSplit" class="right-panel">
         <!-- 上部分：监测结果 -->
         <div class="image-container">
-          <h2 class="title">台北港异常扩建动态监测结果</h2>
+          <h2 class="title">柏礁异常扩建动态监测结果</h2>
           <img :src="image1" alt="监测结果" class="responsive-image" />
         </div>
         <!-- 下部分：监测曲线 和 ECharts 图表 -->
         <div class="chart-container-box">
-          <h2 class="title">台北港异常扩建动态监测曲线</h2>
+          <h2 class="title">柏礁异常扩建动态监测曲线</h2>
           <div ref="chartContainer" class="chart-container"></div>
         </div>
       </div>
@@ -62,7 +62,7 @@ export default {
   data() {
     return {
       isSplit: false,
-      image1: "src/assets/Taibei_Port_Result.png", // 修改图片路径
+      image1: "src/assets/柏礁提取结果图.png", // 修改图片路径
       viewer: null,
       chartInstance: null,
     };
@@ -103,12 +103,12 @@ export default {
       this.viewer._cesiumWidget._creditContainer.style.display = "none";
       // 设置初始视角
       this.viewer.camera.setView({
-        destination: Cesium.Cartesian3.fromDegrees(121.38277, 25.15883, 9000.0),
+        destination: Cesium.Cartesian3.fromDegrees(113.31983, 8.18313, 9000.0),
       });
     },
 
     initChart() {
-      decode_CSV("src/assets/Taibei_Port_Area.csv")
+      decode_CSV("src/assets/柏礁面积.csv")
         .then((csv_data) => {
           // 提取日期、面积（保留4位小数）和abnormal值
           const date_list = csv_data.map((item) => item.date);

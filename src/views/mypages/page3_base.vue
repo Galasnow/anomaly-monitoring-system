@@ -25,7 +25,9 @@
         >
           <DatePicker v-model="date" />
         </Calendar>
-        <div v-if="selectedDate" class="selected-date"></div>
+        <div v-if="selectedDate" class="selected-date">
+          当前选中日期：{{ formattedDate }}
+        </div>
       </div>
     </div>
 
@@ -644,7 +646,7 @@ body,
   flex-direction: column;
   gap: 5px;
   width: auto;
-  height: 300px;
+  height: auto;
   padding: 15px;
   background-color: white;
   border-radius: 8px;
@@ -717,7 +719,7 @@ option {
 /* Echart弹框的位置 */
 .modal {
   position: fixed;
-  top: 410px;
+  top: 470px;
   left: 310px;
   display: flex;
   width: 500px;

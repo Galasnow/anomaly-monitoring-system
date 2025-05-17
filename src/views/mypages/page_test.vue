@@ -62,7 +62,7 @@ export default {
   data() {
     return {
       isSplit: false,
-      image1: "src/assets/Taibei_Port_Result.png", // 修改图片路径
+      image1: "src/assets/test_image.png", // 修改图片路径
       viewer: null,
       chartInstance: null,
     };
@@ -82,9 +82,9 @@ export default {
   },
   methods: {
     initCesium() {
-      // 初始化Cesium Viewer
+      // 初始化 Cesium 地图
       Cesium.Ion.defaultAccessToken = cesium_token;
-      this.viewer = new Viewer(this.$refs.cesiumContainer, {
+      cesium_viewer = new Cesium.Viewer(this.$refs.cesiumContainer, {
         animation: false,
         baseLayerPicker: false,
         fullscreenButton: false,
@@ -99,98 +99,97 @@ export default {
         navigationHelpButton: false,
         navigationInstructionsInitiallyVisible: false,
       });
-      // 隐藏logo信息
-      this.viewer._cesiumWidget._creditContainer.style.display = "none";
-      // 设置初始视角
-      this.viewer.camera.setView({
+
+      cesium_viewer.scene.frameState.creditDisplay.container.style.display =
+        "none";
+      cesium_viewer.imageryLayers.addImageryProvider(
+        new Cesium.WebMapServiceImageryProvider({
+          url: "http://127.0.0.1:13140/geoserver/satellitevisibility/",
+          layers: "satellitevisibility:ZB-DEM",
+          parameters: {
+            service: "WMS",
+            version: "1.1.1",
+            request: "GetMap",
+            format: "image/png",
+            transparent: false,
+            srs: "EPSG:4326",
+          },
+        })
+      );
+      cesium_viewer.camera.setView({
         destination: Cesium.Cartesian3.fromDegrees(121.38277, 25.15883, 9000.0),
       });
     },
 
     initChart() {
-      decode_CSV("src/assets/Taibei_Port_Area.csv")
+      decode_CSV("src/assets/test_area.csv")
         .then((csv_data) => {
-          // 提取日期、面积（保留4位小数）和abnormal值
-          const date_list = csv_data.map((item) => item.date);
-          const area_list = csv_data.map((item) =>
-            parseFloat(item.area).toFixed(4)
-          ); // 保留4位小数
-          const abnormal_list = csv_data.map(
-            (item) => parseInt(item.abnormal, 10) || 0
-          );
-
-          console.log("date_list:", date_list);
-          console.log("area_list:", area_list);
-          console.log("abnormal_list:", abnormal_list);
-
+          // 成功读取文件，打印数据
+          console.log("CSV 文件内容:", csv_data);
+          date_list = csv_data.map((item) => item.date);
+          area_list = csv_data.map((item) => item.area).map(Number);
+          console.log(date_list);
+          console.log(area_list);
+          // 获取DOM元素
           const chartDom = this.$refs.chartContainer;
-          if (!chartDom) {
-            console.error("ECharts 容器未正确初始化！");
-            return;
-          }
-
+          // 初始化ECharts实例
           const myChart = echarts.init(chartDom);
-          myChart.clear(); // 清除缓存，避免图表不刷新
 
+          // 配置折线图选项
           const option = {
+            // title: {
+            //   text: "港口面积变化图",
+            // },
             tooltip: {
               trigger: "axis",
               valueFormatter: function (value) {
-                return value + " km²";
+                return value + " 平方千米";
               },
             },
             xAxis: {
-              type: "time", // 将 xAxis 类型改为 "time"
+              type: "category",
               name: "日期",
-              nameTextStyle: { fontSize: 18 },
-              axisLabel: {
-                fontSize: 18,
-              },
+              // data: ["周一", "周二", "周三", "周四", "周五", "周六", "周日", "周一"],
+              data: date_list,
             },
             yAxis: {
               type: "value",
-              name: "面积 (km²)",
-              nameTextStyle: { fontSize: 18 },
-              min: Math.min(...area_list) * 0.95,
-              max: Math.max(...area_list) * 1.05,
+              name: "平方千米",
+              min: function (value) {
+                return 0.95 * Math.min(...area_list);
+              },
+              max: function (value) {
+                return 1.05 * Math.max(...area_list);
+              },
               axisLabel: {
-                formatter: (value) => value.toFixed(1),
-                fontSize: 18,
+                formatter: (value, index) => {
+                  // 保留3位小数
+                  return value.toFixed(3);
+                },
               },
             },
             series: [
               {
                 name: "面积",
                 type: "line",
-                data: date_list.map((date, index) => [
-                  new Date(date).getTime(),
-                  area_list[index],
-                ]), // 将日期转换为时间戳
-                color: "#FAFA33",
-                smooth: true,
-                showSymbol: true, // 显示所有数据点
-                symbol: "circle", // 圆圈符号
-                symbolSize: (value, params) =>
-                  abnormal_list[params.dataIndex] === 1 ? 15 : 0, // abnormal=1 显示大圆圈
-                lineStyle: {
-                  color: "red", // 自定义线条颜色为红色
-                  width: 3, // 自定义线条宽度
-                },
-                itemStyle: {
-                  color: (params) =>
-                    abnormal_list[params.dataIndex] === 1
-                      ? "#FAFA33"
-                      : "transparent", // abnormal=1 时填充黄色
-                  borderColor: "black", // 圆圈的边框颜色
-                  borderWidth: 1.5, // 圆圈边框宽度
-                },
+                //data: [1,2,3,4,5,6,7,8],
+                data: area_list,
+                color: "red",
+                smooth: true, // 平滑曲线
+                showSymbol: true, //是否默认展示圆点
+                symbol: "emptyCircle", //设定为空心点
+                symbolSize: 10, //设定实心点的大小
               },
             ],
           };
 
+          // 使用配置项绘制图表
           myChart.setOption(option);
         })
-        .catch((error) => console.error("CSV 解析错误: ", error));
+        .catch((error) => {
+          // 处理错误
+          console.error(error.message);
+        });
     },
 
     analyzeData() {
@@ -313,13 +312,14 @@ body,
 
 /* 右侧面板 */
 .right-panel {
-  box-sizing: border-box;
+  position: absolute;
+  top: 0;
+  right: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
   width: 55%;
   height: 100%;
-  padding: 8px;
+  background: #f0f2f5;
 }
 
 /* 上部分：监测结果 */
@@ -365,7 +365,7 @@ body,
 .responsive-image {
   display: block;
   width: auto;
-  height: 91%;
+  height: 124%;
   margin-top: 5px;
   margin-right: auto;
   margin-left: auto;
@@ -385,7 +385,7 @@ body,
 /* 过渡动画 */
 .slide-enter-active,
 .slide-leave-active {
-  transition: all 0.5s ease;
+  transition: all 0.1s ease;
 }
 
 .slide-enter,
