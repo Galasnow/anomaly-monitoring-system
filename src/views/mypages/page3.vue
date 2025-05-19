@@ -323,7 +323,7 @@ export default {
         (element) => element.shortName == date_str
       )[0];
       if (selectedTiff) {
-        const tiffUrl = `public/${selectedTiff.fullName}`; // 根据选择的完整文件名拼接 URL
+        const tiffUrl = `/01_TaiWan_Port/Gaoxiong_Port/02_Output/${selectedTiff.fullName}`; // 根据选择的完整文件名拼接 URL
         await this.loadTiffImage(tiffUrl);
       }
     },
@@ -451,7 +451,7 @@ export default {
     // },
 
     initChart() {
-      decode_CSV("src/assets/Gaoxiong_Port_Area.csv")
+      decode_CSV("/01_TaiWan_Port/Gaoxiong_Port/Gaoxiong_Port_Area.csv")
         .then((csv_data) => {
           // 提取日期、面积（保留4位小数）和abnormal值
           const date_list = csv_data.map((item) => item.date);

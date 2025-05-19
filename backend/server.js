@@ -7,9 +7,9 @@ import path from "path";
 const app = express();
 app.use(cors());
 
-const TIF_FOLDER = "D:/Web/01_TaiWan_Port/Gaoxiong_Port/02_Output";
+const TIF_FOLDER = "../public/01_TaiWan_Port/Gaoxiong_Port/02_Output";
 
-const MAIN_PY_PATH = "D:/Web/01_TaiWan_Port/Code/main.py";
+const MAIN_PY_PATH = "./port_code/main.py";
 
 const SK10_OUTPUT_PATH = "../public/sk10_platform/output";
 const TIF_FOLDER_SK10_S1 = "../public/sk10_platform/output/predict";
