@@ -70,7 +70,7 @@ export const constantRoutes: RouteRecordRaw[] = [
       {
         path: "page1",
         name: "page1",
-        component: () => import("@/views/mypages/page1_1.vue"),
+        component: () => import("@/views/Taiwan_Port/page1_all.vue"),
         meta: {
           title: "监测区域",
         },
@@ -78,33 +78,17 @@ export const constantRoutes: RouteRecordRaw[] = [
       {
         path: "page2",
         name: "page2",
-        component: () => import("@/views/mypages/page2.vue"),
-        meta: {
-          title: "台北港异常扩建动态监测",
-        },
-      },
-      {
-        path: "page3",
-        name: "page3",
-        component: () => import("@/views/mypages/page3.vue"),
+        component: () => import("@/views/Taiwan_Port/page2_Gaoxiong.vue"),
         meta: {
           title: "高雄港异常扩建动态监测",
         },
       },
       {
-        path: "page4",
-        name: "page4",
-        component: () => import("@/views/mypages/page2_copy.vue"),
+        path: "page3",
+        name: "page3",
+        component: () => import("@/views/Taiwan_Port/page3_Taibei.vue"),
         meta: {
-          title: "读取文件夹内容",
-        },
-      },
-      {
-        path: "cesiumviewer",
-        name: "cesiumviewer",
-        component: () => import("@/views/mypages/page3_base.vue"),
-        meta: {
-          title: "Cesium",
+          title: "台北港异常扩建动态监测",
         },
       },
     ],

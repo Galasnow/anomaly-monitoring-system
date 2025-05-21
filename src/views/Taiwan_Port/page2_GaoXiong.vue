@@ -192,7 +192,7 @@ export default {
         if (folderExists) {
           // 2. 如果文件夹存在，直接加载 .tif 文件并展示
           await this.fetchTiffFiles();
-          await this.loadSelectedTiff();
+          // await this.loadSelectedTiff();
           this.isChartModalVisible = true; // 显示ECharts弹窗
           this.initChart(); // 初始化ECharts图表
           this.isImageSelectorVisible = true; // 点击分析按钮后展示“港口提取结果”窗体  // 成功提示
@@ -245,7 +245,7 @@ export default {
             console.log('执行成功，main.py 执行完成');
             // 执行完成后，继续后续的操作，如加载文件
             await this.fetchTiffFiles();
-            await this.loadSelectedTiff();  // 根据你的需要加载文件
+            // await this.loadSelectedTiff(); 
             this.isChartModalVisible = true; // 显示ECharts弹窗
             this.initChart(); // 初始化ECharts图表
             this.isImageSelectorVisible = true; // 点击分析按钮后展示“港口提取结果”窗体  // 成功提示
@@ -268,7 +268,7 @@ export default {
     checkFolderAndLoadFiles() {
       return new Promise((resolve, reject) => {
         const startTime = Date.now();  // 获取开始时间
-        const timeLimit = 20 * 60 * 1000; // 10分钟的时间限制 (单位：毫秒)
+        const timeLimit = 20 * 60 * 1000; // 20分钟的时间限制 (单位：毫秒)
 
         const intervalId = setInterval(async () => {
           try {
@@ -281,7 +281,7 @@ export default {
             }
 
             // 尝试获取文件夹中的文件
-            const response = await axios.get('http://localhost:3017/api/files_txt');
+            const response = await axios.get('http://localhost:3017/api/files_txt_Gaoxiong');
 
             // 查找是否存在 finish.txt 文件
             const finishFile = response.data.files.find(file => file === "finish.txt");
@@ -306,7 +306,7 @@ export default {
 
     async fetchTiffFiles() {
       try {
-        const response = await axios.get('http://localhost:3017/api/files');
+        const response = await axios.get('http://localhost:3017/api/files_Gaoxiong');
         console.log('返回的数据:', response.data); // 确认返回的数据格式
 
         // 保存完整文件名和前8位文件名的映射
@@ -340,27 +340,31 @@ export default {
       console.log('date_str:', date_str)
       const selectedTiff = this.tifFiles.filter(element => element.shortName == date_str)[0];
       if (selectedTiff) {
-        const tiffUrl = `public/01_Taiwan_Port/01_Gaoxiong_Port/${selectedTiff.fullName}`;  // 根据选择的完整文件名拼接 URL
+        const tiffUrl = `public/01_Taiwan_Port/01_Gaoxiong_Port/02_Output/${selectedTiff.fullName}`;  // 根据选择的完整文件名拼接 URL
         await this.loadTiffImage(tiffUrl);
       }
     },
 
-    async loadSelectedTiff() {
-      try {
-        // 假设 this.selectedTiff 存储了 TIFF 文件的文件名
-        if (this.selectedTiff) {
-          // 拼接完整的 URL 以指向后端提供的静态文件 xss
-          const tiffUrl = `http://localhost:3017/api/files/${this.selectedTiff}`;
-          console.log('TIFF file URL:', tiffUrl);
 
-          await this.loadTiffImage(tiffUrl);  // 调用加载 TIFF 影像的方法
-        } else {
-          throw new Error("未选择 TIFF 文件");
-        }
-      } catch (error) {
-        console.error("Error loading selected TIFF:", error);
-      }
-    },
+    // async loadSelectedTiff() {
+    //   try {
+    //     // 假设 this.selectedTiff 存储了 TIFF 文件的文件名
+    //     if (this.selectedTiff) {
+    //       // 拼接完整的 URL 以指向后端提供的静态文件 xss
+    //       const tiffUrl = `http://localhost:3017/api/files/${this.selectedTiff}`;
+    //       console.log('TIFF file URL:', tiffUrl);
+
+    //       await this.loadTiffImage(tiffUrl);  // 调用加载 TIFF 影像的方法
+    //     } else {
+    //       throw new Error("未选择 TIFF 文件");
+    //     }
+    //   } catch (error) {
+    //     console.error("Error loading selected TIFF:", error);
+    //   }
+    // },
+
+
+
 
     async loadTiffImage(tiffUrl) {
       try {
@@ -453,7 +457,7 @@ export default {
 
 
     initChart() {
-      decode_CSV("public/01_Taiwan_Port/Gaoxiong_Port_Area.csv")
+      decode_CSV("public/01_Taiwan_Port/01_Gaoxiong_Port/Gaoxiong_Port_Area.csv")
         .then(csv_data => {
           // 提取日期、面积（保留4位小数）和abnormal值
           const date_list = csv_data.map(item => item.date);

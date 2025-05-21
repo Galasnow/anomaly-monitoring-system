@@ -41,11 +41,11 @@ if __name__ == "__main__":
     current_path = os.path.dirname(current_file_path)
     # print(f'{current_path = }')
     
-    main_dir = r"../public/01_TaiWan_Port/Gaoxiong_Port/"
+    main_dir = r"../public/01_TaiWan_Port/01_Gaoxiong_Port/"
     # # -----------------step 1:将原始影像裁剪为256*256-----------------
     size = 256
     set_dir = main_dir + r"01_Input/"
-    cut_set_dir = main_dir + r"test\image/"
+    cut_set_dir = main_dir + r"test/image/"
     if not os.path.exists(cut_set_dir):
         os.makedirs(cut_set_dir)
     clip_set(set_dir, cut_set_dir, size)
@@ -88,18 +88,18 @@ if __name__ == "__main__":
             # 恢复原图像值
             image = (sample["image"].transpose(1, 2, 0) + 1) * (255 * 0.5)
 
-            save_image = main_dir + r"test\result256/"
+            save_image = main_dir + r"test/result256/"
             visualize_results_gray(image_pred, files[i],save_image)
 
     print('预测完成！')
 
     # -----------------step 3:对预测结果进行拼接-----------------
-    result_dir = main_dir + r"test\result256/"
+    result_dir = main_dir + r"test/result256/"
     if not os.path.exists(result_dir):
         os.makedirs(result_dir)
     add_geoCoordSys_to_original_files(cut_set_dir,result_dir)   # 带坐标的影像、未带坐标的结果
 
-    result_merge_dir = main_dir + r"test\result/"
+    result_merge_dir = main_dir + r"test/result/"
     if not os.path.exists(result_merge_dir):
         os.makedirs(result_merge_dir)
 
