@@ -81,9 +81,10 @@ def remove_invalid_tensor_by_mask(tensors: torch.Tensor, mask: np.ndarray):
     return tensors
 
 
-def yolo2number(image_shape: Sequence, box: torch.Tensor | np.ndarray):
+def yolo2number(image_shape: Sequence[int], box: torch.Tensor | np.ndarray):
     """
     image_shape: (w, h)
+    box: (center_x, center_y, w, h)
     """
     is_torch = isinstance(box, torch.Tensor)
     if is_torch:
@@ -93,21 +94,22 @@ def yolo2number(image_shape: Sequence, box: torch.Tensor | np.ndarray):
         if box.shape[0] == 0:
             return box
     box_number = box.clone().cpu().numpy() if is_torch else box
-    w = box[..., 2] * image_shape[0]
-    h = box[..., 3] * image_shape[1]
-    center_x = box[..., 0] * image_shape[0]
-    center_y = box[..., 1] * image_shape[1]
+    w = box[..., 2] * float(image_shape[0])
+    h = box[..., 3] * float(image_shape[1])
+    center_x = box[..., 0] * float(image_shape[0])
+    center_y = box[..., 1] * float(image_shape[1])
 
     box_number[..., 0] = center_x - w / 2
     box_number[..., 1] = center_y - h / 2
     box_number[..., 2] = center_x + w / 2
     box_number[..., 3] = center_y + h / 2
-    return torch.as_tensor(box_number, device=box.device, dtype=box.dtype) if is_torch else np.asarray(box_number)
+    return torch.as_tensor(box_number, device=box.device, dtype=torch.float32) if is_torch else np.asarray(box_number)
 
 
-def number2yolo(image_shape: Sequence, box_number: torch.Tensor | np.ndarray):
+def number2yolo(image_shape: Sequence[int], box_number: torch.Tensor | np.ndarray):
     """
     image_shape: (w, h)
+    box_number: (xmin, ymin, xmax, ymax)
     """
     is_torch = isinstance(box_number, torch.Tensor)
     if is_torch:
@@ -118,16 +120,17 @@ def number2yolo(image_shape: Sequence, box_number: torch.Tensor | np.ndarray):
             return box_number
     box = box_number.clone().cpu().numpy() if is_torch else box_number
 
-    w = (box[..., 2] - box[..., 0]) / image_shape[0]
-    h = (box[..., 3] - box[..., 1]) / image_shape[1]
-    center_x = (box[..., 2] + box[..., 0]) / (image_shape[0] * 2)
-    center_y = (box[..., 3] + box[..., 1]) / (image_shape[1] * 2)
+    center_x = (box[..., 2] + box[..., 0]) / float(image_shape[0] * 2)
+    center_y = (box[..., 3] + box[..., 1]) / float(image_shape[1] * 2)
+    w = (box[..., 2] - box[..., 0]) / float(image_shape[0])
+    h = (box[..., 3] - box[..., 1]) / float(image_shape[1])
 
+    box = np.asarray(box, dtype=np.float32)
     box[..., 0] = center_x
     box[..., 1] = center_y
     box[..., 2] = w
     box[..., 3] = h
-    return torch.as_tensor(box, device=box_number.device, dtype=box_number.dtype) if is_torch else np.asarray(box)
+    return torch.as_tensor(box, device=box_number.device, dtype=torch.float32) if is_torch else np.asarray(box)
 
 
 def convert_boxes(boxes, x_offset: int, y_offset: int):
@@ -170,25 +173,24 @@ def image_coordinates_2_latitude_longitude(geo_transforms, image_coordinates):
         image_coordinates = np.expand_dims(image_coordinates, axis=0)
     if geo_transforms.ndim == 1:
         geo_transforms = np.expand_dims(geo_transforms, axis=0)
-    geo_coordinates = image_coordinates.copy()
+    geo_coordinates = np.zeros_like(image_coordinates, dtype=np.float64)
     for i, item in enumerate(image_coordinates):
         geo_transform = geo_transforms[i]
-        new_image_coordinates_x = geo_transform[0] + geo_transform[1] * item[0]
-        new_image_coordinates_y = geo_transform[3] + geo_transform[5] * item[1]
+        new_geo_coordinates_x = geo_transform[0] + geo_transform[1] * float(item[0] + 0.5)
+        new_geo_coordinates_y = geo_transform[3] + geo_transform[5] * float(item[1] + 0.5)
 
         #transformer = Transformer.from_crs("EPSG:32649", 'EPSG:4326')
         #geo_coordinate = transformer.transform(new_image_coordinates_x,  new_image_coordinates_y)
         #geo_coordinate = (new_image_coordinates_x, new_image_coordinates_y)
         # logging.info(geo_coordinate)
         # geo_coordinates[i, 1:] = np.flip(geo_coordinate)
-        geo_coordinates[i, :] = (new_image_coordinates_x, new_image_coordinates_y)
+        geo_coordinates[i, :] = (new_geo_coordinates_x, new_geo_coordinates_y)
     if ex_flag:
         geo_coordinates = np.squeeze(geo_coordinates, axis=0)
-    geo_coordinates.astype(np.float64)
     return geo_coordinates
 
 
-def latitude_longitude_2_image_coordinates(geo_transform, geo_coordinates):
+def latitude_longitude_2_image_coordinates(geo_transform, geo_coordinates, to_int=True):
     # logging.info(geo_coordinates)
     # logging.info(geo_coordinates.ndim)
     ex_flag = False
@@ -196,19 +198,30 @@ def latitude_longitude_2_image_coordinates(geo_transform, geo_coordinates):
         ex_flag = True
         geo_coordinates = np.expand_dims(geo_coordinates, axis=0)
     # logging.info(geo_coordinates)
-    image_coordinates = geo_coordinates.astype(np.intp)
+    # image_coordinates = geo_coordinates.astype(np.intp)
+    if to_int:
+        dtype=np.intp
+    else:
+        dtype=np.float64
+    image_coordinates = np.zeros_like(geo_coordinates, dtype=dtype)
     for i, item in enumerate(geo_coordinates):
         # logging.info(geo_transform)
         # logging.info(item)
         if item[0] >= geo_transform[0] and item[1] <= geo_transform[3]:
-            image_coordinates_x = int((item[0] - geo_transform[0]) / geo_transform[1])
-            image_coordinates_y = int((item[1] - geo_transform[3]) / geo_transform[5])
+            image_coordinates_x = (item[0] - geo_transform[0]) / geo_transform[1] - 0.5
+            image_coordinates_y = (item[1] - geo_transform[3]) / geo_transform[5] - 0.5
         else:
             image_coordinates_x = -999
             image_coordinates_y = -999
-            warnings.warn('given geo_location exceed image range')
+            if item[0] < geo_transform[0]:
+                warnings.warn(f'{item[0]} is smaller than left latitude {geo_transform[0]}')
+            elif item[1] > geo_transform[3]:
+                warnings.warn(f'{item[1]} is bigger than top longitude {geo_transform[3]}')
 
         # logging.info(image_coordinates_x, image_coordinates_y)
+        if to_int:
+            image_coordinates_x = round(image_coordinates_x)
+            image_coordinates_y = round(image_coordinates_y)
         image_coordinates[i, :] = (image_coordinates_x, image_coordinates_y)
     # logging.info(f"center's x y = {center_x} {center_y}")
     if ex_flag:
