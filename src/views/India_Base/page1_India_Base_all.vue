@@ -30,25 +30,12 @@ onMounted(async () => {
   });
 
   cesium_viewer.scene.frameState.creditDisplay.container.style.display = "none";
-  // cesium_viewer._cesiumWidget._creditContainer.style.display = "none";
-  // var provider = new Cesium.WebMapServiceImageryProvider({
-  //   url: "http://127.0.0.1:13140/geoserver/satellitevisibility/",
-  //   layers: "satellitevisibility:ZB-DEM",
-  //   parameters: {
-  //     service: "WMS",
-  //     version: "1.1.1",
-  //     request: "GetMap",
-  //     format: "image/png",
-  //     transparent: true,
-  //     srs: "EPSG:4326",
-  //   },
-  // });
-  // cesium_viewer.imageryLayers.addImageryProvider(provider);
 
-  // 添加台北港实体
-  const taipeiPort = cesium_viewer.entities.add({
-    id: "taipei_port",
-    position: Cesium.Cartesian3.fromDegrees(121.38277, 25.15883, 10),
+
+  // 添加杜尔布克营地实体
+  cesium_viewer.entities.add({
+    id: "durbuk_base",
+    position: Cesium.Cartesian3.fromDegrees(78.13766, 34.06501, 10),
     point: {
       pixelSize: 10,
       color: Cesium.Color.RED,
@@ -56,8 +43,8 @@ onMounted(async () => {
       outlineWidth: 2,
     },
     label: {
-      text: "台北港",
-      font: "16px sans-serif",
+      text: "杜尔布克营地",
+      font: "18px sans-serif",
       fillColor: Cesium.Color.WHITE,
       outlineColor: Cesium.Color.BLACK,
       outlineWidth: 2,
@@ -67,10 +54,10 @@ onMounted(async () => {
     },
   });
 
-  // 添加高雄港实体
+  // 添加楚马要塞实体
   cesium_viewer.entities.add({
-    id: "gaoxiong_port",
-    position: Cesium.Cartesian3.fromDegrees(120.31877, 22.53683, 10),
+    id: "chummur_base",
+    position: Cesium.Cartesian3.fromDegrees(78.55748, 32.66934, 10),
     point: {
       pixelSize: 10,
       color: Cesium.Color.RED,
@@ -78,8 +65,8 @@ onMounted(async () => {
       outlineWidth: 2,
     },
     label: {
-      text: "高雄港",
-      font: "16px sans-serif",
+      text: "楚马要塞",
+      font: "18px sans-serif",
       fillColor: Cesium.Color.WHITE,
       outlineColor: Cesium.Color.BLACK,
       outlineWidth: 2,
@@ -90,18 +77,18 @@ onMounted(async () => {
   });
 
   cesium_viewer.camera.flyTo({
-    destination: Cesium.Cartesian3.fromDegrees(121.3, 23.5, 700000), duration:2.5
+    destination: Cesium.Cartesian3.fromDegrees(78.3, 33.5, 500000), duration:2.5
   });
 
   // 监听点击事件
   const handler = new Cesium.ScreenSpaceEventHandler(cesium_viewer.scene.canvas);
   handler.setInputAction((movement) => {
     const pickedObject = cesium_viewer.scene.pick(movement.position);
-    if (Cesium.defined(pickedObject) && pickedObject.id?.id === "taipei_port") {
-      router.push("page2"); // 跳转到 page2.vue
+    if (Cesium.defined(pickedObject) && pickedObject.id?.id === "durbuk_base") {
+      router.push("page2_Durbuk_Base"); // 跳转到 page2.vue
     }
-    if (Cesium.defined(pickedObject) && pickedObject.id?.id === "gaoxiong_port") {
-      router.push("page3"); // 跳转到 page2.vue
+    if (Cesium.defined(pickedObject) && pickedObject.id?.id === "chummur_base") {
+      router.push("page3_Chummur_Base"); // 跳转到 page2.vue
     }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 });

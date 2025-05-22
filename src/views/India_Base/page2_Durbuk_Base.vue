@@ -1,10 +1,10 @@
-<!-- 高雄港异常扩建动态监测 -->
+<!-- 杜尔布克营地异常扩建动态监测 -->
 <template>
   <div class="container">
     <div class="top-panel">
       <!-- 左上角的截止时间选择框 -->
       <div class="time-selector-box">
-        <h2 class="title">台北港异常扩建动态监测</h2>
+        <h2 class="title">杜尔布克营地异常扩建监测</h2>
         <h3>开始日期</h3>
         <input type="date" v-model="selectedDate" @change="onDateChange" />
         <h3>截止日期</h3>
@@ -14,7 +14,7 @@
 
       <!-- 选择影像文件的独立窗体 -->
       <div class="image-selector-box" v-if="isImageSelectorVisible">
-        <h2 class="title">港口提取结果</h2>
+        <h2 class="title">营地提取结果</h2>
         <Calendar transparent borderless :min-date="new Date(2016, 0, 1)" :max-date="new Date()"
           :attributes='attributes' @dayclick="onDayClickHandler">
           <DatePicker v-model="date"></DatePicker>
@@ -39,7 +39,7 @@
     <!-- ECharts 图表弹窗 -->
     <div v-if="isChartModalVisible" class="modal">
       <div class="modal-content">
-        <h2 class="title">台北港异常扩建动态监测曲线</h2>
+        <h2 class="title">杜尔布克营地异常扩建动态监测曲线</h2>
         <div ref="chartContainer" style="width: 600px; height: 400px;"></div>
       </div>
     </div>
@@ -162,7 +162,7 @@ export default {
 
       // 设置初始视角
       this.viewer.camera.setView({
-        destination: Cesium.Cartesian3.fromDegrees(121.37277, 25.16030, 6200.0),
+        destination: Cesium.Cartesian3.fromDegrees(78.13766, 34.06691, 1000.0),
       });
     },
 
@@ -192,6 +192,7 @@ export default {
         if (folderExists) {
           // 2. 如果文件夹存在，直接加载 .tif 文件并展示
           await this.fetchTiffFiles();
+          // await this.loadSelectedTiff();
           this.isChartModalVisible = true; // 显示ECharts弹窗
           this.initChart(); // 初始化ECharts图表
           this.isImageSelectorVisible = true; // 点击分析按钮后展示“港口提取结果”窗体  // 成功提示
@@ -211,7 +212,7 @@ export default {
 
     async checkFolderExists() {
       try {
-        const response = await axios.get('http://localhost:3017/api/check_folder_Taibei');
+        const response = await axios.get('http://localhost:3017/api/check_folder_Durbuk');
 
         // 根据返回的数据格式进行判定
         if (response.data.files) {
@@ -232,7 +233,7 @@ export default {
         this.isLoading = true;  // 显示加载框
 
         // 点击“分析”按钮时，先执行 main.py 生成 .tif 文件
-        const response = await axios.get('http://localhost:3017/api/run_main_Taibei');
+        const response = await axios.get('http://localhost:3017/api/run_main_Durbuk');
         console.log('返回消息:', response.data.message);  // 确认是否成功执行
 
         // 检查返回值
@@ -244,6 +245,7 @@ export default {
             console.log('执行成功，main.py 执行完成');
             // 执行完成后，继续后续的操作，如加载文件
             await this.fetchTiffFiles();
+            // await this.loadSelectedTiff(); 
             this.isChartModalVisible = true; // 显示ECharts弹窗
             this.initChart(); // 初始化ECharts图表
             this.isImageSelectorVisible = true; // 点击分析按钮后展示“港口提取结果”窗体  // 成功提示
@@ -279,7 +281,7 @@ export default {
             }
 
             // 尝试获取文件夹中的文件
-            const response = await axios.get('http://localhost:3017/api/files_txt_Taibei');
+            const response = await axios.get('http://localhost:3017/api/files_txt_Durbuk');
 
             // 查找是否存在 finish.txt 文件
             const finishFile = response.data.files.find(file => file === "finish.txt");
@@ -304,7 +306,7 @@ export default {
 
     async fetchTiffFiles() {
       try {
-        const response = await axios.get('http://localhost:3017/api/files_Taibei');
+        const response = await axios.get('http://localhost:3017/api/files_Durbuk');
         console.log('返回的数据:', response.data); // 确认返回的数据格式
 
         // 保存完整文件名和前8位文件名的映射
@@ -338,10 +340,31 @@ export default {
       console.log('date_str:', date_str)
       const selectedTiff = this.tifFiles.filter(element => element.shortName == date_str)[0];
       if (selectedTiff) {
-        const tiffUrl = `public/01_Taiwan_Port/02_Taibei_Port/02_Output/${selectedTiff.fullName}`;  // 根据选择的完整文件名拼接 URL
+        const tiffUrl = `public/02_India_Base/01_Durbuk_Base/02_Output/${selectedTiff.fullName}`;  // 根据选择的完整文件名拼接 URL
         await this.loadTiffImage(tiffUrl);
       }
     },
+
+
+    // async loadSelectedTiff() {
+    //   try {
+    //     // 假设 this.selectedTiff 存储了 TIFF 文件的文件名
+    //     if (this.selectedTiff) {
+    //       // 拼接完整的 URL 以指向后端提供的静态文件 xss
+    //       const tiffUrl = `http://localhost:3017/api/files/${this.selectedTiff}`;
+    //       console.log('TIFF file URL:', tiffUrl);
+
+    //       await this.loadTiffImage(tiffUrl);  // 调用加载 TIFF 影像的方法
+    //     } else {
+    //       throw new Error("未选择 TIFF 文件");
+    //     }
+    //   } catch (error) {
+    //     console.error("Error loading selected TIFF:", error);
+    //   }
+    // },
+
+
+
 
     async loadTiffImage(tiffUrl) {
       try {
@@ -364,7 +387,7 @@ export default {
           throw new Error("Invalid bounding box retrieved from TIFF image.");
         }
 
-        const utmProjection = 'EPSG:32651'; //WGS_1984_Zone_51N
+        const utmProjection = 'EPSG:32643'; //WGS_1984_UTN_Zone_43N
         const wgs84Projection = 'EPSG:4326';
 
         const lowerLeft = proj4(utmProjection, wgs84Projection, [bbox[0], bbox[1]]);
@@ -434,11 +457,12 @@ export default {
 
 
     initChart() {
-      decode_CSV("public/01_Taiwan_Port/02_Taibei_Port/Taibei_Port_Area.csv")
+      decode_CSV("public/02_India_Base/01_Durbuk_Base/Durbuk_Base_Area.csv")
         .then(csv_data => {
           // 提取日期、面积（保留4位小数）和abnormal值
           const date_list = csv_data.map(item => item.date);
-          const area_list = csv_data.map(item => parseFloat(item.area).toFixed(4)); // 保留4位小数
+          // const area_list = csv_data.map(item => parseFloat(item.area).toFixed(4)); // 保留4位小数
+          const area_list = csv_data.map(item => parseFloat(item.area).toFixed(0)); // 保留04位小数
           const abnormal_list = csv_data.map(item => parseInt(item.abnormal, 10) || 0);
 
           console.log("date_list:", date_list);
@@ -458,7 +482,7 @@ export default {
             tooltip: {
               trigger: "axis",
               valueFormatter: function (value) {
-                return value + " km²";
+                return value + " m²";
               },
             },
             xAxis: {
@@ -471,12 +495,12 @@ export default {
             },
             yAxis: {
               type: "value",
-              name: '面积 (km²)',
+              name: '面积 (m²)',
               nameTextStyle: { fontSize: 18 },
               min: Math.min(...area_list) * 0.95,
               max: Math.max(...area_list) * 1.05,
               axisLabel: {
-                formatter: (value) => value.toFixed(1),
+                formatter: (value) => value.toFixed(0),
                 fontSize: 18,
               },
             },

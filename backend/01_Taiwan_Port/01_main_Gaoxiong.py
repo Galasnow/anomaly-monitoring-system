@@ -136,37 +136,6 @@ if __name__ == "__main__":
     overlay_grayscale_on_image_batch(set_dir, result_merge_dir, image_merge_result_dir, 4)
     add_geoCoordSys_to_original_files(set_dir, image_merge_result_dir)
 
-
-    def copy_csv_file(src_file, dest_dir):
-        try:
-            # 检查源文件是否存在
-            if not os.path.exists(src_file):
-                print(f"源文件 {src_file} 不存在")
-                return
-
-            # 检查目标目录是否存在，如果不存在则创建
-            if not os.path.exists(dest_dir):
-                os.makedirs(dest_dir)
-
-            # 获取文件名
-            file_name = os.path.basename(src_file)
-
-            # 拼接目标路径
-            dest_file = os.path.join(dest_dir, file_name)
-
-            # 复制文件
-            shutil.copy(src_file, dest_file)
-
-            print(f" {file_name} copy {dest_dir}")
-        except Exception as e:
-            print(f"复制文件时出错: {e}")
-
-
-    # 使用示例
-    # src_file = area_result  # 源文件路径
-    # dest_dir = r"D:\Web\Zhongyan_WebGIS\src\assets"  # 目标文件夹路径
-    # copy_csv_file(src_file,dest_dir)
-
     finish_txt = main_dir + r"/finish.txt"
     with open(finish_txt, "w") as file:
         pass  # 不写入任何内容，文件会保持为空

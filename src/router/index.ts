@@ -58,8 +58,8 @@ export const constantRoutes: RouteRecordRaw[] = [
   // 以下为自定义页面
   // 台海港口异常扩建动态监测
   {
-    path: "/mypages",
-    name: "mypages",
+    path: "/Taiwan_Port",
+    name: "TaiwanPort",
     component: Layout,
     redirect: "noredirect",
     meta: {
@@ -68,25 +68,25 @@ export const constantRoutes: RouteRecordRaw[] = [
     },
     children: [
       {
-        path: "page1",
-        name: "page1",
-        component: () => import("@/views/Taiwan_Port/page1_all.vue"),
+        path: "page1_Taiwan_Port_all",
+        name: "page1_Taiwan_Port_all",
+        component: () => import("@/views/Taiwan_Port/page1_Taiwan_Port_all.vue"),
         meta: {
           title: "监测区域",
         },
       },
       {
-        path: "page2",
-        name: "page2",
-        component: () => import("@/views/Taiwan_Port/page2_Gaoxiong.vue"),
+        path: "page2_Gaoxiong_Port",
+        name: "page2_Gaoxiong_Port",
+        component: () => import("@/views/Taiwan_Port/page2_Gaoxiong_Port.vue"),
         meta: {
           title: "高雄港异常扩建动态监测",
         },
       },
       {
-        path: "page3",
-        name: "page3",
-        component: () => import("@/views/Taiwan_Port/page3_Taibei.vue"),
+        path: "page3_Taibei_Port",
+        name: "page3_Taibei_Port",
+        component: () => import("@/views/Taiwan_Port/page3_Taibei_Port.vue"),
         meta: {
           title: "台北港异常扩建动态监测",
         },
@@ -94,60 +94,42 @@ export const constantRoutes: RouteRecordRaw[] = [
     ],
   },
 
-  // 测试页面
+  // 中印边境营地异常扩建动态监测
   {
-    path: "/test",
-    name: "test",
+    path: "/India_Base",
+    name: "India_Base",
     component: Layout,
     redirect: "noredirect",
     meta: {
-      title: "中印边境飞机异常进出库动态监测",
+      title: "中印边境营地异常扩建动态监测",
       icon: "",
       alwaysShow: true,
     },
     children: [
       {
-        path: "test1",
-        name: "test1",
-        component: () => import("@/views/test/other_显示图标.vue"),
+        path: "page1_India_Base_all",
+        name: "page1_India_Base_all",
+        component: () => import("@/views/India_Base/page1_India_Base_all.vue"),
         meta: {
-          title: "图标展示1",
+          title: "监测区域",
           icon: "",
         },
       },
       {
-        path: "test2",
-        name: "test2",
-        component: () => import("@/views/test/other_显示图标2.vue"),
+        path: "page2_Durbuk_Base",
+        name: "page2_Durbuk_Base",
+        component: () => import("@/views/India_Base/page2_Durbuk_Base.vue"),
         meta: {
-          title: "图标展示2",
+          title: "杜尔布克营地异常扩建监测",
           icon: "",
         },
       },
       {
-        path: "test3",
-        name: "test3",
-        component: () => import("@/views/test/other_上传图片.vue"),
+        path: "page3_Chummur_Base",
+        name: "page3_Chummur_Base",
+        component: () => import("@/views/India_Base/page3_Chummur_Base.vue"),
         meta: {
-          title: "上传图片",
-          icon: "",
-        },
-      },
-      {
-        path: "test4",
-        name: "test4",
-        component: () => import("@/views/test/cecium_加载本地wms服务.vue"),
-        meta: {
-          title: "加载本地wms服务",
-          icon: "",
-        },
-      },
-      {
-        path: "test5",
-        name: "test5",
-        component: () => import("@/views/test/index.vue"),
-        meta: {
-          title: "模板页面",
+          title: "楚马要塞异常扩建监测",
           icon: "",
         },
       },
