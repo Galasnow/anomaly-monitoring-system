@@ -1,6 +1,8 @@
 import os
 import numpy as np
+from tqdm import tqdm
 from osgeo import gdal
+gdal.UseExceptions()
 
 def clip_set(set_dir, savefile_dir, size):
     all_file = []
@@ -10,7 +12,7 @@ def clip_set(set_dir, savefile_dir, size):
                 all_file.append(file)
     print('all file len ', len(all_file))
 
-    for num in range(len(all_file)):
+    for num in tqdm(range(len(all_file))):
         temp_file = all_file[num]
         in_ds = gdal.Open(os.path.join(set_dir, temp_file))  # 读取要切的原图
 

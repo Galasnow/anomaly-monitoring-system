@@ -101,13 +101,13 @@ def add_scalebar(ax, lon0, lat0, length, size=3, fontsize=10):
     ax.text(lon0 + length / 2 * 2.7, lat0 + size + 60, 'm', horizontalalignment='center', fontweight='bold',fontsize=fontsize, color='white')
 
 
-
-from get_id_index import find_matching_id
-main_dir = r"E:\personal file\00Zhongyan\00Nansha\Nansha_Island\01_Baijiao/"
-accuracy_csv = main_dir + r"Baijiao_Accuracy.csv"
-area_result = main_dir + r"Baijiao_Area.csv"
-id_index = find_matching_id(accuracy_csv, area_result)
-set_dir = main_dir + r"01_Input/"
-image_merge_result_plt = main_dir + r"Baijiao_Image.png"
-generate_test_image_plots(set_dir, image_merge_result_plt, id_index)
-print('预测结果绘制完成！')
+if __name__ == "__main__":
+    from get_id_index import find_matching_id
+    main_dir = r"E:\personal file\00Zhongyan\00Nansha\Nansha_Island\01_Baijiao/"
+    accuracy_csv = main_dir + r"Baijiao_Accuracy.csv"
+    area_result = main_dir + r"Baijiao_Area.csv"
+    id_index = find_matching_id(accuracy_csv, area_result)
+    set_dir = main_dir + r"01_Input/"
+    image_merge_result_plt = main_dir + r"Baijiao_Image.png"
+    generate_test_image_plots(set_dir, image_merge_result_plt, id_index)
+    print('预测结果绘制完成！')

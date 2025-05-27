@@ -1,6 +1,7 @@
 import os
 import cv2
 import numpy as np
+from tqdm import tqdm
 
 def overlay_grayscale_on_image_batch(original_folder, grayscale_folder, output_folder, dilation_iter=1):
     # List all files in the original and grayscale folders
@@ -8,7 +9,7 @@ def overlay_grayscale_on_image_batch(original_folder, grayscale_folder, output_f
     grayscale_files = os.listdir(grayscale_folder)
 
     # Iterate through each file in the original folder
-    for original_filename in original_files:
+    for original_filename in tqdm(original_files):
         # Construct paths for original and grayscale images
         original_image_path = os.path.join(original_folder, original_filename)
         # Assuming grayscale images have "_label" before the extension

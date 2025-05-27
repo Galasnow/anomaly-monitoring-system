@@ -1,6 +1,7 @@
 import os
 from osgeo import gdal
 import numpy as np
+from tqdm import tqdm
 
 def calculate_bounds(tile_files):
     min_x, min_y, max_x, max_y = None, None, None, None
@@ -86,7 +87,7 @@ def batch_stitch(image_tile_dir, label_tile_dir, stitched_image_base_dir, origin
     # Get the list of original images
     original_images = [f for f in os.listdir(original_image_base_dir) if f.endswith('.tif')]
 
-    for original_image in original_images:
+    for original_image in tqdm(original_images):
         region_date = os.path.splitext(original_image)[0]
 
         # Extract region and date

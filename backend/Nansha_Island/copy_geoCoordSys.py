@@ -1,4 +1,5 @@
 import os
+from tqdm import tqdm
 from osgeo import gdal
 
 def add_geoCoordSys_to_original_files(set_dir, label_dir):
@@ -30,7 +31,7 @@ def add_geoCoordSys_to_original_files(set_dir, label_dir):
     all_files = [f for f in os.listdir(set_dir) if f.endswith(".tif")]
     print('Total files to process:', len(all_files))
 
-    for temp_file in all_files:
+    for temp_file in tqdm(all_files):
         img_pos_path = os.path.join(set_dir, temp_file)
         img_none_path = os.path.join(label_dir, temp_file)
 

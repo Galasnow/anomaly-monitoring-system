@@ -12,6 +12,7 @@ class Trainer(object):
         self.file_path = file_path
         print("model save dir:", file_path)
         self.net = net
+        self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
     def train_model(self, train_loader, test_loader, epoch):
         self.net.train()
@@ -132,11 +133,10 @@ class Trainer(object):
 
     def restore_model(self):
         print("restore the model...")
-        self.net.load_state_dict(torch.load('./model3.pth'))
+        self.net.load_state_dict(torch.load(self.file_path, map_location=self.device))
 
     def predict(self, image):
+        self.net.load_state_dict(torch.load(self.file_path, map_location=self.device, weights_only=True))
         self.net.eval()
-        self.net.cuda()
-        self.net.load_state_dict(torch.load("E:/personal file/00Zhongyan/00Nansha/Nansha_Island/code/model3.pth"))
         prediction = self.net(image)
         return prediction

@@ -295,15 +295,17 @@ def plot_area_data(area_csv, start_date='2022/05/01', tolerance=0.005, area_line
     else:
         plt.show()
 
-main_dir = r"E:\personal file\00Zhongyan\00Nansha\Nansha_Island\01_Baijiao/"
-area_result = main_dir + r"Baijiao_Area.csv"
-line_result = main_dir + r"Baijiao_Area3.png"
-accuracy_csv = main_dir + r"Baijiao_Accuracy.csv"
-plot_area_data(
-    area_csv=area_result,
-    start_date='2016/01/01',
-    tolerance=0.005,
-    area_line=line_result,
-    accuracy_csv=accuracy_csv
-    )
-print('图表绘制完成！')
+        
+if __name__ == "__main__":
+    main_dir = r"E:\personal file\00Zhongyan\00Nansha\Nansha_Island\01_Baijiao/"
+    area_result = main_dir + r"Baijiao_Area.csv"
+    line_result = main_dir + r"Baijiao_Area3.png"
+    accuracy_csv = main_dir + r"Baijiao_Accuracy.csv"
+    plot_area_data(
+        area_csv=area_result,
+        start_date='2016/01/01',
+        tolerance=0.005,
+        area_line=line_result,
+        accuracy_csv=accuracy_csv
+        )
+    print('图表绘制完成！')
