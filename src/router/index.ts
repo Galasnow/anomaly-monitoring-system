@@ -70,7 +70,8 @@ export const constantRoutes: RouteRecordRaw[] = [
       {
         path: "page1_Taiwan_Port_all",
         name: "page1_Taiwan_Port_all",
-        component: () => import("@/views/Taiwan_Port/page1_Taiwan_Port_all.vue"),
+        component: () =>
+          import("@/views/Taiwan_Port/page1_Taiwan_Port_all.vue"),
         meta: {
           title: "监测区域",
         },
@@ -368,12 +369,11 @@ export const constantRoutes: RouteRecordRaw[] = [
     ],
   },
 
-  // 测试页面
   {
-    path: "/menu2",
+    path: "/nansha_island",
     component: Layout,
     redirect: "noredirect",
-    name: "Menu2",
+    name: "NanshaIsland",
     meta: {
       title: "南海岛礁异常扩建动态监测", //安全态势分级与情势推演
       hidden: false,
@@ -383,9 +383,23 @@ export const constantRoutes: RouteRecordRaw[] = [
     },
     children: [
       {
-        path: "menu2-1",
-        component: () => import("@/views/mypages/page2_Daojiao.vue"),
-        name: "Menu2-1",
+        path: "page_area_of_nansha_island",
+        name: "page_area_of_nansha_island",
+        component: () =>
+          import("@/views/nansha_island/page_area_of_nansha_island.vue"),
+        meta: {
+          title: "监测区域",
+          hidden: false,
+          roles: ["ADMIN"],
+          keepAlive: true,
+          alwaysShow: false,
+          params: null,
+        },
+      },
+      {
+        path: "page_baijiao",
+        name: "page_baijiao",
+        component: () => import("@/views/nansha_island/page_baijiao.vue"),
         meta: {
           title: "柏礁异常扩建动态监测",
           hidden: false,
@@ -396,11 +410,11 @@ export const constantRoutes: RouteRecordRaw[] = [
         },
       },
       {
-        path: "menu2-2",
-        component: () => import("@/views/menus/menu2/SAVEE.vue"),
-        name: "Menu2-2",
+        path: "page_bishengjiao",
+        name: "page_bishengjiao",
+        component: () => import("@/views/nansha_island/page_bishengjiao.vue"),
         meta: {
-          title: "南华礁异常扩建动态监测",
+          title: "毕生礁异常扩建动态监测",
           hidden: false,
           roles: ["ADMIN"],
           keepAlive: true,
