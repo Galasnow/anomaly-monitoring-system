@@ -12,7 +12,9 @@ def clip_set(set_dir, savefile_dir, size):
                 all_file.append(file)
     print('all file len ', len(all_file))
 
-    for num in tqdm(range(len(all_file))):
+    pbar = tqdm(range(len(all_file)))
+    pbar.set_description(f'Clip original images')
+    for num in pbar:
         temp_file = all_file[num]
         in_ds = gdal.Open(os.path.join(set_dir, temp_file))  # 读取要切的原图
 

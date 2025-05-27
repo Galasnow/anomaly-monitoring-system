@@ -98,9 +98,6 @@ onMounted(async () => {
   handler.setInputAction((movement) => {
     const pickedObject = cesium_viewer.scene.pick(movement.position);
     if (Cesium.defined(pickedObject) && pickedObject.id?.id === "bai_jiao") {
-      router.push("page_baijiao"); // 跳转到 page2.vue
-    }
-    if (Cesium.defined(pickedObject) && pickedObject.id?.id === "bai_jiao") {
       router.push("page_baijiao");
     }
     if (

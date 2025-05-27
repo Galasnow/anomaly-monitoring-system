@@ -623,6 +623,21 @@ app.get("/api/run-main_baijiao", (req, res) => {
       taskProgress[taskId].progress = parseInt(match[1]);
     }
   });
+  // 捕获 Python 脚本的错误
+  process.stderr.on("data", (data) => {
+    console.error(`stderr: ${data.toString()}`);
+  });
+
+  // 监听进程结束
+  process.on("close", (code) => {
+    if (code === 0) {
+      taskProgress[taskId].status = "completed"; // 更新任务状态
+      console.log(`main.py 执行成功，任务ID: ${taskId}`);
+    } else {
+      taskProgress[taskId].status = "failed"; // 更新任务状态为失败
+      console.error(`main.py 执行失败，任务ID: ${taskId}`);
+    }
+  });
 });
 
 // 运行 main.py，返回任务ID

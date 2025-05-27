@@ -297,14 +297,13 @@ export const constantRoutes: RouteRecordRaw[] = [
     ],
   },
 
-  // 测试页面
   {
-    path: "/menu3",
+    path: "/ship_gather",
     component: Layout,
     redirect: "noredirect",
-    name: "Menu3",
+    name: "ShipGather",
     meta: {
-      title: "南海船舶异常聚集动态监测", //安全态势互联互通
+      title: "南海船舶异常聚集动态监测",
       hidden: false,
       roles: ["ADMIN"],
       alwaysShow: false,
@@ -312,53 +311,38 @@ export const constantRoutes: RouteRecordRaw[] = [
     },
     children: [
       {
-        path: "menu3-1",
-        component: () => import("@/views/mypages/page4.vue"),
-        name: "Menu3-1",
+        path: "page_area_of_ship_gather",
+        name: "page_area_of_ship_gather",
+        component: () =>
+          import("@/views/ship_gather/page_area_of_ship_gather.vue"),
         meta: {
-          title: "边境互联互通",
+          title: "监测区域",
           hidden: false,
           roles: ["ADMIN"],
           keepAlive: true,
           alwaysShow: false,
           params: null,
         },
-        children: [
-          {
-            path: "menu3-1-1",
-            component: () => import("@/views/menus/menu3/道路网互联互通.vue"),
-            name: "Menu3-1-1",
-            meta: {
-              title: "✅道路网互联互通",
-              hidden: false,
-              roles: ["ADMIN"],
-              keepAlive: true,
-              alwaysShow: false,
-              params: null,
-            },
-          },
-          {
-            path: "menu3-1-2",
-            component: () =>
-              import("@/views/menus/menu3/卫星导航和移动通讯互联互通.vue"),
-            name: "Menu3-1-2",
-            meta: {
-              title: "✅卫星导航和移动通讯互联互通",
-              hidden: false,
-              roles: ["ADMIN"],
-              keepAlive: true,
-              alwaysShow: false,
-              params: null,
-            },
-          },
-        ],
       },
       {
-        path: "menu3-2",
-        component: () => import("@/views/mypages/page3.vue"),
-        name: "Menu3-2",
+        path: "page_xianbinjiao",
+        name: "page_xianbinjiao",
+        component: () => import("@/views/ship_gather/page_xianbinjiao.vue"),
         meta: {
-          title: "渔船搜救互联互通",
+          title: "仙宾礁异常聚集动态监测",
+          hidden: false,
+          roles: ["ADMIN"],
+          keepAlive: true,
+          alwaysShow: false,
+          params: null,
+        },
+      },
+      {
+        path: "page_nanhuajiao",
+        name: "page_nanhuajiao",
+        component: () => import("@/views/ship_gather/page_nanhuajiao.vue"),
+        meta: {
+          title: "南华礁异常聚集动态监测",
           hidden: false,
           roles: ["ADMIN"],
           keepAlive: true,
@@ -375,7 +359,7 @@ export const constantRoutes: RouteRecordRaw[] = [
     redirect: "noredirect",
     name: "NanshaIsland",
     meta: {
-      title: "南海岛礁异常扩建动态监测", //安全态势分级与情势推演
+      title: "南海岛礁异常扩建动态监测",
       hidden: false,
       roles: ["ADMIN"],
       alwaysShow: false,
