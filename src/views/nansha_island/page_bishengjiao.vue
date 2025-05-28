@@ -14,7 +14,7 @@
 
       <!-- 选择影像文件的独立窗体 -->
       <div class="image-selector-box" v-if="isImageSelectorVisible">
-        <h2 class="title">毕生礁面积</h2>
+        <h2 class="title">毕生礁提取结果</h2>
         <Calendar
           ref="calendarRef"
           transparent
@@ -308,7 +308,6 @@ async function onDayClickHandler(day) {
 async function loadTiffImage(tiffUrl) {
   try {
     const response = await fetch(tiffUrl);
-    console.log(tiffUrl);
     const arrayBuffer = await response.arrayBuffer();
     const tiff = await GeoTIFF.fromArrayBuffer(arrayBuffer);
 
@@ -422,7 +421,7 @@ function initChart() {
         },
         yAxis: {
           type: "value",
-          name: "面积",
+          name: "面积 (km²)",
           nameTextStyle: { fontSize: 18 },
           min: Math.min(...area_list),
           max: Math.max(...area_list),
