@@ -208,8 +208,7 @@ async function analyzeData() {
     if (folderExists) {
       // 2. 如果文件夹存在，直接加载 .tif 文件并展示
       await fetchTiffFiles();
-      loadpoint(viewer.value);
-      // await loadSelectedTiff();
+      // loadpoint(viewer.value);
       isChartModalVisible.value = true; // 显示ECharts弹窗
       initChart(); // 初始化ECharts图表
       isImageSelectorVisible.value = true; // 点击分析按钮后展示“港口提取结果”窗体  // 成功提示
@@ -244,9 +243,8 @@ async function runMainPythonScript() {
       if (isFinished) {
         console.log("Python 脚本执行完成");
         // 执行完成后，继续后续的操作，如加载文件
-        loadpoint(viewer.value);
+        // loadpoint(viewer.value);
         await fetchTiffFiles();
-        // await loadSelectedTiff();  // 根据你的需要加载文件
         isChartModalVisible.value = true; // 显示ECharts弹窗
         initChart(); // 初始化ECharts图表
         isImageSelectorVisible.value = true; // 点击分析按钮后展示“港口提取结果”窗体  // 成功提示
@@ -358,50 +356,50 @@ async function onDayClickHandler(day) {
 }
 
 // 加载点数据
-async function loadpoint(viewer) {
-  try {
-    const geo_json = "/sk10_platform/sk10_platform_point.json";
-    const dataSource = await Cesium.GeoJsonDataSource.load(geo_json, {
-      markerSymbol: "circle",
-      markerSize: 30,
-      stroke: Cesium.Color.HOTPINK,
-      fill: Cesium.Color.PINK.withAlpha(1),
-      strokeWidth: 3,
-      clampToGround: true,
-    });
+// async function loadpoint(viewer) {
+//   try {
+//     const geo_json = "/sk10_platform/sk10_platform_point.json";
+//     const dataSource = await Cesium.GeoJsonDataSource.load(geo_json, {
+//       markerSymbol: "circle",
+//       markerSize: 30,
+//       stroke: Cesium.Color.HOTPINK,
+//       fill: Cesium.Color.PINK.withAlpha(1),
+//       strokeWidth: 3,
+//       clampToGround: true,
+//     });
 
-    dataSource.entities.values.forEach((value) => {
-      value.billboard = undefined;
-      if (value._properties._Frequency._value == 230) {
-        value.point = {
-          pixelSize: 6,
-          color: Cesium.Color.GREEN,
-          show: true,
-        };
-      } else {
-        value.point = {
-          pixelSize: 5,
-          color: Cesium.Color.RED,
-          show: true,
-        };
-      }
-    });
+//     dataSource.entities.values.forEach((value) => {
+//       value.billboard = undefined;
+//       if (value._properties._Frequency._value == 230) {
+//         value.point = {
+//           pixelSize: 6,
+//           color: Cesium.Color.GREEN,
+//           show: true,
+//         };
+//       } else {
+//         value.point = {
+//           pixelSize: 5,
+//           color: Cesium.Color.RED,
+//           show: true,
+//         };
+//       }
+//     });
 
-    console.log(dataSource);
-    viewer.dataSources.add(dataSource);
-    viewer.flyTo(dataSource, {
-      duration: 1.5,
-      orientation: {
-        heading: Cesium.Math.toRadians(0),
-        pitch: Cesium.Math.toRadians(0),
-        roll: 0.0,
-      },
-    });
-  } catch (error) {
-    console.error("加载 GeoJSON 失败:", error);
-    alert("加载 GeoJSON 失败，请检查数据格式");
-  }
-}
+//     console.log(dataSource);
+//     viewer.dataSources.add(dataSource);
+//     viewer.flyTo(dataSource, {
+//       duration: 1.5,
+//       orientation: {
+//         heading: Cesium.Math.toRadians(0),
+//         pitch: Cesium.Math.toRadians(0),
+//         roll: 0.0,
+//       },
+//     });
+//   } catch (error) {
+//     console.error("加载 GeoJSON 失败:", error);
+//     alert("加载 GeoJSON 失败，请检查数据格式");
+//   }
+// }
 
 // 加载TIFF图像
 async function loadTiffImage(tiffUrl) {
