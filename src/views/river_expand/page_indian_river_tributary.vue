@@ -143,7 +143,7 @@ async function initCesium() {
 async function checkFolderExists() {
   try {
     const response = await axios.get(
-      "http://localhost:3017/api/check-folder_indian_river_tributary"
+      "http://localhost:3017/api/files_indian_river_tributary"
     );
     console.log("response", response);
     // 根据返回的数据格式进行判定

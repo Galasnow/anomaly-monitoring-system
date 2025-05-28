@@ -142,9 +142,7 @@ async function initCesium() {
 
 async function checkFolderExists() {
   try {
-    const response = await axios.get(
-      "http://localhost:3017/api/check-folder_baijiao"
-    );
+    const response = await axios.get("http://localhost:3017/api/files_baijiao");
     console.log("response", response);
     // 根据返回的数据格式进行判定
     if (response.data.files) {
