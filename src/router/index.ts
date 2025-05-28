@@ -224,7 +224,7 @@ export const constantRoutes: RouteRecordRaw[] = [
     ],
   },
 
-  // 中印边境营地异常扩建动态监测
+  // 中巴边境冰川堰塞湖异常溃决动态监测
   {
     path: "/Pakistan_Lake",
     name: "Pakistan_Lake",
@@ -260,8 +260,8 @@ export const constantRoutes: RouteRecordRaw[] = [
 
   // 中印边境飞机异常进出库动态监测
   {
-    path: "/Pakistan_Lake",
-    name: "Pakistan_Lake",
+    path: "/India_Airplane",
+    name: "India_Airplane",
     component: Layout,
     redirect: "noredirect",
     meta: {
@@ -271,9 +271,9 @@ export const constantRoutes: RouteRecordRaw[] = [
     },
     children: [
       {
-        path: "page1_Pakistan_Lake_all",
-        name: "page1_Pakistan_Lake_all",
-        component: () => import("@/views/Pakistan_Lake/page1_Pakistan_Lake_all.vue"),
+        path: "page1_India_Airplane_all",
+        name: "page1_India_Airplane_all",
+        component: () => import("@/views/India_Airplane/page1_India_Airplane_all.vue"),
         meta: {
           title: "监测区域",
           icon: "",
@@ -282,7 +282,7 @@ export const constantRoutes: RouteRecordRaw[] = [
       {
         path: "page2_Hassanabad",
         name: "page2_Hassanabad",
-        component: () => import("@/views/Pakistan_Lake/page2_Hassanabad.vue"),
+        component: () => import("@/views/India_Airplane/page2_Thoise_Airplane.vue"),
         meta: {
           title: "哈萨纳巴德冰川堰塞湖",
           icon: "",
