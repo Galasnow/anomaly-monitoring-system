@@ -1,10 +1,10 @@
-<!-- 印度河支流异常扩张监测 -->
+<!--曼德海峡船舶异常分散监测 -->
 <template>
   <div class="container">
     <div class="top-panel">
       <!-- 左上角的截止时间选择框 -->
       <div class="time-selector-box">
-        <h2 class="title">印度河支流异常扩张监测</h2>
+        <h2 class="title">曼德海峡船舶异常分散监测</h2>
         <h3>开始日期</h3>
         <input type="date" v-model="firstDate" @change="onDateChange" />
         <h3>截止日期</h3>
@@ -14,7 +14,7 @@
 
       <!-- 选择影像文件的独立窗体 -->
       <div class="image-selector-box" v-if="isImageSelectorVisible">
-        <h2 class="title">印度河支流面积</h2>
+        <h2 class="title">曼德海峡提取结果</h2>
         <Calendar
           ref="calendarRef"
           transparent
@@ -45,7 +45,7 @@
     <!-- 右侧内容容器 -->
     <div v-if="isChartModalVisible" class="modal">
       <div class="modal-content">
-        <h2 class="title">印度河支流异常扩张监测曲线</h2>
+        <h2 class="title">曼德海峡船舶异常分散监测曲线</h2>
         <div ref="chartContainer" style="width: 600px; height: 400px"></div>
       </div>
     </div>
@@ -136,14 +136,14 @@ async function initCesium() {
 
   // 设置初始视角
   viewer.value.camera.setView({
-    destination: Cesium.Cartesian3.fromDegrees(76.3575, 35.1824, 100000),
+    destination: Cesium.Cartesian3.fromDegrees(43.9122, 12.4516, 100000),
   });
 }
 
 async function checkFolderExists() {
   try {
     const response = await axios.get(
-      "http://localhost:3017/api/check-folder_indian_river_tributary"
+      "http://localhost:3017/api/check-folder_mandehaixia"
     );
     console.log("response", response);
     // 根据返回的数据格式进行判定
@@ -188,7 +188,7 @@ async function runMainPythonScript() {
 
     // 点击“分析”按钮时，先执行 main.py 生成 .tif 文件
     const response = await axios.get(
-      "http://localhost:3017/api/run-main_indian_river_tributary"
+      "http://localhost:3017/api/run-main_mandehaixia"
     );
     console.log("返回消息:", response.data.message); // 确认是否成功执行
 
@@ -236,7 +236,7 @@ function checkFolderAndLoadFiles() {
 
         // 尝试获取文件夹中的文件
         const response = await axios.get(
-          "http://localhost:3017/api/indian_river_tributary_finish_txt"
+          "http://localhost:3017/api/mandehaixia_finish_txt"
         );
 
         // 查找是否存在 finish.txt 文件
@@ -261,13 +261,13 @@ function checkFolderAndLoadFiles() {
 async function fetchTiffFiles() {
   try {
     const response = await axios.get(
-      "http://localhost:3017/api/files_indian_river_tributary"
+      "http://localhost:3017/api/files_mandehaixia"
     );
     console.log("返回的数据:", response.data);
 
     tif_files.value = response.data.files.map((file) => ({
       fullName: file,
-      shortName: file.substring(19, 27),
+      shortName: file.substring(17, 25),
     }));
 
     mark_dates.value = [];
@@ -275,9 +275,9 @@ async function fetchTiffFiles() {
     // console.log(files)
     for (let i = 0; i < tif_files.value.length; i++) {
       const file = files[i].fullName;
-      const year = file.substring(19, 23);
-      const month = file.substring(23, 25);
-      const day = file.substring(25, 27);
+      const year = file.substring(17, 21);
+      const month = file.substring(21, 23);
+      const day = file.substring(23, 25);
       mark_dates.value.push(new Date(year, month - 1, day));
     }
   } catch (error) {
@@ -298,7 +298,7 @@ async function onDayClickHandler(day) {
     (element) => element.shortName == date_str
   )[0];
   if (selected) {
-    const tiffUrl = `/River_Expand/result/${selected.fullName}`;
+    const tiffUrl = `/Ship_Disperse/result/${selected.fullName}`;
     console.log(tiffUrl);
     await loadTiffImage(tiffUrl);
   }
@@ -308,7 +308,6 @@ async function onDayClickHandler(day) {
 async function loadTiffImage(tiffUrl) {
   try {
     const response = await fetch(tiffUrl);
-    console.log(tiffUrl);
     const arrayBuffer = await response.arrayBuffer();
     const tiff = await GeoTIFF.fromArrayBuffer(arrayBuffer);
 
@@ -327,19 +326,7 @@ async function loadTiffImage(tiffUrl) {
       throw new Error("Invalid bounding box retrieved from TIFF image.");
     }
 
-    const utmProjection = "EPSG:32643";
-    const wgs84Projection = "EPSG:4326";
-
-    const lowerLeft = proj4(utmProjection, wgs84Projection, [bbox[0], bbox[1]]);
-    const upperRight = proj4(utmProjection, wgs84Projection, [
-      bbox[2],
-      bbox[3],
-    ]);
-
-    const minLon = lowerLeft[0];
-    const minLat = lowerLeft[1];
-    const maxLon = upperRight[0];
-    const maxLat = upperRight[1];
+    const [minLon, minLat, maxLon, maxLat] = bbox;
 
     console.log("Converted Bounding box (WGS84):", [
       minLon,
@@ -394,10 +381,10 @@ async function loadTiffImage(tiffUrl) {
 
 // 初始化图表
 function initChart() {
-  decode_CSV("/River_Expand/River_area.csv")
+  decode_CSV("/Ship_Disperse/Honghai_Number.csv")
     .then((csv_data) => {
       const date_list = csv_data.map((item) => item.date);
-      const area_list = csv_data.map((item) => parseFloat(item.area));
+      const number_list = csv_data.map((item) => parseInt(item.number));
       const abnormal_list = csv_data.map(
         (item) => parseInt(item.abnormal, 10) || 0
       );
@@ -424,11 +411,11 @@ function initChart() {
         },
         yAxis: {
           type: "value",
-          name: "面积 (km²)",
+          name: "数量",
           nameTextStyle: { fontSize: 18 },
-          min: Math.min(...area_list),
-          max: Math.max(...area_list),
-          interval: 3,
+          min: Math.min(...number_list),
+          max: Math.max(...number_list),
+          interval: 2,
           axisLabel: {
             formatter: (value) => value,
             fontSize: 18,
@@ -436,11 +423,11 @@ function initChart() {
         },
         series: [
           {
-            name: "面积",
+            name: "数量",
             type: "line",
             data: date_list.map((date, index) => [
               new Date(date).getTime(),
-              area_list[index],
+              number_list[index],
             ]),
             color: "#FAFA33",
             smooth: true,
@@ -487,7 +474,7 @@ function initChart() {
           (element) => element.shortName == date_str
         )[0];
         if (selected) {
-          const tiffUrl = `/River_Expand/result/${selected.fullName}`;
+          const tiffUrl = `/Ship_Disperse/result/${selected.fullName}`;
           console.log(tiffUrl);
           loadTiffImage(tiffUrl);
         }

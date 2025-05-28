@@ -497,69 +497,73 @@ app.get("/api/files_txt_Chummur", (req, res) => {
   }
 });
 
-// India_Airport 
+// India_Airport
 // Bhatinda_Air_Force_Station
-const TIF_FOLDER_Bhatinda = "../public/03_India_Airport/01_Bhatinda_Air_Force_Station/02_Output";
-const MAIN_PY_PATH_Bhatinda = "./03_India_Airport/01_main_Bhatinda_Air_Force_Station.py";
-const TXT_FOLDER_Bhatinda = "../public/03_India_Airport/01_Bhatinda_Air_Force_Station";
+const TIF_FOLDER_Bhatinda =
+  "../public/03_India_Airport/01_Bhatinda_Air_Force_Station/02_Output";
+const MAIN_PY_PATH_Bhatinda =
+  "./03_India_Airport/01_main_Bhatinda_Air_Force_Station.py";
+const TXT_FOLDER_Bhatinda =
+  "../public/03_India_Airport/01_Bhatinda_Air_Force_Station";
 
 // 检查文件夹中是否存在 .tif 文件
 app.get("/api/check_folder_Bhatinda", (req, res) => {
-    try {
-        if (!fs.existsSync(TIF_FOLDER_Bhatinda)) {
-            return res.status(500).json({ error: "文件夹不存在" });
-        }
-
-        let files = fs.readdirSync(TIF_FOLDER_Bhatinda).filter((f) => f.endsWith(".tif"));
-
-        if (files.length > 0) {
-            return res.json({ files }); // 返回文件列表
-        } else {
-            return res.status(404).json({ message: "文件夹中未找到 .tif 文件" });
-        }
-    } catch (err) {
-        console.error("Error checking files:", err);
-        res.status(500).json({ error: "发生未知错误", details: err.message });
+  try {
+    if (!fs.existsSync(TIF_FOLDER_Bhatinda)) {
+      return res.status(500).json({ error: "文件夹不存在" });
     }
-});
 
+    let files = fs
+      .readdirSync(TIF_FOLDER_Bhatinda)
+      .filter((f) => f.endsWith(".tif"));
+
+    if (files.length > 0) {
+      return res.json({ files }); // 返回文件列表
+    } else {
+      return res.status(404).json({ message: "文件夹中未找到 .tif 文件" });
+    }
+  } catch (err) {
+    console.error("Error checking files:", err);
+    res.status(500).json({ error: "发生未知错误", details: err.message });
+  }
+});
 
 // 运行 main.py，返回任务ID
 app.get("/api/run_main_Bhatinda", (req, res) => {
-    const taskId = Date.now(); // 生成唯一任务ID
-    taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
+  const taskId = Date.now(); // 生成唯一任务ID
+  taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
 
-    console.log(`Starting main.py with task ID: ${taskId}`);
+  console.log(`Starting main.py with task ID: ${taskId}`);
 
-    const process = spawn("python", [MAIN_PY_PATH_Bhatinda]);
+  const process = spawn("python", [MAIN_PY_PATH_Bhatinda]);
 
-    // 捕获 Python 脚本的输出
-    process.stdout.on("data", (data) => {
-        console.log(`stdout: ${data.toString()}`);
-        // 假设 main.py 输出类似：'Progress: 20%'
-        const match = data.toString().match(/Progress:\s(\d+)%/);
-        if (match) {
-            taskProgress[taskId].progress = parseInt(match[1]);
-        }
-    });
+  // 捕获 Python 脚本的输出
+  process.stdout.on("data", (data) => {
+    console.log(`stdout: ${data.toString()}`);
+    // 假设 main.py 输出类似：'Progress: 20%'
+    const match = data.toString().match(/Progress:\s(\d+)%/);
+    if (match) {
+      taskProgress[taskId].progress = parseInt(match[1]);
+    }
+  });
 
-    // 捕获 Python 脚本的错误
-    process.stderr.on("data", (data) => {
-        console.error(`stderr: ${data.toString()}`);
-    });
+  // 捕获 Python 脚本的错误
+  process.stderr.on("data", (data) => {
+    console.error(`stderr: ${data.toString()}`);
+  });
 
-    // 监听进程结束
-    process.on("close", (code) => {
-        if (code === 0) {
-            taskProgress[taskId].status = "completed"; // 更新任务状态
-            console.log(`main.py 执行成功，任务ID: ${taskId}`);
-        } else {
-            taskProgress[taskId].status = "failed"; // 更新任务状态为失败
-            console.error(`main.py 执行失败，任务ID: ${taskId}`);
-        }
-    });
+  // 监听进程结束
+  process.on("close", (code) => {
+    if (code === 0) {
+      taskProgress[taskId].status = "completed"; // 更新任务状态
+      console.log(`main.py 执行成功，任务ID: ${taskId}`);
+    } else {
+      taskProgress[taskId].status = "failed"; // 更新任务状态为失败
+      console.error(`main.py 执行失败，任务ID: ${taskId}`);
+    }
+  });
 
-    res.json({ message: "main.py 执行已启动", taskId });
+  res.json({ message: "main.py 执行已启动", taskId });
 });
 
 // 获取 .tif 文件列表，只返回文件名
@@ -574,8 +578,12 @@ app.get("/api/files_Bhatinda", (req, res) => {
       .filter((f) => f.endsWith(".tif"))
       .map((f) => f) // 只返回文件名
       .sort((a, b) => {
-        const timeA = fs.statSync(path.join(TIF_FOLDER_Bhatinda, a)).mtime.getTime();
-        const timeB = fs.statSync(path.join(TIF_FOLDER_Bhatinda, b)).mtime.getTime();
+        const timeA = fs
+          .statSync(path.join(TIF_FOLDER_Bhatinda, a))
+          .mtime.getTime();
+        const timeB = fs
+          .statSync(path.join(TIF_FOLDER_Bhatinda, b))
+          .mtime.getTime();
         return timeB - timeA; // 按修改时间降序
       });
 
@@ -598,8 +606,12 @@ app.get("/api/files_txt_Bhatinda", (req, res) => {
       .filter((f) => f.endsWith(".txt"))
       .map((f) => f) // 只返回文件名
       .sort((a, b) => {
-        const timeA = fs.statSync(path.join(TXT_FOLDER_Bhatinda, a)).mtime.getTime();
-        const timeB = fs.statSync(path.join(TXT_FOLDER_Bhatinda, b)).mtime.getTime();
+        const timeA = fs
+          .statSync(path.join(TXT_FOLDER_Bhatinda, a))
+          .mtime.getTime();
+        const timeB = fs
+          .statSync(path.join(TXT_FOLDER_Bhatinda, b))
+          .mtime.getTime();
         return timeB - timeA; // 按修改时间降序
       });
 
@@ -611,67 +623,69 @@ app.get("/api/files_txt_Bhatinda", (req, res) => {
 });
 
 // Silchar_Airport
-const TIF_FOLDER_Silchar = "../public/03_India_Airport/02_Silchar_Airport/02_Output";
+const TIF_FOLDER_Silchar =
+  "../public/03_India_Airport/02_Silchar_Airport/02_Output";
 const MAIN_PY_PATH_Silchar = "./03_India_Airport/02_main_Silchar_Airport.py";
 const TXT_FOLDER_Silchar = "../public/03_India_Airport/02_Silchar_Base";
 
 // 检查文件夹中是否存在 .tif 文件
 app.get("/api/check_folder_Silchar", (req, res) => {
-    try {
-        if (!fs.existsSync(TIF_FOLDER_Silchar)) {
-            return res.status(500).json({ error: "文件夹不存在" });
-        }
-
-        let files = fs.readdirSync(TIF_FOLDER_Silchar).filter((f) => f.endsWith(".tif"));
-
-        if (files.length > 0) {
-            return res.json({ files }); // 返回文件列表
-        } else {
-            return res.status(404).json({ message: "文件夹中未找到 .tif 文件" });
-        }
-    } catch (err) {
-        console.error("Error checking files:", err);
-        res.status(500).json({ error: "发生未知错误", details: err.message });
+  try {
+    if (!fs.existsSync(TIF_FOLDER_Silchar)) {
+      return res.status(500).json({ error: "文件夹不存在" });
     }
-});
 
+    let files = fs
+      .readdirSync(TIF_FOLDER_Silchar)
+      .filter((f) => f.endsWith(".tif"));
+
+    if (files.length > 0) {
+      return res.json({ files }); // 返回文件列表
+    } else {
+      return res.status(404).json({ message: "文件夹中未找到 .tif 文件" });
+    }
+  } catch (err) {
+    console.error("Error checking files:", err);
+    res.status(500).json({ error: "发生未知错误", details: err.message });
+  }
+});
 
 // 运行 main.py，返回任务ID
 app.get("/api/run_main_Silchar", (req, res) => {
-    const taskId = Date.now(); // 生成唯一任务ID
-    taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
+  const taskId = Date.now(); // 生成唯一任务ID
+  taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
 
-    console.log(`Starting main.py with task ID: ${taskId}`);
+  console.log(`Starting main.py with task ID: ${taskId}`);
 
-    const process = spawn("python", [MAIN_PY_PATH_Silchar]);
+  const process = spawn("python", [MAIN_PY_PATH_Silchar]);
 
-    // 捕获 Python 脚本的输出
-    process.stdout.on("data", (data) => {
-        console.log(`stdout: ${data.toString()}`);
-        // 假设 main.py 输出类似：'Progress: 20%'
-        const match = data.toString().match(/Progress:\s(\d+)%/);
-        if (match) {
-            taskProgress[taskId].progress = parseInt(match[1]);
-        }
-    });
+  // 捕获 Python 脚本的输出
+  process.stdout.on("data", (data) => {
+    console.log(`stdout: ${data.toString()}`);
+    // 假设 main.py 输出类似：'Progress: 20%'
+    const match = data.toString().match(/Progress:\s(\d+)%/);
+    if (match) {
+      taskProgress[taskId].progress = parseInt(match[1]);
+    }
+  });
 
-    // 捕获 Python 脚本的错误
-    process.stderr.on("data", (data) => {
-        console.error(`stderr: ${data.toString()}`);
-    });
+  // 捕获 Python 脚本的错误
+  process.stderr.on("data", (data) => {
+    console.error(`stderr: ${data.toString()}`);
+  });
 
-    // 监听进程结束
-    process.on("close", (code) => {
-        if (code === 0) {
-            taskProgress[taskId].status = "completed"; // 更新任务状态
-            console.log(`main.py 执行成功，任务ID: ${taskId}`);
-        } else {
-            taskProgress[taskId].status = "failed"; // 更新任务状态为失败
-            console.error(`main.py 执行失败，任务ID: ${taskId}`);
-        }
-    });
+  // 监听进程结束
+  process.on("close", (code) => {
+    if (code === 0) {
+      taskProgress[taskId].status = "completed"; // 更新任务状态
+      console.log(`main.py 执行成功，任务ID: ${taskId}`);
+    } else {
+      taskProgress[taskId].status = "failed"; // 更新任务状态为失败
+      console.error(`main.py 执行失败，任务ID: ${taskId}`);
+    }
+  });
 
-    res.json({ message: "main.py 执行已启动", taskId });
+  res.json({ message: "main.py 执行已启动", taskId });
 });
 
 // 获取 .tif 文件列表，只返回文件名
@@ -686,8 +700,12 @@ app.get("/api/files_Silchar", (req, res) => {
       .filter((f) => f.endsWith(".tif"))
       .map((f) => f) // 只返回文件名
       .sort((a, b) => {
-        const timeA = fs.statSync(path.join(TIF_FOLDER_Silchar, a)).mtime.getTime();
-        const timeB = fs.statSync(path.join(TIF_FOLDER_Silchar, b)).mtime.getTime();
+        const timeA = fs
+          .statSync(path.join(TIF_FOLDER_Silchar, a))
+          .mtime.getTime();
+        const timeB = fs
+          .statSync(path.join(TIF_FOLDER_Silchar, b))
+          .mtime.getTime();
         return timeB - timeA; // 按修改时间降序
       });
 
@@ -710,8 +728,12 @@ app.get("/api/files_txt_Silchar", (req, res) => {
       .filter((f) => f.endsWith(".txt"))
       .map((f) => f) // 只返回文件名
       .sort((a, b) => {
-        const timeA = fs.statSync(path.join(TXT_FOLDER_Silchar, a)).mtime.getTime();
-        const timeB = fs.statSync(path.join(TXT_FOLDER_Silchar, b)).mtime.getTime();
+        const timeA = fs
+          .statSync(path.join(TXT_FOLDER_Silchar, a))
+          .mtime.getTime();
+        const timeB = fs
+          .statSync(path.join(TXT_FOLDER_Silchar, b))
+          .mtime.getTime();
         return timeB - timeA; // 按修改时间降序
       });
 
@@ -723,67 +745,69 @@ app.get("/api/files_txt_Silchar", (req, res) => {
 });
 
 // Dehradun_Airport
-const TIF_FOLDER_Dehradun = "../public/03_India_Airport/03_Dehradun_Airport/02_Output";
+const TIF_FOLDER_Dehradun =
+  "../public/03_India_Airport/03_Dehradun_Airport/02_Output";
 const MAIN_PY_PATH_Dehradun = "./03_India_Airport/03_main_Dehradun_Airport.py";
 const TXT_FOLDER_Dehradun = "../public/03_India_Airport/03_Dehradun_Airport";
 
 // 检查文件夹中是否存在 .tif 文件
 app.get("/api/check_folder_Dehradun", (req, res) => {
-    try {
-        if (!fs.existsSync(TIF_FOLDER_Dehradun)) {
-            return res.status(500).json({ error: "文件夹不存在" });
-        }
-
-        let files = fs.readdirSync(TIF_FOLDER_Dehradun).filter((f) => f.endsWith(".tif"));
-
-        if (files.length > 0) {
-            return res.json({ files }); // 返回文件列表
-        } else {
-            return res.status(404).json({ message: "文件夹中未找到 .tif 文件" });
-        }
-    } catch (err) {
-        console.error("Error checking files:", err);
-        res.status(500).json({ error: "发生未知错误", details: err.message });
+  try {
+    if (!fs.existsSync(TIF_FOLDER_Dehradun)) {
+      return res.status(500).json({ error: "文件夹不存在" });
     }
-});
 
+    let files = fs
+      .readdirSync(TIF_FOLDER_Dehradun)
+      .filter((f) => f.endsWith(".tif"));
+
+    if (files.length > 0) {
+      return res.json({ files }); // 返回文件列表
+    } else {
+      return res.status(404).json({ message: "文件夹中未找到 .tif 文件" });
+    }
+  } catch (err) {
+    console.error("Error checking files:", err);
+    res.status(500).json({ error: "发生未知错误", details: err.message });
+  }
+});
 
 // 运行 main.py，返回任务ID
 app.get("/api/run_main_Dehradun", (req, res) => {
-    const taskId = Date.now(); // 生成唯一任务ID
-    taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
+  const taskId = Date.now(); // 生成唯一任务ID
+  taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
 
-    console.log(`Starting main.py with task ID: ${taskId}`);
+  console.log(`Starting main.py with task ID: ${taskId}`);
 
-    const process = spawn("python", [MAIN_PY_PATH_Dehradun]);
+  const process = spawn("python", [MAIN_PY_PATH_Dehradun]);
 
-    // 捕获 Python 脚本的输出
-    process.stdout.on("data", (data) => {
-        console.log(`stdout: ${data.toString()}`);
-        // 假设 main.py 输出类似：'Progress: 20%'
-        const match = data.toString().match(/Progress:\s(\d+)%/);
-        if (match) {
-            taskProgress[taskId].progress = parseInt(match[1]);
-        }
-    });
+  // 捕获 Python 脚本的输出
+  process.stdout.on("data", (data) => {
+    console.log(`stdout: ${data.toString()}`);
+    // 假设 main.py 输出类似：'Progress: 20%'
+    const match = data.toString().match(/Progress:\s(\d+)%/);
+    if (match) {
+      taskProgress[taskId].progress = parseInt(match[1]);
+    }
+  });
 
-    // 捕获 Python 脚本的错误
-    process.stderr.on("data", (data) => {
-        console.error(`stderr: ${data.toString()}`);
-    });
+  // 捕获 Python 脚本的错误
+  process.stderr.on("data", (data) => {
+    console.error(`stderr: ${data.toString()}`);
+  });
 
-    // 监听进程结束
-    process.on("close", (code) => {
-        if (code === 0) {
-            taskProgress[taskId].status = "completed"; // 更新任务状态
-            console.log(`main.py 执行成功，任务ID: ${taskId}`);
-        } else {
-            taskProgress[taskId].status = "failed"; // 更新任务状态为失败
-            console.error(`main.py 执行失败，任务ID: ${taskId}`);
-        }
-    });
+  // 监听进程结束
+  process.on("close", (code) => {
+    if (code === 0) {
+      taskProgress[taskId].status = "completed"; // 更新任务状态
+      console.log(`main.py 执行成功，任务ID: ${taskId}`);
+    } else {
+      taskProgress[taskId].status = "failed"; // 更新任务状态为失败
+      console.error(`main.py 执行失败，任务ID: ${taskId}`);
+    }
+  });
 
-    res.json({ message: "main.py 执行已启动", taskId });
+  res.json({ message: "main.py 执行已启动", taskId });
 });
 
 // 获取 .tif 文件列表，只返回文件名
@@ -798,8 +822,12 @@ app.get("/api/files_Dehradun", (req, res) => {
       .filter((f) => f.endsWith(".tif"))
       .map((f) => f) // 只返回文件名
       .sort((a, b) => {
-        const timeA = fs.statSync(path.join(TIF_FOLDER_Dehradun, a)).mtime.getTime();
-        const timeB = fs.statSync(path.join(TIF_FOLDER_Dehradun, b)).mtime.getTime();
+        const timeA = fs
+          .statSync(path.join(TIF_FOLDER_Dehradun, a))
+          .mtime.getTime();
+        const timeB = fs
+          .statSync(path.join(TIF_FOLDER_Dehradun, b))
+          .mtime.getTime();
         return timeB - timeA; // 按修改时间降序
       });
 
@@ -822,8 +850,12 @@ app.get("/api/files_txt_Dehradun", (req, res) => {
       .filter((f) => f.endsWith(".txt"))
       .map((f) => f) // 只返回文件名
       .sort((a, b) => {
-        const timeA = fs.statSync(path.join(TXT_FOLDER_Dehradun, a)).mtime.getTime();
-        const timeB = fs.statSync(path.join(TXT_FOLDER_Dehradun, b)).mtime.getTime();
+        const timeA = fs
+          .statSync(path.join(TXT_FOLDER_Dehradun, a))
+          .mtime.getTime();
+        const timeB = fs
+          .statSync(path.join(TXT_FOLDER_Dehradun, b))
+          .mtime.getTime();
         return timeB - timeA; // 按修改时间降序
       });
 
@@ -834,8 +866,6 @@ app.get("/api/files_txt_Dehradun", (req, res) => {
   }
 });
 
-
-
 // Leh_Airport
 const TIF_FOLDER_Leh = "../public/03_India_Airport/04_Leh_Airport/02_Output";
 const MAIN_PY_PATH_Leh = "./03_India_Airport/04_main_Leh_Airport.py";
@@ -843,61 +873,62 @@ const TXT_FOLDER_Leh = "../public/03_India_Airport/04_Leh_Airport";
 
 // 检查文件夹中是否存在 .tif 文件
 app.get("/api/check_folder_Leh", (req, res) => {
-    try {
-        if (!fs.existsSync(TIF_FOLDER_Leh)) {
-            return res.status(500).json({ error: "文件夹不存在" });
-        }
-
-        let files = fs.readdirSync(TIF_FOLDER_Leh).filter((f) => f.endsWith(".tif"));
-
-        if (files.length > 0) {
-            return res.json({ files }); // 返回文件列表
-        } else {
-            return res.status(404).json({ message: "文件夹中未找到 .tif 文件" });
-        }
-    } catch (err) {
-        console.error("Error checking files:", err);
-        res.status(500).json({ error: "发生未知错误", details: err.message });
+  try {
+    if (!fs.existsSync(TIF_FOLDER_Leh)) {
+      return res.status(500).json({ error: "文件夹不存在" });
     }
-});
 
+    let files = fs
+      .readdirSync(TIF_FOLDER_Leh)
+      .filter((f) => f.endsWith(".tif"));
+
+    if (files.length > 0) {
+      return res.json({ files }); // 返回文件列表
+    } else {
+      return res.status(404).json({ message: "文件夹中未找到 .tif 文件" });
+    }
+  } catch (err) {
+    console.error("Error checking files:", err);
+    res.status(500).json({ error: "发生未知错误", details: err.message });
+  }
+});
 
 // 运行 main.py，返回任务ID
 app.get("/api/run_main_Leh", (req, res) => {
-    const taskId = Date.now(); // 生成唯一任务ID
-    taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
+  const taskId = Date.now(); // 生成唯一任务ID
+  taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
 
-    console.log(`Starting main.py with task ID: ${taskId}`);
+  console.log(`Starting main.py with task ID: ${taskId}`);
 
-    const process = spawn("python", [MAIN_PY_PATH_Leh]);
+  const process = spawn("python", [MAIN_PY_PATH_Leh]);
 
-    // 捕获 Python 脚本的输出
-    process.stdout.on("data", (data) => {
-        console.log(`stdout: ${data.toString()}`);
-        // 假设 main.py 输出类似：'Progress: 20%'
-        const match = data.toString().match(/Progress:\s(\d+)%/);
-        if (match) {
-            taskProgress[taskId].progress = parseInt(match[1]);
-        }
-    });
+  // 捕获 Python 脚本的输出
+  process.stdout.on("data", (data) => {
+    console.log(`stdout: ${data.toString()}`);
+    // 假设 main.py 输出类似：'Progress: 20%'
+    const match = data.toString().match(/Progress:\s(\d+)%/);
+    if (match) {
+      taskProgress[taskId].progress = parseInt(match[1]);
+    }
+  });
 
-    // 捕获 Python 脚本的错误
-    process.stderr.on("data", (data) => {
-        console.error(`stderr: ${data.toString()}`);
-    });
+  // 捕获 Python 脚本的错误
+  process.stderr.on("data", (data) => {
+    console.error(`stderr: ${data.toString()}`);
+  });
 
-    // 监听进程结束
-    process.on("close", (code) => {
-        if (code === 0) {
-            taskProgress[taskId].status = "completed"; // 更新任务状态
-            console.log(`main.py 执行成功，任务ID: ${taskId}`);
-        } else {
-            taskProgress[taskId].status = "failed"; // 更新任务状态为失败
-            console.error(`main.py 执行失败，任务ID: ${taskId}`);
-        }
-    });
+  // 监听进程结束
+  process.on("close", (code) => {
+    if (code === 0) {
+      taskProgress[taskId].status = "completed"; // 更新任务状态
+      console.log(`main.py 执行成功，任务ID: ${taskId}`);
+    } else {
+      taskProgress[taskId].status = "failed"; // 更新任务状态为失败
+      console.error(`main.py 执行失败，任务ID: ${taskId}`);
+    }
+  });
 
-    res.json({ message: "main.py 执行已启动", taskId });
+  res.json({ message: "main.py 执行已启动", taskId });
 });
 
 // 获取 .tif 文件列表，只返回文件名
@@ -948,69 +979,70 @@ app.get("/api/files_txt_Leh", (req, res) => {
   }
 });
 
-
 // Lengpui_Airport
-const TIF_FOLDER_Lengpui = "../public/03_India_Airport/05_Lengpui_Airport/02_Output";
+const TIF_FOLDER_Lengpui =
+  "../public/03_India_Airport/05_Lengpui_Airport/02_Output";
 const MAIN_PY_PATH_Lengpui = "./03_India_Airport/05_main_Lengpui_Airport.py";
 const TXT_FOLDER_Lengpui = "../public/03_India_Airport/05_Lengpui_Airport";
 
 // 检查文件夹中是否存在 .tif 文件
 app.get("/api/check_folder_Lengpui", (req, res) => {
-    try {
-        if (!fs.existsSync(TIF_FOLDER_Lengpui)) {
-            return res.status(500).json({ error: "文件夹不存在" });
-        }
-
-        let files = fs.readdirSync(TIF_FOLDER_Lengpui).filter((f) => f.endsWith(".tif"));
-
-        if (files.length > 0) {
-            return res.json({ files }); // 返回文件列表
-        } else {
-            return res.status(404).json({ message: "文件夹中未找到 .tif 文件" });
-        }
-    } catch (err) {
-        console.error("Error checking files:", err);
-        res.status(500).json({ error: "发生未知错误", details: err.message });
+  try {
+    if (!fs.existsSync(TIF_FOLDER_Lengpui)) {
+      return res.status(500).json({ error: "文件夹不存在" });
     }
-});
 
+    let files = fs
+      .readdirSync(TIF_FOLDER_Lengpui)
+      .filter((f) => f.endsWith(".tif"));
+
+    if (files.length > 0) {
+      return res.json({ files }); // 返回文件列表
+    } else {
+      return res.status(404).json({ message: "文件夹中未找到 .tif 文件" });
+    }
+  } catch (err) {
+    console.error("Error checking files:", err);
+    res.status(500).json({ error: "发生未知错误", details: err.message });
+  }
+});
 
 // 运行 main.py，返回任务ID
 app.get("/api/run_main_Lengpui", (req, res) => {
-    const taskId = Date.now(); // 生成唯一任务ID
-    taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
+  const taskId = Date.now(); // 生成唯一任务ID
+  taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
 
-    console.log(`Starting main.py with task ID: ${taskId}`);
+  console.log(`Starting main.py with task ID: ${taskId}`);
 
-    const process = spawn("python", [MAIN_PY_PATH_Lengpui]);
+  const process = spawn("python", [MAIN_PY_PATH_Lengpui]);
 
-    // 捕获 Python 脚本的输出
-    process.stdout.on("data", (data) => {
-        console.log(`stdout: ${data.toString()}`);
-        // 假设 main.py 输出类似：'Progress: 20%'
-        const match = data.toString().match(/Progress:\s(\d+)%/);
-        if (match) {
-            taskProgress[taskId].progress = parseInt(match[1]);
-        }
-    });
+  // 捕获 Python 脚本的输出
+  process.stdout.on("data", (data) => {
+    console.log(`stdout: ${data.toString()}`);
+    // 假设 main.py 输出类似：'Progress: 20%'
+    const match = data.toString().match(/Progress:\s(\d+)%/);
+    if (match) {
+      taskProgress[taskId].progress = parseInt(match[1]);
+    }
+  });
 
-    // 捕获 Python 脚本的错误
-    process.stderr.on("data", (data) => {
-        console.error(`stderr: ${data.toString()}`);
-    });
+  // 捕获 Python 脚本的错误
+  process.stderr.on("data", (data) => {
+    console.error(`stderr: ${data.toString()}`);
+  });
 
-    // 监听进程结束
-    process.on("close", (code) => {
-        if (code === 0) {
-            taskProgress[taskId].status = "completed"; // 更新任务状态
-            console.log(`main.py 执行成功，任务ID: ${taskId}`);
-        } else {
-            taskProgress[taskId].status = "failed"; // 更新任务状态为失败
-            console.error(`main.py 执行失败，任务ID: ${taskId}`);
-        }
-    });
+  // 监听进程结束
+  process.on("close", (code) => {
+    if (code === 0) {
+      taskProgress[taskId].status = "completed"; // 更新任务状态
+      console.log(`main.py 执行成功，任务ID: ${taskId}`);
+    } else {
+      taskProgress[taskId].status = "failed"; // 更新任务状态为失败
+      console.error(`main.py 执行失败，任务ID: ${taskId}`);
+    }
+  });
 
-    res.json({ message: "main.py 执行已启动", taskId });
+  res.json({ message: "main.py 执行已启动", taskId });
 });
 
 // 获取 .tif 文件列表，只返回文件名
@@ -1025,8 +1057,12 @@ app.get("/api/files_Lengpui", (req, res) => {
       .filter((f) => f.endsWith(".tif"))
       .map((f) => f) // 只返回文件名
       .sort((a, b) => {
-        const timeA = fs.statSync(path.join(TIF_FOLDER_Lengpui, a)).mtime.getTime();
-        const timeB = fs.statSync(path.join(TIF_FOLDER_Lengpui, b)).mtime.getTime();
+        const timeA = fs
+          .statSync(path.join(TIF_FOLDER_Lengpui, a))
+          .mtime.getTime();
+        const timeB = fs
+          .statSync(path.join(TIF_FOLDER_Lengpui, b))
+          .mtime.getTime();
         return timeB - timeA; // 按修改时间降序
       });
 
@@ -1049,8 +1085,12 @@ app.get("/api/files_txt_Lengpui", (req, res) => {
       .filter((f) => f.endsWith(".txt"))
       .map((f) => f) // 只返回文件名
       .sort((a, b) => {
-        const timeA = fs.statSync(path.join(TXT_FOLDER_Lengpui, a)).mtime.getTime();
-        const timeB = fs.statSync(path.join(TXT_FOLDER_Lengpui, b)).mtime.getTime();
+        const timeA = fs
+          .statSync(path.join(TXT_FOLDER_Lengpui, a))
+          .mtime.getTime();
+        const timeB = fs
+          .statSync(path.join(TXT_FOLDER_Lengpui, b))
+          .mtime.getTime();
         return timeB - timeA; // 按修改时间降序
       });
 
@@ -1062,67 +1102,71 @@ app.get("/api/files_txt_Lengpui", (req, res) => {
 });
 
 // Chabua_Air_Force_Station
-const TIF_FOLDER_Chabua = "../public/03_India_Airport/06_Chabua_Air_Force_Station/02_Output";
-const MAIN_PY_PATH_Chabua = "./03_India_Airport/06_main_Chabua_Air_Force_Station.py";
-const TXT_FOLDER_Chabua = "../public/03_India_Airport/06_Chabua_Air_Force_Station";
+const TIF_FOLDER_Chabua =
+  "../public/03_India_Airport/06_Chabua_Air_Force_Station/02_Output";
+const MAIN_PY_PATH_Chabua =
+  "./03_India_Airport/06_main_Chabua_Air_Force_Station.py";
+const TXT_FOLDER_Chabua =
+  "../public/03_India_Airport/06_Chabua_Air_Force_Station";
 
 // 检查文件夹中是否存在 .tif 文件
 app.get("/api/check_folder_Chabua", (req, res) => {
-    try {
-        if (!fs.existsSync(TIF_FOLDER_Chabua)) {
-            return res.status(500).json({ error: "文件夹不存在" });
-        }
-
-        let files = fs.readdirSync(TIF_FOLDER_Chabua).filter((f) => f.endsWith(".tif"));
-
-        if (files.length > 0) {
-            return res.json({ files }); // 返回文件列表
-        } else {
-            return res.status(404).json({ message: "文件夹中未找到 .tif 文件" });
-        }
-    } catch (err) {
-        console.error("Error checking files:", err);
-        res.status(500).json({ error: "发生未知错误", details: err.message });
+  try {
+    if (!fs.existsSync(TIF_FOLDER_Chabua)) {
+      return res.status(500).json({ error: "文件夹不存在" });
     }
-});
 
+    let files = fs
+      .readdirSync(TIF_FOLDER_Chabua)
+      .filter((f) => f.endsWith(".tif"));
+
+    if (files.length > 0) {
+      return res.json({ files }); // 返回文件列表
+    } else {
+      return res.status(404).json({ message: "文件夹中未找到 .tif 文件" });
+    }
+  } catch (err) {
+    console.error("Error checking files:", err);
+    res.status(500).json({ error: "发生未知错误", details: err.message });
+  }
+});
 
 // 运行 main.py，返回任务ID
 app.get("/api/run_main_Chabua", (req, res) => {
-    const taskId = Date.now(); // 生成唯一任务ID
-    taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
+  const taskId = Date.now(); // 生成唯一任务ID
+  taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
 
-    console.log(`Starting main.py with task ID: ${taskId}`);
+  console.log(`Starting main.py with task ID: ${taskId}`);
 
-    const process = spawn("python", [MAIN_PY_PATH_Chabua]);
+  const process = spawn("python", [MAIN_PY_PATH_Chabua]);
 
-    // 捕获 Python 脚本的输出
-    process.stdout.on("data", (data) => {
-        console.log(`stdout: ${data.toString()}`);
-        // 假设 main.py 输出类似：'Progress: 20%'
-        const match = data.toString().match(/Progress:\s(\d+)%/);
-        if (match) {
-            taskProgress[taskId].progress = parseInt(match[1]);
-        }
-    });
+  // 捕获 Python 脚本的输出
+  process.stdout.on("data", (data) => {
+    console.log(`stdout: ${data.toString()}`);
+    // 假设 main.py 输出类似：'Progress: 20%'
+    const match = data.toString().match(/Progress:\s(\d+)%/);
+    if (match) {
+      taskProgress[taskId].progress = parseInt(match[1]);
+    }
+  });
 
-    // 捕获 Python 脚本的错误
-    process.stderr.on("data", (data) => {
-        console.error(`stderr: ${data.toString()}`);
-    });
+  // 捕获 Python 脚本的错误
+  process.stderr.on("data", (data) => {
+    console.error(`stderr: ${data.toString()}`);
+  });
 
-    // 监听进程结束
-    process.on("close", (code) => {
-        if (code === 0) {
-            taskProgress[taskId].status = "completed"; // 更新任务状态
-            console.log(`main.py 执行成功，任务ID: ${taskId}`);
-        } else {
-            taskProgress[taskId].status = "failed"; // 更新任务状态为失败
-            console.error(`main.py 执行失败，任务ID: ${taskId}`);
-        }
-    });
+  // 监听进程结束
+  process.on("close", (code) => {
+    if (code === 0) {
+      taskProgress[taskId].status = "completed"; // 更新任务状态
+      console.log(`main.py 执行成功，任务ID: ${taskId}`);
+    } else {
+      taskProgress[taskId].status = "failed"; // 更新任务状态为失败
+      console.error(`main.py 执行失败，任务ID: ${taskId}`);
+    }
+  });
 
-    res.json({ message: "main.py 执行已启动", taskId });
+  res.json({ message: "main.py 执行已启动", taskId });
 });
 
 // 获取 .tif 文件列表，只返回文件名
@@ -1137,8 +1181,12 @@ app.get("/api/files_Chabua", (req, res) => {
       .filter((f) => f.endsWith(".tif"))
       .map((f) => f) // 只返回文件名
       .sort((a, b) => {
-        const timeA = fs.statSync(path.join(TIF_FOLDER_Chabua, a)).mtime.getTime();
-        const timeB = fs.statSync(path.join(TIF_FOLDER_Chabua, b)).mtime.getTime();
+        const timeA = fs
+          .statSync(path.join(TIF_FOLDER_Chabua, a))
+          .mtime.getTime();
+        const timeB = fs
+          .statSync(path.join(TIF_FOLDER_Chabua, b))
+          .mtime.getTime();
         return timeB - timeA; // 按修改时间降序
       });
 
@@ -1161,8 +1209,12 @@ app.get("/api/files_txt_Chabua", (req, res) => {
       .filter((f) => f.endsWith(".txt"))
       .map((f) => f) // 只返回文件名
       .sort((a, b) => {
-        const timeA = fs.statSync(path.join(TXT_FOLDER_Chabua, a)).mtime.getTime();
-        const timeB = fs.statSync(path.join(TXT_FOLDER_Chabua, b)).mtime.getTime();
+        const timeA = fs
+          .statSync(path.join(TXT_FOLDER_Chabua, a))
+          .mtime.getTime();
+        const timeB = fs
+          .statSync(path.join(TXT_FOLDER_Chabua, b))
+          .mtime.getTime();
         return timeB - timeA; // 按修改时间降序
       });
 
@@ -1173,31 +1225,31 @@ app.get("/api/files_txt_Chabua", (req, res) => {
   }
 });
 
-
-
 // Pakistan_Lake
 // Hassanabad
-const TIF_FOLDER_Hassanabad = "../public/04_Pakistan_Lake/01_Hassanabad/02_Output";
-
+const TIF_FOLDER_Hassanabad =
+  "../public/04_Pakistan_Lake/01_Hassanabad/02_Output";
 
 // 检查文件夹中是否存在 .tif 文件
 app.get("/api/check_folder_Hassanabad", (req, res) => {
-    try {
-        if (!fs.existsSync(TIF_FOLDER_Hassanabad)) {
-            return res.status(500).json({ error: "文件夹不存在" });
-        }
-
-        let files = fs.readdirSync(TIF_FOLDER_Hassanabad).filter((f) => f.endsWith(".tif"));
-
-        if (files.length > 0) {
-            return res.json({ files }); // 返回文件列表
-        } else {
-            return res.status(404).json({ message: "文件夹中未找到 .tif 文件" });
-        }
-    } catch (err) {
-        console.error("Error checking files:", err);
-        res.status(500).json({ error: "发生未知错误", details: err.message });
+  try {
+    if (!fs.existsSync(TIF_FOLDER_Hassanabad)) {
+      return res.status(500).json({ error: "文件夹不存在" });
     }
+
+    let files = fs
+      .readdirSync(TIF_FOLDER_Hassanabad)
+      .filter((f) => f.endsWith(".tif"));
+
+    if (files.length > 0) {
+      return res.json({ files }); // 返回文件列表
+    } else {
+      return res.status(404).json({ message: "文件夹中未找到 .tif 文件" });
+    }
+  } catch (err) {
+    console.error("Error checking files:", err);
+    res.status(500).json({ error: "发生未知错误", details: err.message });
+  }
 });
 
 // 获取 .tif 文件列表，只返回文件名
@@ -1212,8 +1264,12 @@ app.get("/api/files_Hassanabad", (req, res) => {
       .filter((f) => f.endsWith(".tif"))
       .map((f) => f) // 只返回文件名
       .sort((a, b) => {
-        const timeA = fs.statSync(path.join(TIF_FOLDER_Hassanabad, a)).mtime.getTime();
-        const timeB = fs.statSync(path.join(TIF_FOLDER_Hassanabad, b)).mtime.getTime();
+        const timeA = fs
+          .statSync(path.join(TIF_FOLDER_Hassanabad, a))
+          .mtime.getTime();
+        const timeB = fs
+          .statSync(path.join(TIF_FOLDER_Hassanabad, b))
+          .mtime.getTime();
         return timeB - timeA; // 按修改时间降序
       });
 
@@ -1224,43 +1280,42 @@ app.get("/api/files_Hassanabad", (req, res) => {
   }
 });
 
-
 // 运行 main.py，返回任务ID
 app.get("/api/run_main_Shilong", (req, res) => {
-    const taskId = Date.now(); // 生成唯一任务ID
-    taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
+  const taskId = Date.now(); // 生成唯一任务ID
+  taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
 
-    console.log(`Starting main.py with task ID: ${taskId}`);
+  console.log(`Starting main.py with task ID: ${taskId}`);
 
-    const process = spawn("python", [MAIN_PY_PATH_Shilong]);
+  const process = spawn("python", [MAIN_PY_PATH_Shilong]);
 
-    // 捕获 Python 脚本的输出
-    process.stdout.on("data", (data) => {
-        console.log(`stdout: ${data.toString()}`);
-        // 假设 main.py 输出类似：'Progress: 20%'
-        const match = data.toString().match(/Progress:\s(\d+)%/);
-        if (match) {
-            taskProgress[taskId].progress = parseInt(match[1]);
-        }
-    });
+  // 捕获 Python 脚本的输出
+  process.stdout.on("data", (data) => {
+    console.log(`stdout: ${data.toString()}`);
+    // 假设 main.py 输出类似：'Progress: 20%'
+    const match = data.toString().match(/Progress:\s(\d+)%/);
+    if (match) {
+      taskProgress[taskId].progress = parseInt(match[1]);
+    }
+  });
 
-    // 捕获 Python 脚本的错误
-    process.stderr.on("data", (data) => {
-        console.error(`stderr: ${data.toString()}`);
-    });
+  // 捕获 Python 脚本的错误
+  process.stderr.on("data", (data) => {
+    console.error(`stderr: ${data.toString()}`);
+  });
 
-    // 监听进程结束
-    process.on("close", (code) => {
-        if (code === 0) {
-            taskProgress[taskId].status = "completed"; // 更新任务状态
-            console.log(`main.py 执行成功，任务ID: ${taskId}`);
-        } else {
-            taskProgress[taskId].status = "failed"; // 更新任务状态为失败
-            console.error(`main.py 执行失败，任务ID: ${taskId}`);
-        }
-    });
+  // 监听进程结束
+  process.on("close", (code) => {
+    if (code === 0) {
+      taskProgress[taskId].status = "completed"; // 更新任务状态
+      console.log(`main.py 执行成功，任务ID: ${taskId}`);
+    } else {
+      taskProgress[taskId].status = "failed"; // 更新任务状态为失败
+      console.error(`main.py 执行失败，任务ID: ${taskId}`);
+    }
+  });
 
-    res.json({ message: "main.py 执行已启动", taskId });
+  res.json({ message: "main.py 执行已启动", taskId });
 });
 
 // 获取 .tif 文件列表，只返回文件名
@@ -1275,8 +1330,12 @@ app.get("/api/files_Shilong", (req, res) => {
       .filter((f) => f.endsWith(".tif"))
       .map((f) => f) // 只返回文件名
       .sort((a, b) => {
-        const timeA = fs.statSync(path.join(TIF_FOLDER_Shilong, a)).mtime.getTime();
-        const timeB = fs.statSync(path.join(TIF_FOLDER_Shilong, b)).mtime.getTime();
+        const timeA = fs
+          .statSync(path.join(TIF_FOLDER_Shilong, a))
+          .mtime.getTime();
+        const timeB = fs
+          .statSync(path.join(TIF_FOLDER_Shilong, b))
+          .mtime.getTime();
         return timeB - timeA; // 按修改时间降序
       });
 
@@ -1299,8 +1358,12 @@ app.get("/api/files_txt_Shilong", (req, res) => {
       .filter((f) => f.endsWith(".txt"))
       .map((f) => f) // 只返回文件名
       .sort((a, b) => {
-        const timeA = fs.statSync(path.join(TXT_FOLDER_Shilong, a)).mtime.getTime();
-        const timeB = fs.statSync(path.join(TXT_FOLDER_Shilong, b)).mtime.getTime();
+        const timeA = fs
+          .statSync(path.join(TXT_FOLDER_Shilong, a))
+          .mtime.getTime();
+        const timeB = fs
+          .statSync(path.join(TXT_FOLDER_Shilong, b))
+          .mtime.getTime();
         return timeB - timeA; // 按修改时间降序
       });
 
@@ -1311,34 +1374,33 @@ app.get("/api/files_txt_Shilong", (req, res) => {
   }
 });
 
-
-
-
 // Shilong_Airport
-const TIF_FOLDER_Shilong = "../public/03_India_Airport/07_Shilong_Airport/02_Output";
+const TIF_FOLDER_Shilong =
+  "../public/03_India_Airport/07_Shilong_Airport/02_Output";
 const MAIN_PY_PATH_Shilong = "./03_India_Airport/07_main_Shilong_Airport.py";
 const TXT_FOLDER_Shilong = "../public/03_India_Airport/07_Shilong_Airport";
 
 // 检查文件夹中是否存在 .tif 文件
 app.get("/api/check_folder_Shilong", (req, res) => {
-    try {
-        if (!fs.existsSync(TIF_FOLDER_Shilong)) {
-            return res.status(500).json({ error: "文件夹不存在" });
-        }
-
-        let files = fs.readdirSync(TIF_FOLDER_Shilong).filter((f) => f.endsWith(".tif"));
-
-        if (files.length > 0) {
-            return res.json({ files }); // 返回文件列表
-        } else {
-            return res.status(404).json({ message: "文件夹中未找到 .tif 文件" });
-        }
-    } catch (err) {
-        console.error("Error checking files:", err);
-        res.status(500).json({ error: "发生未知错误", details: err.message });
+  try {
+    if (!fs.existsSync(TIF_FOLDER_Shilong)) {
+      return res.status(500).json({ error: "文件夹不存在" });
     }
-});
 
+    let files = fs
+      .readdirSync(TIF_FOLDER_Shilong)
+      .filter((f) => f.endsWith(".tif"));
+
+    if (files.length > 0) {
+      return res.json({ files }); // 返回文件列表
+    } else {
+      return res.status(404).json({ message: "文件夹中未找到 .tif 文件" });
+    }
+  } catch (err) {
+    console.error("Error checking files:", err);
+    res.status(500).json({ error: "发生未知错误", details: err.message });
+  }
+});
 
 const Indian_River_Tributary_OUTPUT_PATH = "../public/River_Expand";
 const TIF_FOLDER_Indian_River_Tributary = "../public/River_Expand/result";
@@ -1486,6 +1548,59 @@ app.get("/api/files_nanhuajiao", (req, res) => {
           .mtime.getTime();
         const timeB = fs
           .statSync(path.join(TIF_FOLDER_Nanhuajiao, b))
+          .mtime.getTime();
+        return timeB - timeA; // 按修改时间降序
+      });
+
+    res.json({ files });
+  } catch (err) {
+    console.error("Error listing files:", err);
+    res.status(500).json({ error: "发生未知错误", details: err.message });
+  }
+});
+
+const Mandehaixia_OUTPUT_PATH = "../public/Ship_Disperse/";
+const TIF_FOLDER_Mandehaixia = "../public/Ship_Disperse//result";
+
+// 检查文件夹中是否存在 .tif 文件
+app.get("/api/check-folder_mandehaixia", (req, res) => {
+  try {
+    if (!fs.existsSync(TIF_FOLDER_Mandehaixia)) {
+      return res.status(500).json({ error: "文件夹不存在" });
+    }
+
+    let files = fs
+      .readdirSync(TIF_FOLDER_Mandehaixia)
+      .filter((f) => f.endsWith(".tif"));
+
+    if (files.length > 0) {
+      return res.json({ files }); // 返回文件列表
+    } else {
+      return res.status(404).json({ message: "文件夹中未找到 .tif 文件" });
+    }
+  } catch (err) {
+    console.error("Error checking files:", err);
+    res.status(500).json({ error: "发生未知错误", details: err.message });
+  }
+});
+
+// 获取 .tif 文件列表，只返回文件名
+app.get("/api/files_mandehaixia", (req, res) => {
+  try {
+    if (!fs.existsSync(TIF_FOLDER_Mandehaixia)) {
+      return res.status(500).json({ error: "文件夹不存在" });
+    }
+
+    let files = fs
+      .readdirSync(TIF_FOLDER_Mandehaixia)
+      .filter((f) => f.endsWith(".tif"))
+      .map((f) => f) // 只返回文件名
+      .sort((a, b) => {
+        const timeA = fs
+          .statSync(path.join(TIF_FOLDER_Mandehaixia, a))
+          .mtime.getTime();
+        const timeB = fs
+          .statSync(path.join(TIF_FOLDER_Mandehaixia, b))
           .mtime.getTime();
         return timeB - timeA; // 按修改时间降序
       });
