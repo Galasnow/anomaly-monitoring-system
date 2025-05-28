@@ -1459,6 +1459,60 @@ app.get("/api/files_Thoise", (req, res) => {
 });
 
 
+// Leh_Airplane
+const TIF_FOLDER_Leh_Airplane =
+  "../public/05_India_Airplane/02_Leh/02_Output";
+
+// 检查文件夹中是否存在 .tif 文件
+app.get("/api/check_folder_Leh_Airplane", (req, res) => {
+  try {
+    if (!fs.existsSync(TIF_FOLDER_Leh_Airplane)) {
+      return res.status(500).json({ error: "文件夹不存在" });
+    }
+
+    let files = fs
+      .readdirSync(TIF_FOLDER_Leh_Airplane)
+      .filter((f) => f.endsWith(".tif"));
+
+    if (files.length > 0) {
+      return res.json({ files }); // 返回文件列表
+    } else {
+      return res.status(404).json({ message: "文件夹中未找到 .tif 文件" });
+    }
+  } catch (err) {
+    console.error("Error checking files:", err);
+    res.status(500).json({ error: "发生未知错误", details: err.message });
+  }
+});
+
+// 获取 .tif 文件列表，只返回文件名
+app.get("/api/files_Leh_Airplane", (req, res) => {
+  try {
+    if (!fs.existsSync(TIF_FOLDER_Leh_Airplane)) {
+      return res.status(500).json({ error: "文件夹不存在" });
+    }
+
+    let files = fs
+      .readdirSync(TIF_FOLDER_Leh_Airplane)
+      .filter((f) => f.endsWith(".tif"))
+      .map((f) => f) // 只返回文件名
+      .sort((a, b) => {
+        const timeA = fs
+          .statSync(path.join(TIF_FOLDER_Leh_Airplane, a))
+          .mtime.getTime();
+        const timeB = fs
+          .statSync(path.join(TIF_FOLDER_Leh_Airplane, b))
+          .mtime.getTime();
+        return timeB - timeA; // 按修改时间降序
+      });
+
+    res.json({ files });
+  } catch (err) {
+    console.error("Error listing files:", err);
+    res.status(500).json({ error: "发生未知错误", details: err.message });
+  }
+});
+
 
 const Indian_River_Tributary_OUTPUT_PATH = "../public/River_Expand";
 const TIF_FOLDER_Indian_River_Tributary = "../public/River_Expand/result";

@@ -4,7 +4,7 @@
     <div class="top-panel">
       <!-- 左上角的截止时间选择框 -->
       <div class="time-selector-box">
-        <h2 class="title">锡尔恰尔机场监测时间</h2>
+        <h2 class="title">列城机场监测时间</h2>
         <h3>开始日期</h3>
         <input type="date" v-model="selectedDate" @change="onDateChange" />
         <h3>截止日期</h3>
@@ -14,7 +14,7 @@
 
       <!-- 选择影像文件的独立窗体 -->
       <div class="image-selector-box" v-if="isImageSelectorVisible">
-        <h2 class="title">机场提取结果</h2>
+        <h2 class="title">飞机提取结果</h2>
         <Calendar transparent borderless :min-date="new Date(2016, 0, 1)" :max-date="new Date()"
           :attributes='attributes' @dayclick="onDayClickHandler">
           <DatePicker v-model="date"></DatePicker>
@@ -39,7 +39,7 @@
     <!-- ECharts 图表弹窗 -->
     <div v-if="isChartModalVisible" class="modal">
       <div class="modal-content">
-        <h2 class="title">锡尔恰尔机场异常扩建动态监测曲线</h2>
+        <h2 class="title">列城机场飞机异常进出库动态监测曲线</h2>
         <div ref="chartContainer" style="width: 600px; height: 400px;"></div>
       </div>
     </div>
@@ -162,7 +162,7 @@ export default {
 
       // 设置初始视角
       this.viewer.camera.setView({
-        destination: Cesium.Cartesian3.fromDegrees(92.97897, 24.9145, 600.0),
+        destination: Cesium.Cartesian3.fromDegrees(77.549251, 34.139811, 1000.0),
       });
     },
 
@@ -211,7 +211,7 @@ export default {
 
     async checkFolderExists() {
       try {
-        const response = await axios.get('http://localhost:3017/api/check_folder_Silchar');
+        const response = await axios.get('http://localhost:3017/api/check_folder_Leh_Airplane');
 
         // 根据返回的数据格式进行判定
         if (response.data.files) {
@@ -304,7 +304,7 @@ export default {
 
     async fetchTiffFiles() {
       try {
-        const response = await axios.get('http://localhost:3017/api/files_Silchar');
+        const response = await axios.get('http://localhost:3017/api/files_Leh_Airplane');
         console.log('返回的数据:', response.data); // 确认返回的数据格式
 
         // 保存完整文件名和前8位文件名的映射
@@ -338,7 +338,7 @@ export default {
       console.log('date_str:', date_str)
       const selectedTiff = this.tifFiles.filter(element => element.shortName == date_str)[0];
       if (selectedTiff) {
-        const tiffUrl = `public/03_India_Airport/02_Silchar_Airport/02_Output/${selectedTiff.fullName}`;  // 根据选择的完整文件名拼接 URL
+        const tiffUrl = `public/05_India_Airplane/02_Leh/02_Output/${selectedTiff.fullName}`;  // 根据选择的完整文件名拼接 URL
         await this.loadTiffImage(tiffUrl);
       }
     },
@@ -364,7 +364,7 @@ export default {
           throw new Error("Invalid bounding box retrieved from TIFF image.");
         }
 
-        const utmProjection = 'EPSG:32646'; //WGS_1984_Zone_46N
+        const utmProjection = 'EPSG:32643'; //WGS_1984_Zone_43N
         const wgs84Projection = 'EPSG:4326';
 
         const lowerLeft = proj4(utmProjection, wgs84Projection, [bbox[0], bbox[1]]);
@@ -434,11 +434,11 @@ export default {
 
 
     initChart() {
-      decode_CSV("public/03_India_Airport/02_Silchar_Airport/Silchar_Airport_Area.csv")
+      decode_CSV("public/05_India_Airplane/02_Leh/Leh_Airplane_Number.csv")
         .then(csv_data => {
           // 提取日期、面积（保留4位小数）和abnormal值
           const date_list = csv_data.map(item => item.date);
-          const area_list = csv_data.map(item => parseFloat(item.area).toFixed(0)); // 保留4位小数
+          const area_list = csv_data.map(item => parseFloat(item.number).toFixed(0)); // 保留4位小数
           const abnormal_list = csv_data.map(item => parseInt(item.abnormal, 10) || 0);
 
           console.log("date_list:", date_list);
@@ -458,7 +458,7 @@ export default {
             tooltip: {
               trigger: "axis",
               valueFormatter: function (value) {
-                return value + " m²";
+                return value + " 架";
               },
             },
             xAxis: {
@@ -471,18 +471,21 @@ export default {
             },
             yAxis: {
               type: "value",
-              name: '面积 (m²)',
+              name: '数量 (架)',
               nameTextStyle: { fontSize: 18 },
-              min: Math.min(...area_list) * 0.95,
-              max: Math.max(...area_list) * 1.05,
+              min: 0,
+              max: 3,
+              interval: 1,  // 控制刻度步长
               axisLabel: {
-                formatter: (value) => value.toFixed(0),
+                formatter: (value) => {
+                  return [0, 1, 2, 3].includes(value) ? value.toFixed(0) : '';
+                },
                 fontSize: 18,
               },
             },
             series: [
               {
-                name: "面积",
+                name: "数量",
                 type: "line",
                 data: date_list.map((date, index) => [new Date(date).getTime(), area_list[index]]), // 将日期转换为时间戳
                 color: '#FAFA33',
