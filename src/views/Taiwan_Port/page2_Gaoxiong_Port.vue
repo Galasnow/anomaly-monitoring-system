@@ -672,7 +672,7 @@ option {
 .modal {
   position: fixed;
   top: 410px;
-  left: 310px;
+  left: 340px;
   display: flex;
   width: 500px;
   height: 450px;
