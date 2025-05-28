@@ -182,7 +182,7 @@ async function fetchTiffFiles_Gaofen() {
 async function checkFolderExists() {
   try {
     const response = await axios.get(
-      "http://localhost:3017/api/check-folder_sk10_sentinel-1"
+      "http://localhost:3017/api/files_sk10_sentinel-1"
     );
     console.log("response", response);
     // 根据返回的数据格式进行判定

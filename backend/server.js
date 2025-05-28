@@ -1402,11 +1402,9 @@ app.get("/api/files_Hassanabad", (req, res) => {
   }
 });
 
-
 // India_Airplane
 // Thoise
-const TIF_FOLDER_Thoise =
-  "../public/05_India_Airplane/01_Thoise/02_Output";
+const TIF_FOLDER_Thoise = "../public/05_India_Airplane/01_Thoise/02_Output";
 
 // 检查文件夹中是否存在 .tif 文件
 app.get("/api/check_folder_Thoise", (req, res) => {
@@ -1458,10 +1456,8 @@ app.get("/api/files_Thoise", (req, res) => {
   }
 });
 
-
 // Leh_Airplane
-const TIF_FOLDER_Leh_Airplane =
-  "../public/05_India_Airplane/02_Leh/02_Output";
+const TIF_FOLDER_Leh_Airplane = "../public/05_India_Airplane/02_Leh/02_Output";
 
 // 检查文件夹中是否存在 .tif 文件
 app.get("/api/check_folder_Leh_Airplane", (req, res) => {
@@ -1512,7 +1508,6 @@ app.get("/api/files_Leh_Airplane", (req, res) => {
     res.status(500).json({ error: "发生未知错误", details: err.message });
   }
 });
-
 
 const Indian_River_Tributary_OUTPUT_PATH = "../public/River_Expand";
 const TIF_FOLDER_Indian_River_Tributary = "../public/River_Expand/result";
@@ -1961,86 +1956,80 @@ app.get("/api/bishengjiao_finish_txt", (req, res) => {
   }
 });
 
+/**
+ * 检查文件夹并获取.tif文件列表（同步版本）
+ * @param {string} folderPath - 要检查的文件夹路径
+ * @returns {object} 返回结果对象
+ */
+function getTifFiles(folderPath) {
+  try {
+    // 检查文件夹是否存在
+    if (!fs.existsSync(folderPath)) {
+      return {
+        success: false,
+        error: "文件夹不存在",
+        statusCode: 500,
+      };
+    }
+
+    // 读取文件列表
+    let filesList = fs
+      .readdirSync(folderPath)
+      .filter((f) => f.endsWith(".tif"));
+
+    if (files.length == 0) {
+      return {
+        success: false,
+        error: "文件夹中未找到 .tif 文件",
+        statusCode: 404,
+      };
+    }
+
+    // 获取文件状态并排序
+    const filesWithStats = filesList.map((file) => {
+      const stat = fs.statSync(path.join(folderPath, file));
+      return {
+        name: file,
+        mtime: stat.mtime.getTime(),
+      };
+    });
+
+    files = filesWithStats
+      .sort((a, b) => b.mtime - a.mtime)
+      .map((item) => item.name);
+
+    return {
+      success: true,
+      files,
+      count: files.length,
+      statusCode: 200,
+    };
+  } catch (err) {
+    console.error("文件操作出错:", err);
+    return {
+      success: false,
+      error: "发生未知错误",
+      details: err.message,
+      statusCode: 500,
+    };
+  }
+}
+
 const SK10_OUTPUT_PATH = "../public/sk10_platform/output";
 const TIF_FOLDER_SK10_S1 = "../public/sk10_platform/output/predict";
 const TIF_FOLDER_SK10_GAOFEN = "../public/sk10_platform/gaofen";
 const OFFSHORE_PLATFORM_MAIN_PY_PATH = "./predict_platform/all_in_one.py";
-// 检查文件夹中是否存在 .tif 文件
-app.get("/api/check-folder_sk10_sentinel-1", (req, res) => {
-  try {
-    if (!fs.existsSync(TIF_FOLDER_SK10_S1)) {
-      return res.status(500).json({ error: "文件夹不存在" });
-    }
 
-    let files = fs
-      .readdirSync(TIF_FOLDER_SK10_S1)
-      .filter((f) => f.endsWith(".tif"));
-
-    if (files.length > 0) {
-      return res.json({ files }); // 返回文件列表
-    } else {
-      return res.status(404).json({ message: "文件夹中未找到 .tif 文件" });
-    }
-  } catch (err) {
-    console.error("Error checking files:", err);
-    res.status(500).json({ error: "发生未知错误", details: err.message });
-  }
+// 获取文件夹中的.tif文件
+app.get("/api/files_sk10_sentinel-1", async (req, res) => {
+  const result = await getTifFiles(TIF_FOLDER_SK10_S1);
+  return res.status(result.statusCode).json(result);
 });
 
-// 获取 .tif 文件列表，只返回文件名
-app.get("/api/files_sk10_sentinel-1", (req, res) => {
-  try {
-    if (!fs.existsSync(TIF_FOLDER_SK10_S1)) {
-      return res.status(500).json({ error: "文件夹不存在" });
-    }
-
-    let files = fs
-      .readdirSync(TIF_FOLDER_SK10_S1)
-      .filter((f) => f.endsWith(".tif"))
-      .map((f) => f) // 只返回文件名
-      .sort((a, b) => {
-        const timeA = fs
-          .statSync(path.join(TIF_FOLDER_SK10_S1, a))
-          .mtime.getTime();
-        const timeB = fs
-          .statSync(path.join(TIF_FOLDER_SK10_S1, b))
-          .mtime.getTime();
-        return timeB - timeA; // 按修改时间降序
-      });
-
-    res.json({ files });
-  } catch (err) {
-    console.error("Error listing files:", err);
-    res.status(500).json({ error: "发生未知错误", details: err.message });
-  }
-});
-
-// 获取 .tif 文件列表，只返回文件名
-app.get("/api/files_sk10_gaofen", (req, res) => {
-  try {
-    if (!fs.existsSync(TIF_FOLDER_SK10_GAOFEN)) {
-      return res.status(500).json({ error: "文件夹不存在" });
-    }
-
-    let files = fs
-      .readdirSync(TIF_FOLDER_SK10_GAOFEN)
-      .filter((f) => f.endsWith(".tif"))
-      .map((f) => f) // 只返回文件名
-      .sort((a, b) => {
-        const timeA = fs
-          .statSync(path.join(TIF_FOLDER_SK10_GAOFEN, a))
-          .mtime.getTime();
-        const timeB = fs
-          .statSync(path.join(TIF_FOLDER_SK10_GAOFEN, b))
-          .mtime.getTime();
-        return timeB - timeA; // 按修改时间降序
-      });
-
-    res.json({ files });
-  } catch (err) {
-    console.error("Error listing files:", err);
-    res.status(500).json({ error: "发生未知错误", details: err.message });
-  }
+// 获取文件夹中的.tif文件
+app.get("/api/files_sk10_gaofen", async (req, res) => {
+  const result = await getTifFiles(TIF_FOLDER_SK10_GAOFEN);
+  return res.status(result.statusCode).json(result);
 });
 
 // 运行 main.py，返回任务ID
