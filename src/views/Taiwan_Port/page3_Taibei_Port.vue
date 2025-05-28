@@ -212,7 +212,7 @@ export default {
     async checkFolderExists() {
       try {
         const response = await axios.get(
-          "http://localhost:3017/api/check_folder_Taibei"
+          "http://localhost:3017/api/files_Taibei"
         );
 
         // 根据返回的数据格式进行判定

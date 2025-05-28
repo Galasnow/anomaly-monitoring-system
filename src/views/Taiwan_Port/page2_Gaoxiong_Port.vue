@@ -201,7 +201,7 @@ async function onAnalyzeButtonClick() {
 async function checkFolderExists() {
   try {
     const response = await axios.get(
-      "http://localhost:3017/api/check_folder_Gaoxiong"
+      "http://localhost:3017/api/files_Gaoxiong"
     );
 
     if (response.data.files) {

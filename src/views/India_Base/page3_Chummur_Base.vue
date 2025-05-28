@@ -212,7 +212,7 @@ export default {
     async checkFolderExists() {
       try {
         const response = await axios.get(
-          "http://localhost:3017/api/check_folder_Chummur"
+          "http://localhost:3017/api/files_Chummur"
         );
 
         // 根据返回的数据格式进行判定
