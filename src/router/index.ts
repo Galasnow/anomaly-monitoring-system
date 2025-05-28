@@ -329,7 +329,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         name: "page_xianbinjiao",
         component: () => import("@/views/ship_gather/page_xianbinjiao.vue"),
         meta: {
-          title: "仙宾礁异常聚集动态监测",
+          title: "仙宾礁船舶异常聚集动态监测",
           hidden: false,
           roles: ["ADMIN"],
           keepAlive: true,
@@ -342,7 +342,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         name: "page_nanhuajiao",
         component: () => import("@/views/ship_gather/page_nanhuajiao.vue"),
         meta: {
-          title: "南华礁异常聚集动态监测",
+          title: "南华礁船舶异常聚集动态监测",
           hidden: false,
           roles: ["ADMIN"],
           keepAlive: true,
