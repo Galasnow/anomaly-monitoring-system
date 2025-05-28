@@ -136,31 +136,79 @@ export const constantRoutes: RouteRecordRaw[] = [
     ],
   },
 
+  // 中印边境机场异常扩建动态监测
   {
-    path: "/Database",
+    path: "/India_Airport",
+    name: "India_Airport",
     component: Layout,
     redirect: "noredirect",
-    name: "/Database",
     meta: {
-      title: "数据库管理",
-      hidden: false,
-      roles: ["ADMIN"],
-      keepAlive: false,
-      alwaysShow: false,
-      params: null,
+      title: "中印边境机场异常扩建动态监测",
+      icon: "",
+      alwaysShow: true,
     },
     children: [
       {
-        path: "/Database",
-        component: () => import("@/views/menus/数据库管理.vue"),
-        name: "Database",
+        path: "page1_India_Airport_all",
+        name: "page1_India_Airport_all",
+        component: () => import("@/views/India_Airport/page1_India_Airport_all.vue"),
         meta: {
-          title: "中印边境机场异常扩建动态监测",
-          hidden: false,
-          roles: ["ADMIN"],
-          keepAlive: true,
-          alwaysShow: false,
-          params: null,
+          title: "监测区域",
+          icon: "",
+        },
+      },
+      {
+        path: "page2_Bhatinda_Air_Force_Station",
+        name: "page2_Bhatinda_Air_Force_Station",
+        component: () => import("@/views/India_Airport/page2_Bhatinda_Air_Force_Station.vue"),
+        meta: {
+          title: "比夏纳空军基地",
+          icon: "",
+        },
+      },
+      {
+        path: "page3_Silchar_Airport",
+        name: "page3_Silchar_Airport",
+        component: () => import("@/views/India_Airport/page3_Silchar_Airport.vue"),
+        meta: {
+          title: "锡尔恰尔机场",
+          icon: "",
+        },
+      },
+      {
+        path: "page4_Dehradun_Airport",
+        name: "page4_Dehradun_Airport",
+        component: () => import("@/views/India_Airport/page4_Dehradun_Airport.vue"),
+        meta: {
+          title: "德拉敦机场",
+          icon: "",
+        },
+      },
+      {
+        path: "page5_Leh_Airport",
+        name: "page5_Leh_Airport",
+        component: () => import("@/views/India_Airport/page5_Leh_Airport.vue"),
+        meta: {
+          title: "列城机场",
+          icon: "",
+        },
+      },
+      {
+        path: "page6_Lengpui_Airport",
+        name: "page6_Lengpui_Airport",
+        component: () => import("@/views/India_Airport/page6_Lengpui_Airport.vue"),
+        meta: {
+          title: "伦格普伊机场",
+          icon: "",
+        },
+      },
+            {
+        path: "page7_Chabua_Air_Force_Station",
+        name: "page7_Chabua_Air_Force_Station",
+        component: () => import("@/views/India_Airport/page7_Chabua_Air_Force_Station.vue"),
+        meta: {
+          title: "贾布瓦空军基地",
+          icon: "",
         },
       },
     ],
