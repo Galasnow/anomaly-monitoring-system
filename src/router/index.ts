@@ -223,133 +223,37 @@ export const constantRoutes: RouteRecordRaw[] = [
     ],
   },
 
-  // 测试页面
+  // 中印边境营地异常扩建动态监测
   {
-    path: "/menu1",
+    path: "/Pakistan_Lake",
+    name: "Pakistan_Lake",
     component: Layout,
     redirect: "noredirect",
-    name: "Menu1",
     meta: {
-      title: "中印边境营地异常扩建动态监测", //安全态势动态监测
-      hidden: false,
-      roles: ["ADMIN"],
-      alwaysShow: false,
-      params: null,
+      title: "中巴边境冰川堰塞湖异常溃决动态监测",
+      icon: "",
+      alwaysShow: true,
     },
     children: [
       {
-        path: "menu1-1",
-        component: () => import("@/views/mypages/page4.vue"),
-        redirect: "noredirect",
-        name: "Menu1-1",
+        path: "page1_Pakistan_Lake_all",
+        name: "page1_Pakistan_Lake_all",
+        component: () => import("@/views/Pakistan_Lake/page1_Pakistan_Lake_all.vue"),
         meta: {
-          title: "关键要素挖掘",
-          hidden: false,
-          roles: ["ADMIN"],
-          keepAlive: true,
-          alwaysShow: false,
-          params: null,
+          title: "监测区域",
+          icon: "",
         },
-        children: [
-          {
-            path: "menu1-1-1",
-            component: () => import("@/views/mypages/page3.vue"),
-            name: "Menu1-1-1",
-            meta: {
-              title: "时空数据挖掘",
-              hidden: false,
-              roles: ["ADMIN"],
-              keepAlive: true,
-              alwaysShow: false,
-              params: null,
-            },
-          },
-          {
-            path: "menu1-1-2",
-            component: () =>
-              import("@/views/menus/menu1/多源异构数据融合[展示].vue"),
-            name: "Menu1-1-2",
-            meta: {
-              title: "✅多源异构数据融合[展示]",
-              hidden: false,
-              roles: ["ADMIN"],
-              keepAlive: true,
-              alwaysShow: false,
-              params: null,
-            },
-          },
-          {
-            path: "menu1-1-3",
-            component: () =>
-              import("@/views/menus/menu1/多源异构数据融合[功能].vue"),
-            name: "Menu1-1-3",
-            meta: {
-              title: "✅多源异构数据融合[功能]",
-              hidden: false,
-              roles: ["ADMIN"],
-              keepAlive: true,
-              alwaysShow: false,
-              params: null,
-            },
-          },
-        ],
       },
       {
-        path: "menu1-2",
-        component: () => import("@/views/mypages/page4.vue"),
-        redirect: "noredirect",
-        name: "Menu1-2",
+        path: "page2_Hassanabad",
+        name: "page2_Hassanabad",
+        component: () => import("@/views/Pakistan_Lake/page2_Hassanabad.vue"),
         meta: {
-          title: "异常信息检测",
-          hidden: false,
-          roles: ["ADMIN"],
-          keepAlive: true,
-          alwaysShow: false,
-          params: null,
+          title: "哈萨纳巴德冰川堰塞湖",
+          icon: "",
         },
-        children: [
-          {
-            path: "menu1-2-1",
-            component: () =>
-              import("@/views/menus/menu1/影像变化检测[功能].vue"),
-            name: "Menu1-2-1",
-            meta: {
-              title: "✅影像变化检测[功能]",
-              hidden: false,
-              roles: ["ADMIN"],
-              keepAlive: true,
-              alwaysShow: false,
-              params: null,
-            },
-          },
-          {
-            path: "menu1-2-2",
-            component: () => import("@/views/menus/menu1/社交网络检测.vue"),
-            name: "Menu1-2-2",
-            meta: {
-              title: "社交网络检测",
-              hidden: false,
-              roles: ["ADMIN"],
-              keepAlive: true,
-              alwaysShow: false,
-              params: null,
-            },
-          },
-          {
-            path: "menu1-2-3",
-            component: () => import("@/views/menus/menu1/异常变化检测.vue"),
-            name: "Menu1-2-3",
-            meta: {
-              title: "✅异常变化检测",
-              hidden: false,
-              roles: ["ADMIN"],
-              keepAlive: true,
-              alwaysShow: false,
-              params: null,
-            },
-          },
-        ],
       },
+
     ],
   },
 
