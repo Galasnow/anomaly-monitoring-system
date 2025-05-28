@@ -152,7 +152,8 @@ export const constantRoutes: RouteRecordRaw[] = [
       {
         path: "page1_India_Airport_all",
         name: "page1_India_Airport_all",
-        component: () => import("@/views/India_Airport/page1_India_Airport_all.vue"),
+        component: () =>
+          import("@/views/India_Airport/page1_India_Airport_all.vue"),
         meta: {
           title: "监测区域",
           icon: "",
@@ -161,7 +162,8 @@ export const constantRoutes: RouteRecordRaw[] = [
       {
         path: "page2_Bhatinda_Air_Force_Station",
         name: "page2_Bhatinda_Air_Force_Station",
-        component: () => import("@/views/India_Airport/page2_Bhatinda_Air_Force_Station.vue"),
+        component: () =>
+          import("@/views/India_Airport/page2_Bhatinda_Air_Force_Station.vue"),
         meta: {
           title: "比夏纳空军基地",
           icon: "",
@@ -170,7 +172,8 @@ export const constantRoutes: RouteRecordRaw[] = [
       {
         path: "page3_Silchar_Airport",
         name: "page3_Silchar_Airport",
-        component: () => import("@/views/India_Airport/page3_Silchar_Airport.vue"),
+        component: () =>
+          import("@/views/India_Airport/page3_Silchar_Airport.vue"),
         meta: {
           title: "锡尔恰尔机场",
           icon: "",
@@ -179,7 +182,8 @@ export const constantRoutes: RouteRecordRaw[] = [
       {
         path: "page4_Dehradun_Airport",
         name: "page4_Dehradun_Airport",
-        component: () => import("@/views/India_Airport/page4_Dehradun_Airport.vue"),
+        component: () =>
+          import("@/views/India_Airport/page4_Dehradun_Airport.vue"),
         meta: {
           title: "德拉敦机场",
           icon: "",
@@ -197,7 +201,8 @@ export const constantRoutes: RouteRecordRaw[] = [
       {
         path: "page6_Lengpui_Airport",
         name: "page6_Lengpui_Airport",
-        component: () => import("@/views/India_Airport/page6_Lengpui_Airport.vue"),
+        component: () =>
+          import("@/views/India_Airport/page6_Lengpui_Airport.vue"),
         meta: {
           title: "伦格普伊机场",
           icon: "",
@@ -206,7 +211,8 @@ export const constantRoutes: RouteRecordRaw[] = [
       {
         path: "page7_Chabua_Air_Force_Station",
         name: "page7_Chabua_Air_Force_Station",
-        component: () => import("@/views/India_Airport/page7_Chabua_Air_Force_Station.vue"),
+        component: () =>
+          import("@/views/India_Airport/page7_Chabua_Air_Force_Station.vue"),
         meta: {
           title: "贾布瓦空军基地",
           icon: "",
@@ -215,7 +221,8 @@ export const constantRoutes: RouteRecordRaw[] = [
       {
         path: "page8_Shilong_Airport",
         name: "page8_Shilong_Airport",
-        component: () => import("@/views/India_Airport/page8_Shilong_Airport.vue"),
+        component: () =>
+          import("@/views/India_Airport/page8_Shilong_Airport.vue"),
         meta: {
           title: "西隆机场",
           icon: "",
@@ -239,7 +246,8 @@ export const constantRoutes: RouteRecordRaw[] = [
       {
         path: "page1_Pakistan_Lake_all",
         name: "page1_Pakistan_Lake_all",
-        component: () => import("@/views/Pakistan_Lake/page1_Pakistan_Lake_all.vue"),
+        component: () =>
+          import("@/views/Pakistan_Lake/page1_Pakistan_Lake_all.vue"),
         meta: {
           title: "监测区域",
           icon: "",
@@ -254,7 +262,6 @@ export const constantRoutes: RouteRecordRaw[] = [
           icon: "",
         },
       },
-
     ],
   },
 
@@ -288,7 +295,6 @@ export const constantRoutes: RouteRecordRaw[] = [
           icon: "",
         },
       },
-
     ],
   },
 
@@ -382,6 +388,49 @@ export const constantRoutes: RouteRecordRaw[] = [
         component: () => import("@/views/ship_gather/page_nanhuajiao.vue"),
         meta: {
           title: "南华礁船舶异常聚集动态监测",
+          hidden: false,
+          roles: ["ADMIN"],
+          keepAlive: true,
+          alwaysShow: false,
+          params: null,
+        },
+      },
+    ],
+  },
+
+  {
+    path: "/ship_disperse",
+    component: Layout,
+    redirect: "noredirect",
+    name: "ShipDisperse",
+    meta: {
+      title: "红海曼德海峡船舶异常分散动态监测",
+      hidden: false,
+      roles: ["ADMIN"],
+      alwaysShow: false,
+      params: null,
+    },
+    children: [
+      {
+        path: "page_area_of_ship_disperse",
+        name: "page_area_of_ship_disperse",
+        component: () =>
+          import("@/views/ship_disperse/page_area_of_ship_disperse.vue"),
+        meta: {
+          title: "监测区域",
+          hidden: false,
+          roles: ["ADMIN"],
+          keepAlive: true,
+          alwaysShow: false,
+          params: null,
+        },
+      },
+      {
+        path: "page_mandehaixia",
+        name: "page_mamdehaixia",
+        component: () => import("@/views/ship_disperse/page_mandehaixia.vue"),
+        meta: {
+          title: "曼德海峡船舶异常分散动态监测",
           hidden: false,
           roles: ["ADMIN"],
           keepAlive: true,
