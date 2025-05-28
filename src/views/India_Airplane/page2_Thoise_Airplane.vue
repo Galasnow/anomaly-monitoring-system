@@ -211,7 +211,7 @@ export default {
 
     async checkFolderExists() {
       try {
-        const response = await axios.get('http://localhost:3017/api/check_folder_Bhatinda');
+        const response = await axios.get('http://localhost:3017/api/check_folder_Thoise');
 
         // 根据返回的数据格式进行判定
         if (response.data.files) {
@@ -304,7 +304,7 @@ export default {
 
     async fetchTiffFiles() {
       try {
-        const response = await axios.get('http://localhost:3017/api/files_Bhatinda');
+        const response = await axios.get('http://localhost:3017/api/files_Thoise');
         console.log('返回的数据:', response.data); // 确认返回的数据格式
 
         // 保存完整文件名和前8位文件名的映射
@@ -338,7 +338,7 @@ export default {
       console.log('date_str:', date_str)
       const selectedTiff = this.tifFiles.filter(element => element.shortName == date_str)[0];
       if (selectedTiff) {
-        const tiffUrl = `public/03_India_Airport/01_Bhatinda_Air_Force_Station/02_Output/${selectedTiff.fullName}`;  // 根据选择的完整文件名拼接 URL
+        const tiffUrl = `public/05_India_Airplane/01_Thoise/02_Output/${selectedTiff.fullName}`;  // 根据选择的完整文件名拼接 URL
         await this.loadTiffImage(tiffUrl);
       }
     },
@@ -434,11 +434,11 @@ export default {
 
 
     initChart() {
-      decode_CSV("public/03_India_Airport/01_Bhatinda_Air_Force_Station/Bhatinda_Air_Force_Station_Area.csv")
+      decode_CSV("public/05_India_Airplane/01_Thoise/Thoise_Airplane_Number.csv")
         .then(csv_data => {
           // 提取日期、面积（保留4位小数）和abnormal值
           const date_list = csv_data.map(item => item.date);
-          const area_list = csv_data.map(item => parseFloat(item.area).toFixed(0)); // 保留4位小数
+          const area_list = csv_data.map(item => parseFloat(item.number).toFixed(0)); // 保留4位小数
           const abnormal_list = csv_data.map(item => parseInt(item.abnormal, 10) || 0);
 
           console.log("date_list:", date_list);
@@ -458,7 +458,7 @@ export default {
             tooltip: {
               trigger: "axis",
               valueFormatter: function (value) {
-                return value + " m²";
+                return value + "架";
               },
             },
             xAxis: {
@@ -471,10 +471,10 @@ export default {
             },
             yAxis: {
               type: "value",
-              name: '面积 (m²)',
+              name: '数量 (架)',
               nameTextStyle: { fontSize: 18 },
-              min: Math.min(...area_list) * 0.95,
-              max: Math.max(...area_list) * 1.05,
+              min: 3,
+              max: -1,
               axisLabel: {
                 formatter: (value) => value.toFixed(0),
                 fontSize: 18,
@@ -482,7 +482,7 @@ export default {
             },
             series: [
               {
-                name: "面积",
+                name: "数量",
                 type: "line",
                 data: date_list.map((date, index) => [new Date(date).getTime(), area_list[index]]), // 将日期转换为时间戳
                 color: '#FAFA33',

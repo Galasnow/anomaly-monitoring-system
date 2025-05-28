@@ -1403,7 +1403,60 @@ app.get("/api/files_Hassanabad", (req, res) => {
 });
 
 
+// India_Airplane
+// Thoise
+const TIF_FOLDER_Thoise =
+  "../public/05_India_Airplane/01_Thoise/02_Output";
 
+// 检查文件夹中是否存在 .tif 文件
+app.get("/api/check_folder_Thoise", (req, res) => {
+  try {
+    if (!fs.existsSync(TIF_FOLDER_Thoise)) {
+      return res.status(500).json({ error: "文件夹不存在" });
+    }
+
+    let files = fs
+      .readdirSync(TIF_FOLDER_Thoise)
+      .filter((f) => f.endsWith(".tif"));
+
+    if (files.length > 0) {
+      return res.json({ files }); // 返回文件列表
+    } else {
+      return res.status(404).json({ message: "文件夹中未找到 .tif 文件" });
+    }
+  } catch (err) {
+    console.error("Error checking files:", err);
+    res.status(500).json({ error: "发生未知错误", details: err.message });
+  }
+});
+
+// 获取 .tif 文件列表，只返回文件名
+app.get("/api/files_Thoise", (req, res) => {
+  try {
+    if (!fs.existsSync(TIF_FOLDER_Thoise)) {
+      return res.status(500).json({ error: "文件夹不存在" });
+    }
+
+    let files = fs
+      .readdirSync(TIF_FOLDER_Thoise)
+      .filter((f) => f.endsWith(".tif"))
+      .map((f) => f) // 只返回文件名
+      .sort((a, b) => {
+        const timeA = fs
+          .statSync(path.join(TIF_FOLDER_Thoise, a))
+          .mtime.getTime();
+        const timeB = fs
+          .statSync(path.join(TIF_FOLDER_Thoise, b))
+          .mtime.getTime();
+        return timeB - timeA; // 按修改时间降序
+      });
+
+    res.json({ files });
+  } catch (err) {
+    console.error("Error listing files:", err);
+    res.status(500).json({ error: "发生未知错误", details: err.message });
+  }
+});
 
 
 
