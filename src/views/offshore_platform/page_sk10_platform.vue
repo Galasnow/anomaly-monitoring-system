@@ -69,22 +69,25 @@ import "v-calendar/style.css";
 const isSplit = ref(false);
 const viewer = ref(null);
 const chartInstance = ref(null);
-const tifFiles_sk10 = ref([]);
-const tifFiles_sk10_gaofen = ref([]);
+const tifFilesSk10Sentinel1 = ref([]);
+const tifFilesSk10Gaofen = ref([]);
 const selectedTiff = ref(null);
 const isImageSelectorVisible = ref(false);
-const mark_dates_sentinel_1 = ref([]);
-const mark_dates_gaofen = ref([]);
+const markDatesSentinel1 = ref([]);
+const markDatesGaofen = ref([]);
 const cesiumContainer = ref(null);
 const chartContainer = ref(null);
 const firstDate = ref("");
 const secondDate = ref("");
 const calendarDate = ref(null);
 const selectedDate = defineModel();
-const image1 = ref("");
 const calendarRef = ref(null);
 const isLoading = ref(false);
 const isChartModalVisible = ref(false);
+
+const tiffUrlSentinel1 = "/sk10_platform/output/predict/";
+const tiffUrlGaofen = "/sk10_platform/gaofen/";
+const csvPath = "/sk10_platform/output/platform_number.csv";
 
 // 计算属性
 const attributes = computed(() => {
@@ -95,7 +98,7 @@ const attributes = computed(() => {
         fillMode: "light",
         color: "blue",
       },
-      dates: mark_dates_sentinel_1.value,
+      dates: markDatesSentinel1.value,
     },
     {
       key: "tif-dates_gaofen",
@@ -103,14 +106,9 @@ const attributes = computed(() => {
         fillMode: "light",
         color: "red",
       },
-      dates: mark_dates_gaofen.value,
+      dates: markDatesGaofen.value,
     },
   ];
-});
-
-const formattedDate = computed(() => {
-  console.log(selectedDate);
-  return selectedDate.value ? selectedDate.value.toLocaleDateString() : "";
 });
 
 // 解析 CSV 文件
@@ -162,20 +160,19 @@ async function fetchTiffFiles_Gaofen() {
     );
     console.log("返回的数据:", response.data);
 
-    tifFiles_sk10_gaofen.value = response.data.files.map((file) => ({
+    tifFilesSk10Gaofen.value = response.data.files.map((file) => ({
       fullName: file,
       shortName: file.substring(4, 12),
     }));
 
-    mark_dates_gaofen.value = [];
-    const files = tifFiles_sk10_gaofen.value;
-    for (let i = 0; i < tifFiles_sk10_gaofen.value.length; i++) {
+    markDatesGaofen.value = [];
+    const files = tifFilesSk10Gaofen.value;
+    for (let i = 0; i < tifFilesSk10Gaofen.value.length; i++) {
       const file = files[i].fullName;
       const year = file.substring(4, 8);
       const month = file.substring(8, 10);
       const day = file.substring(10, 12);
-      console.log(year);
-      mark_dates_gaofen.value.push(new Date(year, month - 1, day));
+      markDatesGaofen.value.push(new Date(year, month - 1, day));
     }
   } catch (error) {
     console.error("获取文件列表时出错:", error);
@@ -308,19 +305,19 @@ async function fetchTiffFiles() {
     );
     console.log("返回的数据:", response.data);
 
-    tifFiles_sk10.value = response.data.files.map((file) => ({
+    tifFilesSk10Sentinel1.value = response.data.files.map((file) => ({
       fullName: file,
       shortName: file.substring(17, 25),
     }));
 
-    mark_dates_sentinel_1.value = [];
-    const files = tifFiles_sk10.value;
-    for (let i = 0; i < tifFiles_sk10.value.length; i++) {
+    markDatesSentinel1.value = [];
+    const files = tifFilesSk10Sentinel1.value;
+    for (let i = 0; i < tifFilesSk10Sentinel1.value.length; i++) {
       const file = files[i].fullName;
       const year = file.substring(17, 21);
       const month = file.substring(21, 23);
       const day = file.substring(23, 25);
-      mark_dates_sentinel_1.value.push(new Date(year, month - 1, day));
+      markDatesSentinel1.value.push(new Date(year, month - 1, day));
     }
   } catch (error) {
     console.error("获取文件列表时出错:", error);
@@ -336,19 +333,19 @@ async function onDayClickHandler(day) {
   const date_str = `${year_str}${month_str}${day_str}`;
   console.log("date_str:", date_str);
 
-  const selected = tifFiles_sk10_gaofen.value.filter(
+  const selected = tifFilesSk10Gaofen.value.filter(
     (element) => element.shortName == date_str
   )[0];
   if (selected) {
-    const tiffUrl = `/sk10_platform/gaofen/${selected.fullName}`;
+    const tiffUrl = `${tiffUrlGaofen}${selected.fullName}`;
     console.log(tiffUrl);
     await loadTiffImage(tiffUrl);
   } else {
-    const selected = tifFiles_sk10.value.filter(
+    const selected = tifFilesSk10Sentinel1.value.filter(
       (element) => element.shortName == date_str
     )[0];
     if (selected) {
-      const tiffUrl = `/sk10_platform/output/predict/${selected.fullName}`;
+      const tiffUrl = `${tiffUrlSentinel1}${selected.fullName}`;
       console.log(tiffUrl);
       await loadTiffImage(tiffUrl);
     }
@@ -472,7 +469,7 @@ async function loadTiffImage(tiffUrl) {
 
 // 初始化图表
 function initChart() {
-  decode_CSV("/sk10_platform/output/platform_number.csv")
+  decode_CSV(csvPath)
     .then((csv_data) => {
       const date_list = csv_data.map((item) => item.date);
       const number_list = csv_data.map((item) => parseInt(item.number));
@@ -559,19 +556,19 @@ function initChart() {
         console.log("Clicked date:", date_str);
 
         // 查找对应的TIFF文件并加载
-        const selected = tifFiles_sk10_gaofen.value.filter(
+        const selected = tifFilesSk10Gaofen.value.filter(
           (element) => element.shortName == date_str
         )[0];
         if (selected) {
-          const tiffUrl = `/sk10_platform/gaofen/${selected.fullName}`;
+          const tiffUrl = `${tiffUrlGaofen}${selected.fullName}`;
           console.log(tiffUrl);
           loadTiffImage(tiffUrl);
         } else {
-          const selected = tifFiles_sk10.value.filter(
+          const selected = tifFilesSk10Sentinel1.value.filter(
             (element) => element.shortName == date_str
           )[0];
           if (selected) {
-            const tiffUrl = `/sk10_platform/output/predict/${selected.fullName}`;
+            const tiffUrl = `${tiffUrlSentinel1}${selected.fullName}`;
             console.log(tiffUrl);
             loadTiffImage(tiffUrl);
           }
