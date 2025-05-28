@@ -287,11 +287,20 @@ export const constantRoutes: RouteRecordRaw[] = [
         },
       },
       {
-        path: "page2_Hassanabad",
-        name: "page2_Hassanabad",
+        path: "page2_Thoise_Airplane",
+        name: "page2_Thoise_Airplane",
         component: () => import("@/views/India_Airplane/page2_Thoise_Airplane.vue"),
         meta: {
-          title: "哈萨纳巴德冰川堰塞湖",
+          title: "托伊斯空军基地",
+          icon: "",
+        },
+      },
+      {
+        path: "page3_Leh_Airplane",
+        name: "page3_Leh_Airplane",
+        component: () => import("@/views/India_Airplane/page3_Leh_Airplane.vue"),
+        meta: {
+          title: "列城机场",
           icon: "",
         },
       },

@@ -1225,20 +1225,21 @@ app.get("/api/files_txt_Chabua", (req, res) => {
   }
 });
 
-// Pakistan_Lake
-// Hassanabad
-const TIF_FOLDER_Hassanabad =
-  "../public/04_Pakistan_Lake/01_Hassanabad/02_Output";
+// Shilong_Airport
+const TIF_FOLDER_Shilong =
+  "../public/03_India_Airport/07_Shilong_Airport/02_Output";
+const MAIN_PY_PATH_Shilong = "./03_India_Airport/07_main_Shilong_Airport.py";
+const TXT_FOLDER_Shilong = "../public/03_India_Airport/07_Shilong_Airport";
 
 // 检查文件夹中是否存在 .tif 文件
-app.get("/api/check_folder_Hassanabad", (req, res) => {
+app.get("/api/check_folder_Shilong", (req, res) => {
   try {
-    if (!fs.existsSync(TIF_FOLDER_Hassanabad)) {
+    if (!fs.existsSync(TIF_FOLDER_Shilong)) {
       return res.status(500).json({ error: "文件夹不存在" });
     }
 
     let files = fs
-      .readdirSync(TIF_FOLDER_Hassanabad)
+      .readdirSync(TIF_FOLDER_Shilong)
       .filter((f) => f.endsWith(".tif"));
 
     if (files.length > 0) {
@@ -1248,34 +1249,6 @@ app.get("/api/check_folder_Hassanabad", (req, res) => {
     }
   } catch (err) {
     console.error("Error checking files:", err);
-    res.status(500).json({ error: "发生未知错误", details: err.message });
-  }
-});
-
-// 获取 .tif 文件列表，只返回文件名
-app.get("/api/files_Hassanabad", (req, res) => {
-  try {
-    if (!fs.existsSync(TIF_FOLDER_Hassanabad)) {
-      return res.status(500).json({ error: "文件夹不存在" });
-    }
-
-    let files = fs
-      .readdirSync(TIF_FOLDER_Hassanabad)
-      .filter((f) => f.endsWith(".tif"))
-      .map((f) => f) // 只返回文件名
-      .sort((a, b) => {
-        const timeA = fs
-          .statSync(path.join(TIF_FOLDER_Hassanabad, a))
-          .mtime.getTime();
-        const timeB = fs
-          .statSync(path.join(TIF_FOLDER_Hassanabad, b))
-          .mtime.getTime();
-        return timeB - timeA; // 按修改时间降序
-      });
-
-    res.json({ files });
-  } catch (err) {
-    console.error("Error listing files:", err);
     res.status(500).json({ error: "发生未知错误", details: err.message });
   }
 });
@@ -1374,21 +1347,20 @@ app.get("/api/files_txt_Shilong", (req, res) => {
   }
 });
 
-// Shilong_Airport
-const TIF_FOLDER_Shilong =
-  "../public/03_India_Airport/07_Shilong_Airport/02_Output";
-const MAIN_PY_PATH_Shilong = "./03_India_Airport/07_main_Shilong_Airport.py";
-const TXT_FOLDER_Shilong = "../public/03_India_Airport/07_Shilong_Airport";
+// Pakistan_Lake
+// Hassanabad
+const TIF_FOLDER_Hassanabad =
+  "../public/04_Pakistan_Lake/01_Hassanabad/02_Output";
 
 // 检查文件夹中是否存在 .tif 文件
-app.get("/api/check_folder_Shilong", (req, res) => {
+app.get("/api/check_folder_Hassanabad", (req, res) => {
   try {
-    if (!fs.existsSync(TIF_FOLDER_Shilong)) {
+    if (!fs.existsSync(TIF_FOLDER_Hassanabad)) {
       return res.status(500).json({ error: "文件夹不存在" });
     }
 
     let files = fs
-      .readdirSync(TIF_FOLDER_Shilong)
+      .readdirSync(TIF_FOLDER_Hassanabad)
       .filter((f) => f.endsWith(".tif"));
 
     if (files.length > 0) {
@@ -1401,6 +1373,39 @@ app.get("/api/check_folder_Shilong", (req, res) => {
     res.status(500).json({ error: "发生未知错误", details: err.message });
   }
 });
+
+// 获取 .tif 文件列表，只返回文件名
+app.get("/api/files_Hassanabad", (req, res) => {
+  try {
+    if (!fs.existsSync(TIF_FOLDER_Hassanabad)) {
+      return res.status(500).json({ error: "文件夹不存在" });
+    }
+
+    let files = fs
+      .readdirSync(TIF_FOLDER_Hassanabad)
+      .filter((f) => f.endsWith(".tif"))
+      .map((f) => f) // 只返回文件名
+      .sort((a, b) => {
+        const timeA = fs
+          .statSync(path.join(TIF_FOLDER_Hassanabad, a))
+          .mtime.getTime();
+        const timeB = fs
+          .statSync(path.join(TIF_FOLDER_Hassanabad, b))
+          .mtime.getTime();
+        return timeB - timeA; // 按修改时间降序
+      });
+
+    res.json({ files });
+  } catch (err) {
+    console.error("Error listing files:", err);
+    res.status(500).json({ error: "发生未知错误", details: err.message });
+  }
+});
+
+
+
+
+
 
 const Indian_River_Tributary_OUTPUT_PATH = "../public/River_Expand";
 const TIF_FOLDER_Indian_River_Tributary = "../public/River_Expand/result";
