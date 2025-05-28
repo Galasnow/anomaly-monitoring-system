@@ -298,6 +298,50 @@ export const constantRoutes: RouteRecordRaw[] = [
   },
 
   {
+    path: "/zhongba_river",
+    component: Layout,
+    redirect: "noredirect",
+    name: "ZhongBaRiver",
+    meta: {
+      title: "中巴边境冰川补给河流异常扩张动态监测",
+      hidden: false,
+      roles: ["ADMIN"],
+      alwaysShow: false,
+      params: null,
+    },
+    children: [
+      {
+        path: "page_area_of_zhongba_river",
+        name: "page_area_of_zhongba_river",
+        component: () =>
+          import("@/views/river_expand/page_area_of_zhongba_river.vue"),
+        meta: {
+          title: "监测区域",
+          hidden: false,
+          roles: ["ADMIN"],
+          keepAlive: true,
+          alwaysShow: false,
+          params: null,
+        },
+      },
+      {
+        path: "page_indian_river_tributary",
+        name: "page_indian_river_tributary",
+        component: () =>
+          import("@/views/river_expand/page_indian_river_tributary.vue"),
+        meta: {
+          title: "印度河支流异常扩张动态监测",
+          hidden: false,
+          roles: ["ADMIN"],
+          keepAlive: true,
+          alwaysShow: false,
+          params: null,
+        },
+      },
+    ],
+  },
+
+  {
     path: "/ship_gather",
     component: Layout,
     redirect: "noredirect",

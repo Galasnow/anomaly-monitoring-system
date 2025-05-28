@@ -497,6 +497,59 @@ app.get("/api/files_txt_Chummur", (req, res) => {
   }
 });
 
+const Indian_River_Tributary_OUTPUT_PATH = "../public/River_Expand";
+const TIF_FOLDER_Indian_River_Tributary = "../public/River_Expand/result";
+
+// 检查文件夹中是否存在 .tif 文件
+app.get("/api/check-folder_indian_river_tributary", (req, res) => {
+  try {
+    if (!fs.existsSync(TIF_FOLDER_Indian_River_Tributary)) {
+      return res.status(500).json({ error: "文件夹不存在" });
+    }
+
+    let files = fs
+      .readdirSync(TIF_FOLDER_Indian_River_Tributary)
+      .filter((f) => f.endsWith(".tif"));
+
+    if (files.length > 0) {
+      return res.json({ files }); // 返回文件列表
+    } else {
+      return res.status(404).json({ message: "文件夹中未找到 .tif 文件" });
+    }
+  } catch (err) {
+    console.error("Error checking files:", err);
+    res.status(500).json({ error: "发生未知错误", details: err.message });
+  }
+});
+
+// 获取 .tif 文件列表，只返回文件名
+app.get("/api/files_indian_river_tributary", (req, res) => {
+  try {
+    if (!fs.existsSync(TIF_FOLDER_Indian_River_Tributary)) {
+      return res.status(500).json({ error: "文件夹不存在" });
+    }
+
+    let files = fs
+      .readdirSync(TIF_FOLDER_Indian_River_Tributary)
+      .filter((f) => f.endsWith(".tif"))
+      .map((f) => f) // 只返回文件名
+      .sort((a, b) => {
+        const timeA = fs
+          .statSync(path.join(TIF_FOLDER_Indian_River_Tributary, a))
+          .mtime.getTime();
+        const timeB = fs
+          .statSync(path.join(TIF_FOLDER_Indian_River_Tributary, b))
+          .mtime.getTime();
+        return timeB - timeA; // 按修改时间降序
+      });
+
+    res.json({ files });
+  } catch (err) {
+    console.error("Error listing files:", err);
+    res.status(500).json({ error: "发生未知错误", details: err.message });
+  }
+});
+
 const Xianbinjiao_OUTPUT_PATH = "../public/Ship_Gather/01_Xianbinjiao";
 const Nanhuajiao_OUTPUT_PATH = "../public/Ship_Gather/02_Nanhuajiao";
 const TIF_FOLDER_Xianbinjiao = "../public/Ship_Gather/01_Xianbinjiao/result";
