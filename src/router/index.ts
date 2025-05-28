@@ -202,12 +202,21 @@ export const constantRoutes: RouteRecordRaw[] = [
           icon: "",
         },
       },
-            {
+      {
         path: "page7_Chabua_Air_Force_Station",
         name: "page7_Chabua_Air_Force_Station",
         component: () => import("@/views/India_Airport/page7_Chabua_Air_Force_Station.vue"),
         meta: {
           title: "贾布瓦空军基地",
+          icon: "",
+        },
+      },
+      {
+        path: "page8_Shilong_Airport",
+        name: "page8_Shilong_Airport",
+        component: () => import("@/views/India_Airport/page8_Shilong_Airport.vue"),
+        meta: {
+          title: "西隆机场",
           icon: "",
         },
       },

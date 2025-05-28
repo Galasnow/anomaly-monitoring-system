@@ -144,7 +144,7 @@ onMounted(async () => {
     },
   });
 
-    // 添加伦格普伊机场实体
+  // 添加查布瓦空军基地实体
   cesium_viewer.entities.add({
     id: "Chabua_Air_Force_Station",
     position: Cesium.Cartesian3.fromDegrees(95.114966, 27.467536, 10),
@@ -156,6 +156,28 @@ onMounted(async () => {
     },
     label: {
       text: "贾布瓦空军基地",
+      font: "18px sans-serif",
+      fillColor: Cesium.Color.WHITE,
+      outlineColor: Cesium.Color.BLACK,
+      outlineWidth: 2,
+      style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+      verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+      pixelOffset: new Cesium.Cartesian2(0, -20),
+    },
+  });
+
+  // 添加西隆机场实体
+  cesium_viewer.entities.add({
+    id: "Shilong_Airport",
+    position: Cesium.Cartesian3.fromDegrees(91.976154, 25.704745, 10),
+    point: {
+      pixelSize: 10,
+      color: Cesium.Color.RED,
+      outlineColor: Cesium.Color.WHITE,
+      outlineWidth: 2,
+    },
+    label: {
+      text: "西隆机场",
       font: "18px sans-serif",
       fillColor: Cesium.Color.WHITE,
       outlineColor: Cesium.Color.BLACK,
@@ -190,7 +212,10 @@ onMounted(async () => {
       router.push("page6_Lengpui_Airport"); // 跳转到 page6_Lengpui_Airport.vue
     }
     if (Cesium.defined(pickedObject) && pickedObject.id?.id === "Chabua_Air_Force_Station") {
-      router.push("page7_Chabua_Air_Force_Station"); // 跳转到 page6_Lengpui_Airport.vue
+      router.push("page7_Chabua_Air_Force_Station"); // 跳转到 page7_Chabua_Air_Force_Station.vue
+    }
+    if (Cesium.defined(pickedObject) && pickedObject.id?.id === "Shilong_Airport") {
+      router.push("page8_Shilong_Airport"); // 跳转到 page8_Shilong_Airport.vue
     }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 });
