@@ -39,7 +39,7 @@
     <!-- ECharts 图表弹窗 -->
     <div v-if="isChartModalVisible" class="modal">
       <div class="modal-content">
-        <h2 class="title">托伊斯空军基地异常扩建动态监测曲线</h2>
+        <h2 class="title">托伊斯空军基地飞机异常进出库动态监测曲线</h2>
         <div ref="chartContainer" style="width: 600px; height: 400px;"></div>
       </div>
     </div>
@@ -473,10 +473,13 @@ export default {
               type: "value",
               name: '数量 (架)',
               nameTextStyle: { fontSize: 18 },
-              min: 3,
-              max: -1,
+              min: 0,
+              max: 1,
+              interval: 1,  // 控制刻度步长
               axisLabel: {
-                formatter: (value) => value.toFixed(0),
+                formatter: (value) => {
+                  return [0, 1].includes(value) ? value.toFixed(0) : '';
+                },
                 fontSize: 18,
               },
             },
