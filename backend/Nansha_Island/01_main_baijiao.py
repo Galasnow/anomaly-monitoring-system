@@ -77,13 +77,15 @@ if __name__ == "__main__":
     # unet = unet.cuda()
     # print("begin training!")
 
-    trainer = Trainer(net = unet, file_path = model_file_path)
+    trainer = Trainer(net=unet, file_path=model_file_path)
     #
     # trainer.train_model(train_loader=train_loader, test_loader=test_loader, epoch=100)
     # print("训练完成")
     # show result:
     if True:
-        for i in tqdm(range(len(test_data))):
+        pbar = tqdm(range(len(test_data)))
+        pbar.set_description(f'Predicting')
+        for i in pbar:
             sample = test_data[i]
             image_tensor = Variable(torch.FloatTensor(sample["image"])).to(DEVICE).unsqueeze(0)
 
@@ -148,6 +150,6 @@ if __name__ == "__main__":
     # generate_test_image_plots(set_dir, image_merge_result_plt, id_index)
     # print('预测结果绘制完成！')
 
-    finish_txt = main_dir + r"/finish.txt"
+    finish_txt = main_dir + r"02_Output/finish.txt"
     with open(finish_txt, "w") as file:
         pass  # 不写入任何内容，文件会保持为空
