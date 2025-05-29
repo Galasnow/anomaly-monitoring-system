@@ -121,32 +121,10 @@ app.get("/api/run_main_Gaoxiong", (req, res) => {
   res.json({ message: "main.py 执行已启动", taskId });
 });
 
-// 获取 .txt 文件列表，只返回文件名
-app.get("/api/files_txt_Gaoxiong", (req, res) => {
-  try {
-    if (!fs.existsSync(TXT_FOLDER_Gaoxiong)) {
-      return res.status(500).json({ error: "文件夹不存在" });
-    }
-
-    let files = fs
-      .readdirSync(TXT_FOLDER_Gaoxiong)
-      .filter((f) => f.endsWith(".txt"))
-      .map((f) => f) // 只返回文件名
-      .sort((a, b) => {
-        const timeA = fs
-          .statSync(path.join(TXT_FOLDER_Gaoxiong, a))
-          .mtime.getTime();
-        const timeB = fs
-          .statSync(path.join(TXT_FOLDER_Gaoxiong, b))
-          .mtime.getTime();
-        return timeB - timeA; // 按修改时间降序
-      });
-
-    res.json({ files });
-  } catch (err) {
-    console.error("Error listing files:", err);
-    res.status(500).json({ error: "发生未知错误", details: err.message });
-  }
+// 获取文件夹中的.txt文件
+app.get("/api/files_txt_Gaoxiong", async (req, res) => {
+  const result = await getFolderFiles(TXT_FOLDER_Gaoxiong, ".txt");
+  return res.status(result.statusCode).json(result);
 });
 
 // Taibei_Port
@@ -198,32 +176,10 @@ app.get("/api/run_main_Taibei", (req, res) => {
   res.json({ message: "main.py 执行已启动", taskId });
 });
 
-// 获取 .txt 文件列表，只返回文件名
-app.get("/api/files_txt_Taibei", (req, res) => {
-  try {
-    if (!fs.existsSync(TXT_FOLDER_Taibei)) {
-      return res.status(500).json({ error: "文件夹不存在" });
-    }
-
-    let files = fs
-      .readdirSync(TXT_FOLDER_Taibei)
-      .filter((f) => f.endsWith(".txt"))
-      .map((f) => f) // 只返回文件名
-      .sort((a, b) => {
-        const timeA = fs
-          .statSync(path.join(TXT_FOLDER_Taibei, a))
-          .mtime.getTime();
-        const timeB = fs
-          .statSync(path.join(TXT_FOLDER_Taibei, b))
-          .mtime.getTime();
-        return timeB - timeA; // 按修改时间降序
-      });
-
-    res.json({ files });
-  } catch (err) {
-    console.error("Error listing files:", err);
-    res.status(500).json({ error: "发生未知错误", details: err.message });
-  }
+// 获取文件夹中的.txt文件
+app.get("/api/files_txt_Taibei", async (req, res) => {
+  const result = await getFolderFiles(TXT_FOLDER_Taibei, ".txt");
+  return res.status(result.statusCode).json(result);
 });
 
 // India_Base
@@ -276,32 +232,10 @@ app.get("/api/run_main_Durbuk", (req, res) => {
   res.json({ message: "main.py 执行已启动", taskId });
 });
 
-// 获取 .txt 文件列表，只返回文件名
-app.get("/api/files_txt_Durbuk", (req, res) => {
-  try {
-    if (!fs.existsSync(TXT_FOLDER_Durbuk)) {
-      return res.status(500).json({ error: "文件夹不存在" });
-    }
-
-    let files = fs
-      .readdirSync(TXT_FOLDER_Durbuk)
-      .filter((f) => f.endsWith(".txt"))
-      .map((f) => f) // 只返回文件名
-      .sort((a, b) => {
-        const timeA = fs
-          .statSync(path.join(TXT_FOLDER_Durbuk, a))
-          .mtime.getTime();
-        const timeB = fs
-          .statSync(path.join(TXT_FOLDER_Durbuk, b))
-          .mtime.getTime();
-        return timeB - timeA; // 按修改时间降序
-      });
-
-    res.json({ files });
-  } catch (err) {
-    console.error("Error listing files:", err);
-    res.status(500).json({ error: "发生未知错误", details: err.message });
-  }
+// 获取文件夹中的.txt文件
+app.get("/api/files_txt_Durbuk", async (req, res) => {
+  const result = await getFolderFiles(TXT_FOLDER_Durbuk, ".txt");
+  return res.status(result.statusCode).json(result);
 });
 
 // Chummur_Base
@@ -353,32 +287,10 @@ app.get("/api/run_main_Chummur", (req, res) => {
   res.json({ message: "main.py 执行已启动", taskId });
 });
 
-// 获取 .txt 文件列表，只返回文件名
-app.get("/api/files_txt_Chummur", (req, res) => {
-  try {
-    if (!fs.existsSync(TXT_FOLDER_Chummur)) {
-      return res.status(500).json({ error: "文件夹不存在" });
-    }
-
-    let files = fs
-      .readdirSync(TXT_FOLDER_Chummur)
-      .filter((f) => f.endsWith(".txt"))
-      .map((f) => f) // 只返回文件名
-      .sort((a, b) => {
-        const timeA = fs
-          .statSync(path.join(TXT_FOLDER_Chummur, a))
-          .mtime.getTime();
-        const timeB = fs
-          .statSync(path.join(TXT_FOLDER_Chummur, b))
-          .mtime.getTime();
-        return timeB - timeA; // 按修改时间降序
-      });
-
-    res.json({ files });
-  } catch (err) {
-    console.error("Error listing files:", err);
-    res.status(500).json({ error: "发生未知错误", details: err.message });
-  }
+// 获取文件夹中的.txt文件
+app.get("/api/files_txt_Chummur", async (req, res) => {
+  const result = await getFolderFiles(TXT_FOLDER_Chummur, ".txt");
+  return res.status(result.statusCode).json(result);
 });
 
 // India_Airport
@@ -434,32 +346,10 @@ app.get("/api/run_main_Bhatinda", (req, res) => {
   res.json({ message: "main.py 执行已启动", taskId });
 });
 
-// 获取 .txt 文件列表，只返回文件名
-app.get("/api/files_txt_Bhatinda", (req, res) => {
-  try {
-    if (!fs.existsSync(TXT_FOLDER_Bhatinda)) {
-      return res.status(500).json({ error: "文件夹不存在" });
-    }
-
-    let files = fs
-      .readdirSync(TXT_FOLDER_Bhatinda)
-      .filter((f) => f.endsWith(".txt"))
-      .map((f) => f) // 只返回文件名
-      .sort((a, b) => {
-        const timeA = fs
-          .statSync(path.join(TXT_FOLDER_Bhatinda, a))
-          .mtime.getTime();
-        const timeB = fs
-          .statSync(path.join(TXT_FOLDER_Bhatinda, b))
-          .mtime.getTime();
-        return timeB - timeA; // 按修改时间降序
-      });
-
-    res.json({ files });
-  } catch (err) {
-    console.error("Error listing files:", err);
-    res.status(500).json({ error: "发生未知错误", details: err.message });
-  }
+// 获取文件夹中的.txt文件
+app.get("/api/files_txt_Bhatinda", async (req, res) => {
+  const result = await getFolderFiles(TXT_FOLDER_Bhatinda, ".txt");
+  return res.status(result.statusCode).json(result);
 });
 
 // Silchar_Airport
@@ -512,32 +402,10 @@ app.get("/api/run_main_Silchar", (req, res) => {
   res.json({ message: "main.py 执行已启动", taskId });
 });
 
-// 获取 .txt 文件列表，只返回文件名
-app.get("/api/files_txt_Silchar", (req, res) => {
-  try {
-    if (!fs.existsSync(TXT_FOLDER_Silchar)) {
-      return res.status(500).json({ error: "文件夹不存在" });
-    }
-
-    let files = fs
-      .readdirSync(TXT_FOLDER_Silchar)
-      .filter((f) => f.endsWith(".txt"))
-      .map((f) => f) // 只返回文件名
-      .sort((a, b) => {
-        const timeA = fs
-          .statSync(path.join(TXT_FOLDER_Silchar, a))
-          .mtime.getTime();
-        const timeB = fs
-          .statSync(path.join(TXT_FOLDER_Silchar, b))
-          .mtime.getTime();
-        return timeB - timeA; // 按修改时间降序
-      });
-
-    res.json({ files });
-  } catch (err) {
-    console.error("Error listing files:", err);
-    res.status(500).json({ error: "发生未知错误", details: err.message });
-  }
+// 获取文件夹中的.txt文件
+app.get("/api/files_txt_Silchar", async (req, res) => {
+  const result = await getFolderFiles(TXT_FOLDER_Silchar, ".txt");
+  return res.status(result.statusCode).json(result);
 });
 
 // Dehradun_Airport
@@ -590,32 +458,10 @@ app.get("/api/run_main_Dehradun", (req, res) => {
   res.json({ message: "main.py 执行已启动", taskId });
 });
 
-// 获取 .txt 文件列表，只返回文件名
-app.get("/api/files_txt_Dehradun", (req, res) => {
-  try {
-    if (!fs.existsSync(TXT_FOLDER_Dehradun)) {
-      return res.status(500).json({ error: "文件夹不存在" });
-    }
-
-    let files = fs
-      .readdirSync(TXT_FOLDER_Dehradun)
-      .filter((f) => f.endsWith(".txt"))
-      .map((f) => f) // 只返回文件名
-      .sort((a, b) => {
-        const timeA = fs
-          .statSync(path.join(TXT_FOLDER_Dehradun, a))
-          .mtime.getTime();
-        const timeB = fs
-          .statSync(path.join(TXT_FOLDER_Dehradun, b))
-          .mtime.getTime();
-        return timeB - timeA; // 按修改时间降序
-      });
-
-    res.json({ files });
-  } catch (err) {
-    console.error("Error listing files:", err);
-    res.status(500).json({ error: "发生未知错误", details: err.message });
-  }
+// 获取文件夹中的.txt文件
+app.get("/api/files_txt_Dehradun", async (req, res) => {
+  const result = await getFolderFiles(TXT_FOLDER_Dehradun, ".txt");
+  return res.status(result.statusCode).json(result);
 });
 
 // Leh_Airport
@@ -667,28 +513,10 @@ app.get("/api/run_main_Leh", (req, res) => {
   res.json({ message: "main.py 执行已启动", taskId });
 });
 
-// 获取 .txt 文件列表，只返回文件名
-app.get("/api/files_txt_Leh", (req, res) => {
-  try {
-    if (!fs.existsSync(TXT_FOLDER_Leh)) {
-      return res.status(500).json({ error: "文件夹不存在" });
-    }
-
-    let files = fs
-      .readdirSync(TXT_FOLDER_Leh)
-      .filter((f) => f.endsWith(".txt"))
-      .map((f) => f) // 只返回文件名
-      .sort((a, b) => {
-        const timeA = fs.statSync(path.join(TXT_FOLDER_Leh, a)).mtime.getTime();
-        const timeB = fs.statSync(path.join(TXT_FOLDER_Leh, b)).mtime.getTime();
-        return timeB - timeA; // 按修改时间降序
-      });
-
-    res.json({ files });
-  } catch (err) {
-    console.error("Error listing files:", err);
-    res.status(500).json({ error: "发生未知错误", details: err.message });
-  }
+// 获取文件夹中的.txt文件
+app.get("/api/files_txt_Leh", async (req, res) => {
+  const result = await getFolderFiles(TXT_FOLDER_Leh, ".txt");
+  return res.status(result.statusCode).json(result);
 });
 
 // Lengpui_Airport
@@ -741,32 +569,10 @@ app.get("/api/run_main_Lengpui", (req, res) => {
   res.json({ message: "main.py 执行已启动", taskId });
 });
 
-// 获取 .txt 文件列表，只返回文件名
-app.get("/api/files_txt_Lengpui", (req, res) => {
-  try {
-    if (!fs.existsSync(TXT_FOLDER_Lengpui)) {
-      return res.status(500).json({ error: "文件夹不存在" });
-    }
-
-    let files = fs
-      .readdirSync(TXT_FOLDER_Lengpui)
-      .filter((f) => f.endsWith(".txt"))
-      .map((f) => f) // 只返回文件名
-      .sort((a, b) => {
-        const timeA = fs
-          .statSync(path.join(TXT_FOLDER_Lengpui, a))
-          .mtime.getTime();
-        const timeB = fs
-          .statSync(path.join(TXT_FOLDER_Lengpui, b))
-          .mtime.getTime();
-        return timeB - timeA; // 按修改时间降序
-      });
-
-    res.json({ files });
-  } catch (err) {
-    console.error("Error listing files:", err);
-    res.status(500).json({ error: "发生未知错误", details: err.message });
-  }
+// 获取文件夹中的.txt文件
+app.get("/api/files_txt_Lengpui", async (req, res) => {
+  const result = await getFolderFiles(TXT_FOLDER_Lengpui, ".txt");
+  return res.status(result.statusCode).json(result);
 });
 
 // Chabua_Air_Force_Station
@@ -821,32 +627,10 @@ app.get("/api/run_main_Chabua", (req, res) => {
   res.json({ message: "main.py 执行已启动", taskId });
 });
 
-// 获取 .txt 文件列表，只返回文件名
-app.get("/api/files_txt_Chabua", (req, res) => {
-  try {
-    if (!fs.existsSync(TXT_FOLDER_Chabua)) {
-      return res.status(500).json({ error: "文件夹不存在" });
-    }
-
-    let files = fs
-      .readdirSync(TXT_FOLDER_Chabua)
-      .filter((f) => f.endsWith(".txt"))
-      .map((f) => f) // 只返回文件名
-      .sort((a, b) => {
-        const timeA = fs
-          .statSync(path.join(TXT_FOLDER_Chabua, a))
-          .mtime.getTime();
-        const timeB = fs
-          .statSync(path.join(TXT_FOLDER_Chabua, b))
-          .mtime.getTime();
-        return timeB - timeA; // 按修改时间降序
-      });
-
-    res.json({ files });
-  } catch (err) {
-    console.error("Error listing files:", err);
-    res.status(500).json({ error: "发生未知错误", details: err.message });
-  }
+// 获取文件夹中的.txt文件
+app.get("/api/files_txt_Chabua", async (req, res) => {
+  const result = await getFolderFiles(TXT_FOLDER_Chabua, ".txt");
+  return res.status(result.statusCode).json(result);
 });
 
 // Shilong_Airport
@@ -899,32 +683,10 @@ app.get("/api/run_main_Shilong", (req, res) => {
   res.json({ message: "main.py 执行已启动", taskId });
 });
 
-// 获取 .txt 文件列表，只返回文件名
-app.get("/api/files_txt_Shilong", (req, res) => {
-  try {
-    if (!fs.existsSync(TXT_FOLDER_Shilong)) {
-      return res.status(500).json({ error: "文件夹不存在" });
-    }
-
-    let files = fs
-      .readdirSync(TXT_FOLDER_Shilong)
-      .filter((f) => f.endsWith(".txt"))
-      .map((f) => f) // 只返回文件名
-      .sort((a, b) => {
-        const timeA = fs
-          .statSync(path.join(TXT_FOLDER_Shilong, a))
-          .mtime.getTime();
-        const timeB = fs
-          .statSync(path.join(TXT_FOLDER_Shilong, b))
-          .mtime.getTime();
-        return timeB - timeA; // 按修改时间降序
-      });
-
-    res.json({ files });
-  } catch (err) {
-    console.error("Error listing files:", err);
-    res.status(500).json({ error: "发生未知错误", details: err.message });
-  }
+// 获取文件夹中的.txt文件
+app.get("/api/files_txt_Shilong", async (req, res) => {
+  const result = await getFolderFiles(TXT_FOLDER_Shilong, ".txt");
+  return res.status(result.statusCode).json(result);
 });
 
 // Pakistan_Lake
@@ -1089,60 +851,16 @@ app.get("/api/run-main_bishengjiao", (req, res) => {
   res.json({ message: "main.py 执行已启动", taskId });
 });
 
-// 获取 .txt 文件列表，只返回文件名
-app.get("/api/baijiao_finish_txt", (req, res) => {
-  try {
-    if (!fs.existsSync(Baijiao_OUTPUT_PATH)) {
-      return res.status(500).json({ error: "文件夹不存在" });
-    }
-
-    let files = fs
-      .readdirSync(Baijiao_OUTPUT_PATH)
-      .filter((f) => f.endsWith(".txt"))
-      .map((f) => f) // 只返回文件名
-      .sort((a, b) => {
-        const timeA = fs
-          .statSync(path.join(Baijiao_OUTPUT_PATH, a))
-          .mtime.getTime();
-        const timeB = fs
-          .statSync(path.join(Baijiao_OUTPUT_PATH, b))
-          .mtime.getTime();
-        return timeB - timeA; // 按修改时间降序
-      });
-
-    res.json({ files });
-  } catch (err) {
-    console.error("Error listing files:", err);
-    res.status(500).json({ error: "发生未知错误", details: err.message });
-  }
+// 获取文件夹中的.txt文件
+app.get("/api/baijiao_finish_txt", async (req, res) => {
+  const result = await getFolderFiles(Baijiao_OUTPUT_PATH, ".txt");
+  return res.status(result.statusCode).json(result);
 });
 
-// 获取 .txt 文件列表，只返回文件名
-app.get("/api/bishengjiao_finish_txt", (req, res) => {
-  try {
-    if (!fs.existsSync(Bishengjiao_OUTPUT_PATH)) {
-      return res.status(500).json({ error: "文件夹不存在" });
-    }
-
-    let files = fs
-      .readdirSync(Bishengjiao_OUTPUT_PATH)
-      .filter((f) => f.endsWith(".txt"))
-      .map((f) => f) // 只返回文件名
-      .sort((a, b) => {
-        const timeA = fs
-          .statSync(path.join(Bishengjiao_OUTPUT_PATH, a))
-          .mtime.getTime();
-        const timeB = fs
-          .statSync(path.join(Bishengjiao_OUTPUT_PATH, b))
-          .mtime.getTime();
-        return timeB - timeA; // 按修改时间降序
-      });
-
-    res.json({ files });
-  } catch (err) {
-    console.error("Error listing files:", err);
-    res.status(500).json({ error: "发生未知错误", details: err.message });
-  }
+// 获取文件夹中的.txt文件
+app.get("/api/bishengjiao_finish_txt", async (req, res) => {
+  const result = await getFolderFiles(Bishengjiao_OUTPUT_PATH, ".txt");
+  return res.status(result.statusCode).json(result);
 });
 
 const SK10_OUTPUT_PATH = "../public/sk10_platform/output";
@@ -1200,32 +918,10 @@ app.get("/api/run-main_offshore_platform", (req, res) => {
   res.json({ message: "main.py 执行已启动", taskId });
 });
 
-// 获取 .txt 文件列表，只返回文件名
-app.get("/api/sk10_platform_finish_txt", (req, res) => {
-  try {
-    if (!fs.existsSync(SK10_OUTPUT_PATH)) {
-      return res.status(500).json({ error: "文件夹不存在" });
-    }
-
-    let files = fs
-      .readdirSync(SK10_OUTPUT_PATH)
-      .filter((f) => f.endsWith(".txt"))
-      .map((f) => f) // 只返回文件名
-      .sort((a, b) => {
-        const timeA = fs
-          .statSync(path.join(SK10_OUTPUT_PATH, a))
-          .mtime.getTime();
-        const timeB = fs
-          .statSync(path.join(SK10_OUTPUT_PATH, b))
-          .mtime.getTime();
-        return timeB - timeA; // 按修改时间降序
-      });
-
-    res.json({ files });
-  } catch (err) {
-    console.error("Error listing files:", err);
-    res.status(500).json({ error: "发生未知错误", details: err.message });
-  }
+// 获取文件夹中的.txt文件
+app.get("/api/sk10_platform_finish_txt", async (req, res) => {
+  const result = await getFolderFiles(SK10_OUTPUT_PATH, ".txt");
+  return res.status(result.statusCode).json(result);
 });
 
 // all
