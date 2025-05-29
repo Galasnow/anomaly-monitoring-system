@@ -70,6 +70,61 @@ function getFolderFiles(folderPath, suffix) {
   }
 }
 
+/**
+ * 异步运行 main.py 脚本
+ * @param {string} pythonScriptPath - main.py 脚本的完整路径
+ * @param {object} taskProgress - 任务进度跟踪对象
+ * @returns {Promise<object>} 返回包含任务ID的Promise
+ */
+function runMainPythonScript(pythonScriptPath, taskProgress) {
+  return new Promise((resolve) => {
+    const taskId = Date.now(); // 生成唯一任务ID
+    taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度
+
+    console.log(`Starting main.py with task ID: ${taskId}`);
+
+    const process = spawn("python", [pythonScriptPath], {
+      encoding: "utf-8",
+    });
+
+    // 捕获 Python 脚本的输出
+    process.stdout.on("data", (data) => {
+      console.log(`stdout: ${data.toString()}`);
+      const match = data.toString().match(/Progress:\s(\d+)%/);
+      if (match) {
+        taskProgress[taskId].progress = parseInt(match[1]);
+      }
+    });
+
+    // 捕获 Python 脚本的错误
+    process.stderr.on("data", (data) => {
+      console.error(`stderr: ${data.toString()}`);
+    });
+
+    // 监听进程结束
+    process.on("close", (code) => {
+      if (code === 0) {
+        taskProgress[taskId].status = "completed";
+        console.log(`main.py 执行成功，任务ID: ${taskId}`);
+      } else {
+        taskProgress[taskId].status = "failed";
+        console.error(`main.py 执行失败，任务ID: ${taskId}`);
+      }
+      resolve({
+        taskId,
+        status: code === 0 ? "completed" : "failed",
+        message: code === 0 ? "main.py 执行成功" : "main.py 执行失败",
+      });
+    });
+
+    // 立即返回任务ID（不等待进程结束）
+    resolve({
+      message: "main.py 执行已启动",
+      taskId,
+    });
+  });
+}
+
 // Taiwan_Port
 // Gaoxiong_Port
 const TIF_FOLDER_Gaoxiong =
@@ -84,41 +139,17 @@ app.get("/api/files_Gaoxiong", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run_main_Gaoxiong", (req, res) => {
-  const taskId = Date.now(); // 生成唯一任务ID
-  taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
-
-  console.log(`Starting main.py with task ID: ${taskId}`);
-
-  const process = spawn("python", [MAIN_PY_PATH_Gaoxiong]);
-
-  // 捕获 Python 脚本的输出
-  process.stdout.on("data", (data) => {
-    console.log(`stdout: ${data.toString()}`);
-    // 假设 main.py 输出类似：'Progress: 20%'
-    const match = data.toString().match(/Progress:\s(\d+)%/);
-    if (match) {
-      taskProgress[taskId].progress = parseInt(match[1]);
-    }
-  });
-
-  // 捕获 Python 脚本的错误
-  process.stderr.on("data", (data) => {
-    console.error(`stderr: ${data.toString()}`);
-  });
-
-  // 监听进程结束
-  process.on("close", (code) => {
-    if (code === 0) {
-      taskProgress[taskId].status = "completed"; // 更新任务状态
-      console.log(`main.py 执行成功，任务ID: ${taskId}`);
-    } else {
-      taskProgress[taskId].status = "failed"; // 更新任务状态为失败
-      console.error(`main.py 执行失败，任务ID: ${taskId}`);
-    }
-  });
-
-  res.json({ message: "main.py 执行已启动", taskId });
+app.get("/api/run-main_Gaoxiong", async (req, res) => {
+  try {
+    const result = await runMainPythonScript(
+      MAIN_PY_PATH_Gaoxiong,
+      taskProgress
+    );
+    res.json(result);
+  } catch (error) {
+    console.error("执行失败:", error);
+    res.status(500).json({ error: "执行过程中出错" });
+  }
 });
 
 // 获取文件夹中的.txt文件
@@ -139,41 +170,14 @@ app.get("/api/files_Taibei", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run_main_Taibei", (req, res) => {
-  const taskId = Date.now(); // 生成唯一任务ID
-  taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
-
-  console.log(`Starting main.py with task ID: ${taskId}`);
-
-  const process = spawn("python", [MAIN_PY_PATH_Taibei]);
-
-  // 捕获 Python 脚本的输出
-  process.stdout.on("data", (data) => {
-    console.log(`stdout: ${data.toString()}`);
-    // 假设 main.py 输出类似：'Progress: 20%'
-    const match = data.toString().match(/Progress:\s(\d+)%/);
-    if (match) {
-      taskProgress[taskId].progress = parseInt(match[1]);
-    }
-  });
-
-  // 捕获 Python 脚本的错误
-  process.stderr.on("data", (data) => {
-    console.error(`stderr: ${data.toString()}`);
-  });
-
-  // 监听进程结束
-  process.on("close", (code) => {
-    if (code === 0) {
-      taskProgress[taskId].status = "completed"; // 更新任务状态
-      console.log(`main.py 执行成功，任务ID: ${taskId}`);
-    } else {
-      taskProgress[taskId].status = "failed"; // 更新任务状态为失败
-      console.error(`main.py 执行失败，任务ID: ${taskId}`);
-    }
-  });
-
-  res.json({ message: "main.py 执行已启动", taskId });
+app.get("/api/run-main_Taibei", async (req, res) => {
+  try {
+    const result = await runMainPythonScript(MAIN_PY_PATH_Taibei, taskProgress);
+    res.json(result);
+  } catch (error) {
+    console.error("执行失败:", error);
+    res.status(500).json({ error: "执行过程中出错" });
+  }
 });
 
 // 获取文件夹中的.txt文件
@@ -195,41 +199,14 @@ app.get("/api/files_Durbuk", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run_main_Durbuk", (req, res) => {
-  const taskId = Date.now(); // 生成唯一任务ID
-  taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
-
-  console.log(`Starting main.py with task ID: ${taskId}`);
-
-  const process = spawn("python", [MAIN_PY_PATH_Durbuk]);
-
-  // 捕获 Python 脚本的输出
-  process.stdout.on("data", (data) => {
-    console.log(`stdout: ${data.toString()}`);
-    // 假设 main.py 输出类似：'Progress: 20%'
-    const match = data.toString().match(/Progress:\s(\d+)%/);
-    if (match) {
-      taskProgress[taskId].progress = parseInt(match[1]);
-    }
-  });
-
-  // 捕获 Python 脚本的错误
-  process.stderr.on("data", (data) => {
-    console.error(`stderr: ${data.toString()}`);
-  });
-
-  // 监听进程结束
-  process.on("close", (code) => {
-    if (code === 0) {
-      taskProgress[taskId].status = "completed"; // 更新任务状态
-      console.log(`main.py 执行成功，任务ID: ${taskId}`);
-    } else {
-      taskProgress[taskId].status = "failed"; // 更新任务状态为失败
-      console.error(`main.py 执行失败，任务ID: ${taskId}`);
-    }
-  });
-
-  res.json({ message: "main.py 执行已启动", taskId });
+app.get("/api/run-main_Durbuk", async (req, res) => {
+  try {
+    const result = await runMainPythonScript(MAIN_PY_PATH_Durbuk, taskProgress);
+    res.json(result);
+  } catch (error) {
+    console.error("执行失败:", error);
+    res.status(500).json({ error: "执行过程中出错" });
+  }
 });
 
 // 获取文件夹中的.txt文件
@@ -250,41 +227,17 @@ app.get("/api/files_Chummur", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run_main_Chummur", (req, res) => {
-  const taskId = Date.now(); // 生成唯一任务ID
-  taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
-
-  console.log(`Starting main.py with task ID: ${taskId}`);
-
-  const process = spawn("python", [MAIN_PY_PATH_Chummur]);
-
-  // 捕获 Python 脚本的输出
-  process.stdout.on("data", (data) => {
-    console.log(`stdout: ${data.toString()}`);
-    // 假设 main.py 输出类似：'Progress: 20%'
-    const match = data.toString().match(/Progress:\s(\d+)%/);
-    if (match) {
-      taskProgress[taskId].progress = parseInt(match[1]);
-    }
-  });
-
-  // 捕获 Python 脚本的错误
-  process.stderr.on("data", (data) => {
-    console.error(`stderr: ${data.toString()}`);
-  });
-
-  // 监听进程结束
-  process.on("close", (code) => {
-    if (code === 0) {
-      taskProgress[taskId].status = "completed"; // 更新任务状态
-      console.log(`main.py 执行成功，任务ID: ${taskId}`);
-    } else {
-      taskProgress[taskId].status = "failed"; // 更新任务状态为失败
-      console.error(`main.py 执行失败，任务ID: ${taskId}`);
-    }
-  });
-
-  res.json({ message: "main.py 执行已启动", taskId });
+app.get("/api/run-main_Chummur", async (req, res) => {
+  try {
+    const result = await runMainPythonScript(
+      MAIN_PY_PATH_Chummur,
+      taskProgress
+    );
+    res.json(result);
+  } catch (error) {
+    console.error("执行失败:", error);
+    res.status(500).json({ error: "执行过程中出错" });
+  }
 });
 
 // 获取文件夹中的.txt文件
@@ -309,41 +262,17 @@ app.get("/api/files_Bhatinda", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run_main_Bhatinda", (req, res) => {
-  const taskId = Date.now(); // 生成唯一任务ID
-  taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
-
-  console.log(`Starting main.py with task ID: ${taskId}`);
-
-  const process = spawn("python", [MAIN_PY_PATH_Bhatinda]);
-
-  // 捕获 Python 脚本的输出
-  process.stdout.on("data", (data) => {
-    console.log(`stdout: ${data.toString()}`);
-    // 假设 main.py 输出类似：'Progress: 20%'
-    const match = data.toString().match(/Progress:\s(\d+)%/);
-    if (match) {
-      taskProgress[taskId].progress = parseInt(match[1]);
-    }
-  });
-
-  // 捕获 Python 脚本的错误
-  process.stderr.on("data", (data) => {
-    console.error(`stderr: ${data.toString()}`);
-  });
-
-  // 监听进程结束
-  process.on("close", (code) => {
-    if (code === 0) {
-      taskProgress[taskId].status = "completed"; // 更新任务状态
-      console.log(`main.py 执行成功，任务ID: ${taskId}`);
-    } else {
-      taskProgress[taskId].status = "failed"; // 更新任务状态为失败
-      console.error(`main.py 执行失败，任务ID: ${taskId}`);
-    }
-  });
-
-  res.json({ message: "main.py 执行已启动", taskId });
+app.get("/api/run-main_Bhatinda", async (req, res) => {
+  try {
+    const result = await runMainPythonScript(
+      MAIN_PY_PATH_Bhatinda,
+      taskProgress
+    );
+    res.json(result);
+  } catch (error) {
+    console.error("执行失败:", error);
+    res.status(500).json({ error: "执行过程中出错" });
+  }
 });
 
 // 获取文件夹中的.txt文件
@@ -365,41 +294,17 @@ app.get("/api/files_Silchar", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run_main_Silchar", (req, res) => {
-  const taskId = Date.now(); // 生成唯一任务ID
-  taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
-
-  console.log(`Starting main.py with task ID: ${taskId}`);
-
-  const process = spawn("python", [MAIN_PY_PATH_Silchar]);
-
-  // 捕获 Python 脚本的输出
-  process.stdout.on("data", (data) => {
-    console.log(`stdout: ${data.toString()}`);
-    // 假设 main.py 输出类似：'Progress: 20%'
-    const match = data.toString().match(/Progress:\s(\d+)%/);
-    if (match) {
-      taskProgress[taskId].progress = parseInt(match[1]);
-    }
-  });
-
-  // 捕获 Python 脚本的错误
-  process.stderr.on("data", (data) => {
-    console.error(`stderr: ${data.toString()}`);
-  });
-
-  // 监听进程结束
-  process.on("close", (code) => {
-    if (code === 0) {
-      taskProgress[taskId].status = "completed"; // 更新任务状态
-      console.log(`main.py 执行成功，任务ID: ${taskId}`);
-    } else {
-      taskProgress[taskId].status = "failed"; // 更新任务状态为失败
-      console.error(`main.py 执行失败，任务ID: ${taskId}`);
-    }
-  });
-
-  res.json({ message: "main.py 执行已启动", taskId });
+app.get("/api/run-main_Silchar", async (req, res) => {
+  try {
+    const result = await runMainPythonScript(
+      MAIN_PY_PATH_Silchar,
+      taskProgress
+    );
+    res.json(result);
+  } catch (error) {
+    console.error("执行失败:", error);
+    res.status(500).json({ error: "执行过程中出错" });
+  }
 });
 
 // 获取文件夹中的.txt文件
@@ -421,41 +326,17 @@ app.get("/api/files_Dehradun", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run_main_Dehradun", (req, res) => {
-  const taskId = Date.now(); // 生成唯一任务ID
-  taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
-
-  console.log(`Starting main.py with task ID: ${taskId}`);
-
-  const process = spawn("python", [MAIN_PY_PATH_Dehradun]);
-
-  // 捕获 Python 脚本的输出
-  process.stdout.on("data", (data) => {
-    console.log(`stdout: ${data.toString()}`);
-    // 假设 main.py 输出类似：'Progress: 20%'
-    const match = data.toString().match(/Progress:\s(\d+)%/);
-    if (match) {
-      taskProgress[taskId].progress = parseInt(match[1]);
-    }
-  });
-
-  // 捕获 Python 脚本的错误
-  process.stderr.on("data", (data) => {
-    console.error(`stderr: ${data.toString()}`);
-  });
-
-  // 监听进程结束
-  process.on("close", (code) => {
-    if (code === 0) {
-      taskProgress[taskId].status = "completed"; // 更新任务状态
-      console.log(`main.py 执行成功，任务ID: ${taskId}`);
-    } else {
-      taskProgress[taskId].status = "failed"; // 更新任务状态为失败
-      console.error(`main.py 执行失败，任务ID: ${taskId}`);
-    }
-  });
-
-  res.json({ message: "main.py 执行已启动", taskId });
+app.get("/api/run-main_Dehradun", async (req, res) => {
+  try {
+    const result = await runMainPythonScript(
+      MAIN_PY_PATH_Dehradun,
+      taskProgress
+    );
+    res.json(result);
+  } catch (error) {
+    console.error("执行失败:", error);
+    res.status(500).json({ error: "执行过程中出错" });
+  }
 });
 
 // 获取文件夹中的.txt文件
@@ -476,41 +357,14 @@ app.get("/api/files_Leh", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run_main_Leh", (req, res) => {
-  const taskId = Date.now(); // 生成唯一任务ID
-  taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
-
-  console.log(`Starting main.py with task ID: ${taskId}`);
-
-  const process = spawn("python", [MAIN_PY_PATH_Leh]);
-
-  // 捕获 Python 脚本的输出
-  process.stdout.on("data", (data) => {
-    console.log(`stdout: ${data.toString()}`);
-    // 假设 main.py 输出类似：'Progress: 20%'
-    const match = data.toString().match(/Progress:\s(\d+)%/);
-    if (match) {
-      taskProgress[taskId].progress = parseInt(match[1]);
-    }
-  });
-
-  // 捕获 Python 脚本的错误
-  process.stderr.on("data", (data) => {
-    console.error(`stderr: ${data.toString()}`);
-  });
-
-  // 监听进程结束
-  process.on("close", (code) => {
-    if (code === 0) {
-      taskProgress[taskId].status = "completed"; // 更新任务状态
-      console.log(`main.py 执行成功，任务ID: ${taskId}`);
-    } else {
-      taskProgress[taskId].status = "failed"; // 更新任务状态为失败
-      console.error(`main.py 执行失败，任务ID: ${taskId}`);
-    }
-  });
-
-  res.json({ message: "main.py 执行已启动", taskId });
+app.get("/api/run-main_Leh", async (req, res) => {
+  try {
+    const result = await runMainPythonScript(MAIN_PY_PATH_Leh, taskProgress);
+    res.json(result);
+  } catch (error) {
+    console.error("执行失败:", error);
+    res.status(500).json({ error: "执行过程中出错" });
+  }
 });
 
 // 获取文件夹中的.txt文件
@@ -532,41 +386,17 @@ app.get("/api/files_Lengpui", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run_main_Lengpui", (req, res) => {
-  const taskId = Date.now(); // 生成唯一任务ID
-  taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
-
-  console.log(`Starting main.py with task ID: ${taskId}`);
-
-  const process = spawn("python", [MAIN_PY_PATH_Lengpui]);
-
-  // 捕获 Python 脚本的输出
-  process.stdout.on("data", (data) => {
-    console.log(`stdout: ${data.toString()}`);
-    // 假设 main.py 输出类似：'Progress: 20%'
-    const match = data.toString().match(/Progress:\s(\d+)%/);
-    if (match) {
-      taskProgress[taskId].progress = parseInt(match[1]);
-    }
-  });
-
-  // 捕获 Python 脚本的错误
-  process.stderr.on("data", (data) => {
-    console.error(`stderr: ${data.toString()}`);
-  });
-
-  // 监听进程结束
-  process.on("close", (code) => {
-    if (code === 0) {
-      taskProgress[taskId].status = "completed"; // 更新任务状态
-      console.log(`main.py 执行成功，任务ID: ${taskId}`);
-    } else {
-      taskProgress[taskId].status = "failed"; // 更新任务状态为失败
-      console.error(`main.py 执行失败，任务ID: ${taskId}`);
-    }
-  });
-
-  res.json({ message: "main.py 执行已启动", taskId });
+app.get("/api/run-main_Lengpui", async (req, res) => {
+  try {
+    const result = await runMainPythonScript(
+      MAIN_PY_PATH_Lengpui,
+      taskProgress
+    );
+    res.json(result);
+  } catch (error) {
+    console.error("执行失败:", error);
+    res.status(500).json({ error: "执行过程中出错" });
+  }
 });
 
 // 获取文件夹中的.txt文件
@@ -590,41 +420,14 @@ app.get("/api/files_Chabua", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run_main_Chabua", (req, res) => {
-  const taskId = Date.now(); // 生成唯一任务ID
-  taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
-
-  console.log(`Starting main.py with task ID: ${taskId}`);
-
-  const process = spawn("python", [MAIN_PY_PATH_Chabua]);
-
-  // 捕获 Python 脚本的输出
-  process.stdout.on("data", (data) => {
-    console.log(`stdout: ${data.toString()}`);
-    // 假设 main.py 输出类似：'Progress: 20%'
-    const match = data.toString().match(/Progress:\s(\d+)%/);
-    if (match) {
-      taskProgress[taskId].progress = parseInt(match[1]);
-    }
-  });
-
-  // 捕获 Python 脚本的错误
-  process.stderr.on("data", (data) => {
-    console.error(`stderr: ${data.toString()}`);
-  });
-
-  // 监听进程结束
-  process.on("close", (code) => {
-    if (code === 0) {
-      taskProgress[taskId].status = "completed"; // 更新任务状态
-      console.log(`main.py 执行成功，任务ID: ${taskId}`);
-    } else {
-      taskProgress[taskId].status = "failed"; // 更新任务状态为失败
-      console.error(`main.py 执行失败，任务ID: ${taskId}`);
-    }
-  });
-
-  res.json({ message: "main.py 执行已启动", taskId });
+app.get("/api/run-main_Chabua", async (req, res) => {
+  try {
+    const result = await runMainPythonScript(MAIN_PY_PATH_Chabua, taskProgress);
+    res.json(result);
+  } catch (error) {
+    console.error("执行失败:", error);
+    res.status(500).json({ error: "执行过程中出错" });
+  }
 });
 
 // 获取文件夹中的.txt文件
@@ -646,41 +449,17 @@ app.get("/api/files_Shilong", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run_main_Shilong", (req, res) => {
-  const taskId = Date.now(); // 生成唯一任务ID
-  taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
-
-  console.log(`Starting main.py with task ID: ${taskId}`);
-
-  const process = spawn("python", [MAIN_PY_PATH_Shilong]);
-
-  // 捕获 Python 脚本的输出
-  process.stdout.on("data", (data) => {
-    console.log(`stdout: ${data.toString()}`);
-    // 假设 main.py 输出类似：'Progress: 20%'
-    const match = data.toString().match(/Progress:\s(\d+)%/);
-    if (match) {
-      taskProgress[taskId].progress = parseInt(match[1]);
-    }
-  });
-
-  // 捕获 Python 脚本的错误
-  process.stderr.on("data", (data) => {
-    console.error(`stderr: ${data.toString()}`);
-  });
-
-  // 监听进程结束
-  process.on("close", (code) => {
-    if (code === 0) {
-      taskProgress[taskId].status = "completed"; // 更新任务状态
-      console.log(`main.py 执行成功，任务ID: ${taskId}`);
-    } else {
-      taskProgress[taskId].status = "failed"; // 更新任务状态为失败
-      console.error(`main.py 执行失败，任务ID: ${taskId}`);
-    }
-  });
-
-  res.json({ message: "main.py 执行已启动", taskId });
+app.get("/api/run-main_Shilong", async (req, res) => {
+  try {
+    const result = await runMainPythonScript(
+      MAIN_PY_PATH_Shilong,
+      taskProgress
+    );
+    res.json(result);
+  } catch (error) {
+    console.error("执行失败:", error);
+    res.status(500).json({ error: "执行过程中出错" });
+  }
 });
 
 // 获取文件夹中的.txt文件
@@ -779,76 +558,31 @@ app.get("/api/files_bishengjiao", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run-main_baijiao", (req, res) => {
-  const taskId = Date.now(); // 生成唯一任务ID
-  taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
-
-  console.log(`Starting main.py with task ID: ${taskId}`);
-
-  const process = spawn("python", [Baijiao_MAIN_PY_PATH]);
-
-  // 捕获 Python 脚本的输出
-  process.stdout.on("data", (data) => {
-    console.log(`stdout: ${data.toString()}`);
-    // 假设 main.py 输出类似：'Progress: 20%'
-    const match = data.toString().match(/Progress:\s(\d+)%/);
-    if (match) {
-      taskProgress[taskId].progress = parseInt(match[1]);
-    }
-  });
-  // 捕获 Python 脚本的错误
-  process.stderr.on("data", (data) => {
-    console.error(`stderr: ${data.toString()}`);
-  });
-
-  // 监听进程结束
-  process.on("close", (code) => {
-    if (code === 0) {
-      taskProgress[taskId].status = "completed"; // 更新任务状态
-      console.log(`main.py 执行成功，任务ID: ${taskId}`);
-    } else {
-      taskProgress[taskId].status = "failed"; // 更新任务状态为失败
-      console.error(`main.py 执行失败，任务ID: ${taskId}`);
-    }
-  });
+app.get("/api/run-main_baijiao", async (req, res) => {
+  try {
+    const result = await runMainPythonScript(
+      Baijiao_MAIN_PY_PATH,
+      taskProgress
+    );
+    res.json(result);
+  } catch (error) {
+    console.error("执行失败:", error);
+    res.status(500).json({ error: "执行过程中出错" });
+  }
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run-main_bishengjiao", (req, res) => {
-  const taskId = Date.now(); // 生成唯一任务ID
-  taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
-
-  console.log(`Starting main.py with task ID: ${taskId}`);
-
-  const process = spawn("python", [Bishengjiao_MAIN_PY_PATH]);
-
-  // 捕获 Python 脚本的输出
-  process.stdout.on("data", (data) => {
-    console.log(`stdout: ${data.toString()}`);
-    // 假设 main.py 输出类似：'Progress: 20%'
-    const match = data.toString().match(/Progress:\s(\d+)%/);
-    if (match) {
-      taskProgress[taskId].progress = parseInt(match[1]);
-    }
-  });
-
-  // 捕获 Python 脚本的错误
-  process.stderr.on("data", (data) => {
-    console.error(`stderr: ${data.toString()}`);
-  });
-
-  // 监听进程结束
-  process.on("close", (code) => {
-    if (code === 0) {
-      taskProgress[taskId].status = "completed"; // 更新任务状态
-      console.log(`main.py 执行成功，任务ID: ${taskId}`);
-    } else {
-      taskProgress[taskId].status = "failed"; // 更新任务状态为失败
-      console.error(`main.py 执行失败，任务ID: ${taskId}`);
-    }
-  });
-
-  res.json({ message: "main.py 执行已启动", taskId });
+app.get("/api/run-main_bishengjiao", async (req, res) => {
+  try {
+    const result = await runMainPythonScript(
+      Bishengjiao_MAIN_PY_PATH,
+      taskProgress
+    );
+    res.json(result);
+  } catch (error) {
+    console.error("执行失败:", error);
+    res.status(500).json({ error: "执行过程中出错" });
+  }
 });
 
 // 获取文件夹中的.txt文件
@@ -881,41 +615,17 @@ app.get("/api/files_sk10_gaofen", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run-main_offshore_platform", (req, res) => {
-  const taskId = Date.now(); // 生成唯一任务ID
-  taskProgress[taskId] = { progress: 0, status: "running" }; // 初始化任务进度为0
-
-  console.log(`Starting main.py with task ID: ${taskId}`);
-
-  const process = spawn("python", [OFFSHORE_PLATFORM_MAIN_PY_PATH]);
-
-  // 捕获 Python 脚本的输出
-  process.stdout.on("data", (data) => {
-    console.log(`stdout: ${data.toString()}`);
-    // 假设 main.py 输出类似：'Progress: 20%'
-    const match = data.toString().match(/Progress:\s(\d+)%/);
-    if (match) {
-      taskProgress[taskId].progress = parseInt(match[1]);
-    }
-  });
-
-  // 捕获 Python 脚本的错误
-  process.stderr.on("data", (data) => {
-    console.error(`stderr: ${data.toString()}`);
-  });
-
-  // 监听进程结束
-  process.on("close", (code) => {
-    if (code === 0) {
-      taskProgress[taskId].status = "completed"; // 更新任务状态
-      console.log(`main.py 执行成功，任务ID: ${taskId}`);
-    } else {
-      taskProgress[taskId].status = "failed"; // 更新任务状态为失败
-      console.error(`main.py 执行失败，任务ID: ${taskId}`);
-    }
-  });
-
-  res.json({ message: "main.py 执行已启动", taskId });
+app.get("/api/run-main_offshore_platform", async (req, res) => {
+  try {
+    const result = await runMainPythonScript(
+      OFFSHORE_PLATFORM_MAIN_PY_PATH,
+      taskProgress
+    );
+    res.json(result);
+  } catch (error) {
+    console.error("执行失败:", error);
+    res.status(500).json({ error: "执行过程中出错" });
+  }
 });
 
 // 获取文件夹中的.txt文件
