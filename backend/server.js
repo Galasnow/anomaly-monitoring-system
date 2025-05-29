@@ -11,11 +11,12 @@ app.use(cors());
 let taskProgress = {};
 
 /**
- * 检查文件夹并获取.tif文件列表（同步版本）
+ * 检查文件夹并获取文件列表（同步版本）
  * @param {string} folderPath - 要检查的文件夹路径
+ * @param {string} suffix - 要检查的文件后缀
  * @returns {object} 返回结果对象
  */
-function getTifFiles(folderPath) {
+function getFolderFiles(folderPath, suffix) {
   try {
     // 检查文件夹是否存在
     if (!fs.existsSync(folderPath)) {
@@ -29,12 +30,12 @@ function getTifFiles(folderPath) {
     // 读取文件列表
     let filesList = fs
       .readdirSync(folderPath)
-      .filter((f) => f.endsWith(".tif"));
+      .filter((f) => f.endsWith(suffix));
 
     if (filesList.length == 0) {
       return {
         success: false,
-        error: "文件夹中未找到 .tif 文件",
+        error: `文件夹中未找到${suffix}文件`,
         statusCode: 404,
       };
     }
@@ -78,7 +79,7 @@ const TXT_FOLDER_Gaoxiong = "../public/01_Taiwan_Port/01_Gaoxiong_Port";
 
 // 获取文件夹中的.tif文件
 app.get("/api/files_Gaoxiong", async (req, res) => {
-  const result = await getTifFiles(TIF_FOLDER_Gaoxiong);
+  const result = await getFolderFiles(TIF_FOLDER_Gaoxiong, ".tif");
   return res.status(result.statusCode).json(result);
 });
 
@@ -155,7 +156,7 @@ const TXT_FOLDER_Taibei = "../public/01_Taiwan_Port/02_Taibei_Port";
 
 // 获取文件夹中的.tif文件
 app.get("/api/files_Taibei", async (req, res) => {
-  const result = await getTifFiles(TIF_FOLDER_Taibei);
+  const result = await getFolderFiles(TIF_FOLDER_Taibei, ".tif");
   return res.status(result.statusCode).json(result);
 });
 
@@ -233,7 +234,7 @@ const TXT_FOLDER_Durbuk = "../public/02_India_Base/01_Durbuk_Base";
 
 // 获取文件夹中的.tif文件
 app.get("/api/files_Durbuk", async (req, res) => {
-  const result = await getTifFiles(TIF_FOLDER_Durbuk);
+  const result = await getFolderFiles(TIF_FOLDER_Durbuk, ".tif");
   return res.status(result.statusCode).json(result);
 });
 
@@ -310,7 +311,7 @@ const TXT_FOLDER_Chummur = "../public/02_India_Base/02_Chummur_Base";
 
 // 获取文件夹中的.tif文件
 app.get("/api/files_Chummur", async (req, res) => {
-  const result = await getTifFiles(TIF_FOLDER_Chummur);
+  const result = await getFolderFiles(TIF_FOLDER_Chummur, ".tif");
   return res.status(result.statusCode).json(result);
 });
 
@@ -391,7 +392,7 @@ const TXT_FOLDER_Bhatinda =
 
 // 获取文件夹中的.tif文件
 app.get("/api/files_Bhatinda", async (req, res) => {
-  const result = await getTifFiles(TIF_FOLDER_Bhatinda);
+  const result = await getFolderFiles(TIF_FOLDER_Bhatinda, ".tif");
   return res.status(result.statusCode).json(result);
 });
 
@@ -469,7 +470,7 @@ const TXT_FOLDER_Silchar = "../public/03_India_Airport/02_Silchar_Base";
 
 // 获取文件夹中的.tif文件
 app.get("/api/files_Silchar", async (req, res) => {
-  const result = await getTifFiles(TIF_FOLDER_Silchar);
+  const result = await getFolderFiles(TIF_FOLDER_Silchar, ".tif");
   return res.status(result.statusCode).json(result);
 });
 
@@ -547,7 +548,7 @@ const TXT_FOLDER_Dehradun = "../public/03_India_Airport/03_Dehradun_Airport";
 
 // 获取文件夹中的.tif文件
 app.get("/api/files_Dehradun", async (req, res) => {
-  const result = await getTifFiles(TIF_FOLDER_Dehradun);
+  const result = await getFolderFiles(TIF_FOLDER_Dehradun, ".tif");
   return res.status(result.statusCode).json(result);
 });
 
@@ -624,7 +625,7 @@ const TXT_FOLDER_Leh = "../public/03_India_Airport/04_Leh_Airport";
 
 // 获取文件夹中的.tif文件
 app.get("/api/files_Leh", async (req, res) => {
-  const result = await getTifFiles(TIF_FOLDER_Leh);
+  const result = await getFolderFiles(TIF_FOLDER_Leh, ".tif");
   return res.status(result.statusCode).json(result);
 });
 
@@ -698,7 +699,7 @@ const TXT_FOLDER_Lengpui = "../public/03_India_Airport/05_Lengpui_Airport";
 
 // 获取文件夹中的.tif文件
 app.get("/api/files_Lengpui", async (req, res) => {
-  const result = await getTifFiles(TIF_FOLDER_Lengpui);
+  const result = await getFolderFiles(TIF_FOLDER_Lengpui, ".tif");
   return res.status(result.statusCode).json(result);
 });
 
@@ -778,7 +779,7 @@ const TXT_FOLDER_Chabua =
 
 // 获取文件夹中的.tif文件
 app.get("/api/files_Chabua", async (req, res) => {
-  const result = await getTifFiles(TIF_FOLDER_Chabua);
+  const result = await getFolderFiles(TIF_FOLDER_Chabua, ".tif");
   return res.status(result.statusCode).json(result);
 });
 
@@ -856,7 +857,7 @@ const TXT_FOLDER_Shilong = "../public/03_India_Airport/07_Shilong_Airport";
 
 // 获取文件夹中的.tif文件
 app.get("/api/files_Shilong", async (req, res) => {
-  const result = await getTifFiles(TIF_FOLDER_Shilong);
+  const result = await getFolderFiles(TIF_FOLDER_Shilong, ".tif");
   return res.status(result.statusCode).json(result);
 });
 
@@ -933,7 +934,7 @@ const TIF_FOLDER_Hassanabad =
 
 // 获取文件夹中的.tif文件
 app.get("/api/files_Hassanabad", async (req, res) => {
-  const result = await getTifFiles(TIF_FOLDER_Hassanabad);
+  const result = await getFolderFiles(TIF_FOLDER_Hassanabad, ".tif");
   return res.status(result.statusCode).json(result);
 });
 
@@ -943,7 +944,7 @@ const TIF_FOLDER_Thoise = "../public/05_India_Airplane/01_Thoise/02_Output";
 
 // 获取文件夹中的.tif文件
 app.get("/api/files_Thoise", async (req, res) => {
-  const result = await getTifFiles(TIF_FOLDER_Thoise);
+  const result = await getFolderFiles(TIF_FOLDER_Thoise, ".tif");
   return res.status(result.statusCode).json(result);
 });
 
@@ -952,7 +953,7 @@ const TIF_FOLDER_Leh_Airplane = "../public/05_India_Airplane/02_Leh/02_Output";
 
 // 获取文件夹中的.tif文件
 app.get("/api/files_Leh_Airplane", async (req, res) => {
-  const result = await getTifFiles(TIF_FOLDER_Leh_Airplane);
+  const result = await getFolderFiles(TIF_FOLDER_Leh_Airplane, ".tif");
   return res.status(result.statusCode).json(result);
 });
 
@@ -961,7 +962,10 @@ const TIF_FOLDER_Indian_River_Tributary = "../public/River_Expand/result";
 
 // 获取文件夹中的.tif文件
 app.get("/api/files_indian_river_tributary", async (req, res) => {
-  const result = await getTifFiles(TIF_FOLDER_Indian_River_Tributary);
+  const result = await getFolderFiles(
+    TIF_FOLDER_Indian_River_Tributary,
+    ".tif"
+  );
   return res.status(result.statusCode).json(result);
 });
 
@@ -972,13 +976,13 @@ const TIF_FOLDER_Nanhuajiao = "../public/Ship_Gather/02_Nanhuajiao/result";
 
 // 获取文件夹中的.tif文件
 app.get("/api/files_xianbinjiao", async (req, res) => {
-  const result = await getTifFiles(TIF_FOLDER_Xianbinjiao);
+  const result = await getFolderFiles(TIF_FOLDER_Xianbinjiao, ".tif");
   return res.status(result.statusCode).json(result);
 });
 
 // 获取文件夹中的.tif文件
 app.get("/api/files_nanhuajiao", async (req, res) => {
-  const result = await getTifFiles(TIF_FOLDER_Nanhuajiao);
+  const result = await getFolderFiles(TIF_FOLDER_Nanhuajiao, ".tif");
   return res.status(result.statusCode).json(result);
 });
 
@@ -987,7 +991,7 @@ const TIF_FOLDER_Mandehaixia = "../public/Ship_Disperse//result";
 
 // 获取文件夹中的.tif文件
 app.get("/api/files_mandehaixia", async (req, res) => {
-  const result = await getTifFiles(TIF_FOLDER_Mandehaixia);
+  const result = await getFolderFiles(TIF_FOLDER_Mandehaixia, ".tif");
   return res.status(result.statusCode).json(result);
 });
 
@@ -1002,13 +1006,13 @@ const Bishengjiao_MAIN_PY_PATH = "./Nansha_Island/02_main_bishengjiao.py";
 
 // 获取文件夹中的.tif文件
 app.get("/api/files_baijiao", async (req, res) => {
-  const result = await getTifFiles(TIF_FOLDER_Baijiao);
+  const result = await getFolderFiles(TIF_FOLDER_Baijiao, ".tif");
   return res.status(result.statusCode).json(result);
 });
 
 // 获取文件夹中的.tif文件
 app.get("/api/files_bishengjiao", async (req, res) => {
-  const result = await getTifFiles(TIF_FOLDER_Bishengjiao);
+  const result = await getFolderFiles(TIF_FOLDER_Bishengjiao, ".tif");
   return res.status(result.statusCode).json(result);
 });
 
@@ -1148,13 +1152,13 @@ const OFFSHORE_PLATFORM_MAIN_PY_PATH = "./predict_platform/all_in_one.py";
 
 // 获取文件夹中的.tif文件
 app.get("/api/files_sk10_sentinel-1", async (req, res) => {
-  const result = await getTifFiles(TIF_FOLDER_SK10_S1);
+  const result = await getFolderFiles(TIF_FOLDER_SK10_S1, ".tif");
   return res.status(result.statusCode).json(result);
 });
 
 // 获取文件夹中的.tif文件
 app.get("/api/files_sk10_gaofen", async (req, res) => {
-  const result = await getTifFiles(TIF_FOLDER_SK10_GAOFEN);
+  const result = await getFolderFiles(TIF_FOLDER_SK10_GAOFEN, ".tif");
   return res.status(result.statusCode).json(result);
 });
 
