@@ -62,7 +62,7 @@ import * as GeoTIFF from "geotiff";
 import proj4 from "proj4";
 import { Calendar, DatePicker } from "v-calendar";
 import "v-calendar/style.css";
-import { decode_CSV } from "../utils/utils.js";
+import { decode_CSV, checkFolderExists } from "../utils/utils.js";
 
 // Reactive state
 const isSplit = ref(false);
@@ -148,7 +148,9 @@ function analyzeData() {
 
 async function onAnalyzeButtonClick() {
   try {
-    const folderExists = await checkFolderExists();
+    // 1. 先检查文件夹是否存在
+    const outTifFileUrl = "http://localhost:3017/api/files_Hassanabad";
+    const folderExists = await checkFolderExists(outTifFileUrl);
 
     if (folderExists) {
       await fetchTiffFiles();
@@ -165,23 +167,6 @@ async function onAnalyzeButtonClick() {
   } catch (error) {
     console.error("分析按钮点击时出错:", error);
     return { success: false, message: `出错: ${error.message}` };
-  }
-}
-
-async function checkFolderExists() {
-  try {
-    const response = await axios.get(
-      "http://localhost:3017/api/files_Hassanabad"
-    );
-
-    if (response.data.files) {
-      return true;
-    } else if (response.data.error || response.data.message) {
-      return false;
-    }
-  } catch (error) {
-    console.error("检查文件夹是否存在时出错:", error);
-    return false;
   }
 }
 

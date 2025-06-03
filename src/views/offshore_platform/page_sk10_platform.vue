@@ -63,7 +63,7 @@ import axios from "axios";
 import * as GeoTIFF from "geotiff";
 import { Calendar, DatePicker } from "v-calendar";
 import "v-calendar/style.css";
-import { decode_CSV } from "../utils/utils.js";
+import { decode_CSV, checkFolderExists } from "../utils/utils.js";
 
 // 响应式数据
 const isSplit = ref(false);
@@ -166,28 +166,11 @@ async function fetchTiffFiles_Gaofen() {
   }
 }
 
-async function checkFolderExists() {
-  try {
-    const response = await axios.get(
-      "http://localhost:3017/api/files_sk10_sentinel-1"
-    );
-    console.log("response", response);
-    // 根据返回的数据格式进行判定
-    if (response.data.files) {
-      return true; // 如果文件夹中有 .tif 文件
-    } else if (response.data.error || response.data.message) {
-      return false; // 如果发生错误或没有找到文件
-    }
-  } catch (error) {
-    console.error("检查文件夹是否存在时出错:", error);
-    return false; // 出现错误时认为文件夹不存在
-  }
-}
-
 async function analyzeData() {
   try {
     // 1. 先检查文件夹是否存在
-    const folderExists = await checkFolderExists();
+    const outTifFileUrl = "http://localhost:3017/api/files_sk10_sentinel-1";
+    const folderExists = await checkFolderExists(outTifFileUrl);
 
     if (folderExists) {
       // 2. 如果文件夹存在，直接加载 .tif 文件并展示
