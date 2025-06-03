@@ -325,19 +325,7 @@ async function loadTiffImage(tiffUrl) {
       throw new Error("Invalid bounding box retrieved from TIFF image.");
     }
 
-    const utmProjection = "EPSG:32650";
-    const wgs84Projection = "EPSG:4326";
-
-    const lowerLeft = proj4(utmProjection, wgs84Projection, [bbox[0], bbox[1]]);
-    const upperRight = proj4(utmProjection, wgs84Projection, [
-      bbox[2],
-      bbox[3],
-    ]);
-
-    const minLon = lowerLeft[0];
-    const minLat = lowerLeft[1];
-    const maxLon = upperRight[0];
-    const maxLat = upperRight[1];
+    const [minLon, minLat, maxLon, maxLat] = bbox;
 
     console.log("Converted Bounding box (WGS84):", [
       minLon,
