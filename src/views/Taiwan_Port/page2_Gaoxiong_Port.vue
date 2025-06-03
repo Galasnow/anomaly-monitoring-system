@@ -80,11 +80,6 @@ const calendarRef = ref(null);
 const isChartModalVisible = ref(false);
 const isLoading = ref(false);
 
-// Data lists
-const date_list = [];
-const area_list = [];
-let cesium_viewer = null;
-
 // CSV parsing function
 function decode_CSV(csv_path) {
   return new Promise((resolve, reject) => {
@@ -96,18 +91,6 @@ function decode_CSV(csv_path) {
         reject(new Error(`读取 CSV 文件时出错: ${error.message}`));
       });
   });
-}
-
-function generate_date_list(tifFiles) {
-  const out_date_list = [];
-  for (let i = 0; i < tifFiles.length; i++) {
-    const file = tifFiles[i];
-    const year = file.substring(0, 4);
-    const month = file.substring(4, 6);
-    const day = file.substring(6, 8);
-    out_date_list.push(new Date(year, month - 1, day));
-  }
-  return out_date_list;
 }
 
 // Computed properties
@@ -634,19 +617,6 @@ option {
   width: 100%;
   height: 100%;
 }
-
-/* .image-container {
-  height: 50%;
-  padding: 15px;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.chart-container {
-  flex: 1;
-  padding: 15px;
-  /* min-height: 300px;
-} */
 
 .responsive-image {
   display: block;
