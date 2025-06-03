@@ -1,5 +1,5 @@
 <template>
-  <div id="cesiumContainer"></div>
+  <div id="cesium-container"></div>
 </template>
 
 <script setup>
@@ -13,7 +13,7 @@ const router = useRouter();
 
 onMounted(async () => {
   Cesium.Ion.defaultAccessToken = cesium_token;
-  cesium_viewer = new Cesium.Viewer("cesiumContainer", {
+  cesium_viewer = new Cesium.Viewer("cesium-container", {
     animation: false,
     baseLayerPicker: true,
     fullscreenButton: false,
@@ -30,7 +30,6 @@ onMounted(async () => {
   });
 
   cesium_viewer.scene.frameState.creditDisplay.container.style.display = "none";
-
 
   // 添加杜尔布克营地实体
   cesium_viewer.entities.add({
@@ -77,17 +76,23 @@ onMounted(async () => {
   });
 
   cesium_viewer.camera.flyTo({
-    destination: Cesium.Cartesian3.fromDegrees(78.3, 33.5, 500000), duration:2.5
+    destination: Cesium.Cartesian3.fromDegrees(78.3, 33.5, 500000),
+    duration: 2.5,
   });
 
   // 监听点击事件
-  const handler = new Cesium.ScreenSpaceEventHandler(cesium_viewer.scene.canvas);
+  const handler = new Cesium.ScreenSpaceEventHandler(
+    cesium_viewer.scene.canvas
+  );
   handler.setInputAction((movement) => {
     const pickedObject = cesium_viewer.scene.pick(movement.position);
     if (Cesium.defined(pickedObject) && pickedObject.id?.id === "durbuk_base") {
       router.push("page2_Durbuk_Base"); // 跳转到 page2.vue
     }
-    if (Cesium.defined(pickedObject) && pickedObject.id?.id === "chummur_base") {
+    if (
+      Cesium.defined(pickedObject) &&
+      pickedObject.id?.id === "chummur_base"
+    ) {
       router.push("page3_Chummur_Base"); // 跳转到 page2.vue
     }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
@@ -99,9 +104,9 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-#cesiumContainer {
+#cesium-container {
+  position: absolute;
   width: 100%;
   height: 100%;
-  position: absolute;
 }
 </style>

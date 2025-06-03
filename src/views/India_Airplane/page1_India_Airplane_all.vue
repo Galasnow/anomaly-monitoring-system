@@ -1,5 +1,5 @@
 <template>
-  <div id="cesiumContainer"></div>
+  <div id="cesium-container"></div>
 </template>
 
 <script setup>
@@ -13,7 +13,7 @@ const router = useRouter();
 
 onMounted(async () => {
   Cesium.Ion.defaultAccessToken = cesium_token;
-  cesium_viewer = new Cesium.Viewer("cesiumContainer", {
+  cesium_viewer = new Cesium.Viewer("cesium-container", {
     animation: false,
     baseLayerPicker: true,
     fullscreenButton: false,
@@ -29,7 +29,7 @@ onMounted(async () => {
     navigationInstructionsInitiallyVisible: false,
   });
 
-  cesium_viewer.scene.frameState.creditDisplay.container.style.display = "none"
+  cesium_viewer.scene.frameState.creditDisplay.container.style.display = "none";
 
   // 添加托伊斯空军基地
   cesium_viewer.entities.add({
@@ -75,21 +75,25 @@ onMounted(async () => {
     },
   });
 
-
-
   cesium_viewer.camera.flyTo({
-    destination: Cesium.Cartesian3.fromDegrees(77, 34.5, 300000), duration:2.5
+    destination: Cesium.Cartesian3.fromDegrees(77, 34.5, 300000),
+    duration: 2.5,
   });
 
   // 监听点击事件
-  const handler = new Cesium.ScreenSpaceEventHandler(cesium_viewer.scene.canvas);
+  const handler = new Cesium.ScreenSpaceEventHandler(
+    cesium_viewer.scene.canvas
+  );
   handler.setInputAction((movement) => {
     const pickedObject = cesium_viewer.scene.pick(movement.position);
-    if (Cesium.defined(pickedObject) && pickedObject.id?.id === "Thoise_Airport") {
+    if (
+      Cesium.defined(pickedObject) &&
+      pickedObject.id?.id === "Thoise_Airport"
+    ) {
       router.push("page2_Thoise_Airplane"); // 跳转到 page2_Bhatinda_Air_Force_Station.vue
     }
     if (Cesium.defined(pickedObject) && pickedObject.id?.id === "Leh_Airport") {
-      router.push("page3_Len_Airplane"); // 跳转到 page3_Silchar_Airport.vue
+      router.push("page3_Leh_Airplane"); // 跳转到 page3_Silchar_Airport.vue
     }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 });
@@ -100,9 +104,9 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-#cesiumContainer {
+#cesium-container {
+  position: absolute;
   width: 100%;
   height: 100%;
-  position: absolute;
 }
 </style>

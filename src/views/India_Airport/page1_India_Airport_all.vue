@@ -1,5 +1,5 @@
 <template>
-  <div id="cesiumContainer"></div>
+  <div id="cesium-container"></div>
 </template>
 
 <script setup>
@@ -13,7 +13,7 @@ const router = useRouter();
 
 onMounted(async () => {
   Cesium.Ion.defaultAccessToken = cesium_token;
-  cesium_viewer = new Cesium.Viewer("cesiumContainer", {
+  cesium_viewer = new Cesium.Viewer("cesium-container", {
     animation: false,
     baseLayerPicker: true,
     fullscreenButton: false,
@@ -75,8 +75,7 @@ onMounted(async () => {
     },
   });
 
-
-    // 添加德拉敦机场实体
+  // 添加德拉敦机场实体
   cesium_viewer.entities.add({
     id: "Dehradun_Airport",
     position: Cesium.Cartesian3.fromDegrees(78.190046, 30.193041, 10),
@@ -97,7 +96,6 @@ onMounted(async () => {
       pixelOffset: new Cesium.Cartesian2(0, -20),
     },
   });
-
 
   // 添加列城机场实体
   cesium_viewer.entities.add({
@@ -120,7 +118,6 @@ onMounted(async () => {
       pixelOffset: new Cesium.Cartesian2(0, -20),
     },
   });
-
 
   // 添加伦格普伊机场实体
   cesium_viewer.entities.add({
@@ -189,32 +186,53 @@ onMounted(async () => {
   });
 
   cesium_viewer.camera.flyTo({
-    destination: Cesium.Cartesian3.fromDegrees(83.71, 30.38, 3000000), duration:2.5
+    destination: Cesium.Cartesian3.fromDegrees(83.71, 30.38, 3000000),
+    duration: 2.5,
   });
 
   // 监听点击事件
-  const handler = new Cesium.ScreenSpaceEventHandler(cesium_viewer.scene.canvas);
+  const handler = new Cesium.ScreenSpaceEventHandler(
+    cesium_viewer.scene.canvas
+  );
   handler.setInputAction((movement) => {
     const pickedObject = cesium_viewer.scene.pick(movement.position);
-    if (Cesium.defined(pickedObject) && pickedObject.id?.id === "Bhatinda_Air_Force_Station") {
+    if (
+      Cesium.defined(pickedObject) &&
+      pickedObject.id?.id === "Bhatinda_Air_Force_Station"
+    ) {
       router.push("page2_Bhatinda_Air_Force_Station"); // 跳转到 page2_Bhatinda_Air_Force_Station.vue
     }
-    if (Cesium.defined(pickedObject) && pickedObject.id?.id === "Silchar_Airport") {
+    if (
+      Cesium.defined(pickedObject) &&
+      pickedObject.id?.id === "Silchar_Airport"
+    ) {
       router.push("page3_Silchar_Airport"); // 跳转到 page3_Silchar_Airport.vue
     }
-    if (Cesium.defined(pickedObject) && pickedObject.id?.id === "Dehradun_Airport") {
+    if (
+      Cesium.defined(pickedObject) &&
+      pickedObject.id?.id === "Dehradun_Airport"
+    ) {
       router.push("page4_Dehradun_Airport"); // 跳转到 page4_Dehradun_Airport.vue
     }
     if (Cesium.defined(pickedObject) && pickedObject.id?.id === "Leh_Airport") {
       router.push("page5_Leh_Airport"); // 跳转到 page5_Leh_Airport.vue
     }
-    if (Cesium.defined(pickedObject) && pickedObject.id?.id === "Lengpui_Airport") {
+    if (
+      Cesium.defined(pickedObject) &&
+      pickedObject.id?.id === "Lengpui_Airport"
+    ) {
       router.push("page6_Lengpui_Airport"); // 跳转到 page6_Lengpui_Airport.vue
     }
-    if (Cesium.defined(pickedObject) && pickedObject.id?.id === "Chabua_Air_Force_Station") {
+    if (
+      Cesium.defined(pickedObject) &&
+      pickedObject.id?.id === "Chabua_Air_Force_Station"
+    ) {
       router.push("page7_Chabua_Air_Force_Station"); // 跳转到 page7_Chabua_Air_Force_Station.vue
     }
-    if (Cesium.defined(pickedObject) && pickedObject.id?.id === "Shilong_Airport") {
+    if (
+      Cesium.defined(pickedObject) &&
+      pickedObject.id?.id === "Shilong_Airport"
+    ) {
       router.push("page8_Shilong_Airport"); // 跳转到 page8_Shilong_Airport.vue
     }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
@@ -226,9 +244,9 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-#cesiumContainer {
+#cesium-container {
+  position: absolute;
   width: 100%;
   height: 100%;
-  position: absolute;
 }
 </style>

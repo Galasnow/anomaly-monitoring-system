@@ -1,5 +1,5 @@
 <template>
-  <div id="cesiumContainer"></div>
+  <div id="cesium-container"></div>
 </template>
 
 <script setup>
@@ -13,7 +13,7 @@ const router = useRouter();
 
 onMounted(async () => {
   Cesium.Ion.defaultAccessToken = cesium_token;
-  cesium_viewer = new Cesium.Viewer("cesiumContainer", {
+  cesium_viewer = new Cesium.Viewer("cesium-container", {
     animation: false,
     baseLayerPicker: true,
     fullscreenButton: false,
@@ -30,7 +30,6 @@ onMounted(async () => {
   });
 
   cesium_viewer.scene.frameState.creditDisplay.container.style.display = "none";
-
 
   // 添加哈萨纳巴德冰川堰塞湖
   cesium_viewer.entities.add({
@@ -55,17 +54,19 @@ onMounted(async () => {
   });
 
   cesium_viewer.camera.flyTo({
-    destination: Cesium.Cartesian3.fromDegrees(74, 36, 500000), duration:2.5
+    destination: Cesium.Cartesian3.fromDegrees(74, 36, 500000),
+    duration: 2.5,
   });
 
   // 监听点击事件
-  const handler = new Cesium.ScreenSpaceEventHandler(cesium_viewer.scene.canvas);
+  const handler = new Cesium.ScreenSpaceEventHandler(
+    cesium_viewer.scene.canvas
+  );
   handler.setInputAction((movement) => {
     const pickedObject = cesium_viewer.scene.pick(movement.position);
     if (Cesium.defined(pickedObject) && pickedObject.id?.id === "Hassanabad") {
       router.push("page2_Hassanabad"); // 跳转到 page2.vue
     }
-
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 });
 
@@ -75,9 +76,9 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-#cesiumContainer {
+#cesium-container {
+  position: absolute;
   width: 100%;
   height: 100%;
-  position: absolute;
 }
 </style>
