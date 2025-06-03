@@ -58,11 +58,11 @@ import * as Cesium from "cesium";
 import * as echarts from "echarts";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import axios from "axios";
-import * as d3 from "d3";
 import * as GeoTIFF from "geotiff";
 import proj4 from "proj4";
 import { Calendar, DatePicker } from "v-calendar";
 import "v-calendar/style.css";
+import { decode_CSV } from "../utils/utils.js";
 
 // Reactive state
 const isSplit = ref(false);
@@ -79,19 +79,6 @@ const selectedDate = defineModel();
 const calendarRef = ref(null);
 const isChartModalVisible = ref(false);
 const isLoading = ref(false);
-
-// CSV parsing function
-function decode_CSV(csv_path) {
-  return new Promise((resolve, reject) => {
-    d3.csv(csv_path)
-      .then((data) => {
-        resolve(data);
-      })
-      .catch((error) => {
-        reject(new Error(`读取 CSV 文件时出错: ${error.message}`));
-      });
-  });
-}
 
 // Computed properties
 const attributes = computed(() => [

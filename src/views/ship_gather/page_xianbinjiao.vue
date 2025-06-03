@@ -60,11 +60,11 @@ import * as Cesium from "cesium";
 import * as echarts from "echarts";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import axios from "axios";
-import * as d3 from "d3";
 import * as GeoTIFF from "geotiff";
 import proj4 from "proj4"; // 导入 proj4 用于坐标转换
 import { Calendar, DatePicker } from "v-calendar";
 import "v-calendar/style.css";
+import { decode_CSV } from "../utils/utils.js";
 
 // 响应式数据
 const isSplit = ref(false);
@@ -98,19 +98,6 @@ const attributes = computed(() => {
     },
   ];
 });
-
-// 解析 CSV 文件
-function decode_CSV(csv_path) {
-  return new Promise((resolve, reject) => {
-    d3.csv(csv_path)
-      .then((data) => {
-        resolve(data);
-      })
-      .catch((error) => {
-        reject(new Error(`读取 CSV 文件时出错: ${error.message}`));
-      });
-  });
-}
 
 // 初始化Cesium
 async function initCesium() {
