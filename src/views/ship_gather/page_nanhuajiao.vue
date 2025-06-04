@@ -64,7 +64,11 @@ import * as GeoTIFF from "geotiff";
 import proj4 from "proj4"; // 导入 proj4 用于坐标转换
 import { Calendar, DatePicker } from "v-calendar";
 import "v-calendar/style.css";
-import { decode_CSV, checkFolderExists } from "../utils/utils.js";
+import {
+  decode_CSV,
+  checkFolderExists,
+  checkFinishStatus,
+} from "../utils/utils.js";
 
 // 响应式数据
 const isSplit = ref(false);
@@ -165,7 +169,9 @@ async function runMainPythonScript() {
     // 检查返回值
     if (response.data.message === "main.py 执行已启动") {
       // 等待文件夹生成并检查是否有 finish.txt 文件
-      const isFinished = await checkFolderAndLoadFiles();
+      const finishResponseUrl =
+        "http://localhost:3017/api/nanhuajiao_finish_txt";
+      const isFinished = await checkFinishStatus(finishResponseUrl);
 
       if (isFinished) {
         console.log("Python 脚本执行完成");
@@ -187,44 +193,6 @@ async function runMainPythonScript() {
     // 执行完毕后隐藏加载框
     isLoading.value = false; // 隐藏加载框
   }
-}
-
-function checkFolderAndLoadFiles() {
-  return new Promise((resolve, reject) => {
-    const startTime = Date.now(); // 获取开始时间
-    const timeLimit = 60 * 60 * 1000; // 60分钟的时间限制 (单位：毫秒)
-
-    const intervalId = setInterval(async () => {
-      try {
-        // 检查是否超时
-        if (Date.now() - startTime > timeLimit) {
-          clearInterval(intervalId); // 停止定时器
-          console.log("时间已到，未找到 finish.txt 文件");
-          resolve(false); // 返回失败标志
-          return;
-        }
-
-        // 尝试获取文件夹中的文件
-        const response = await axios.get(
-          "http://localhost:3017/api/nanhuajiao_finish_txt"
-        );
-
-        // 查找是否存在 finish.txt 文件
-        const finishFile = response.data.files.find(
-          (file) => file === "finish.txt"
-        );
-
-        // 如果 finish.txt 文件存在，表示 main.py 执行完成
-        if (finishFile) {
-          clearInterval(intervalId); // 停止定时器
-          console.log("main.py 执行完成，文件夹中存在 finish.txt");
-          resolve(true); // 返回执行完成的标志
-        }
-      } catch (error) {
-        console.error("获取文件列表时出错:", error);
-      }
-    }, 30 * 1000); // 每30秒检查一次
-  });
 }
 
 // 获取TIFF文件列表

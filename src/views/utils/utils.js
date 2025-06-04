@@ -34,3 +34,50 @@ export async function checkFolderExists(folderUrl) {
     return false; // 出现错误时认为文件夹不存在
   }
 }
+
+/**
+ * 检查main.py是否执行完毕
+ * @param {string} finishResponseUrl - 要检查的finish.txt路径
+ * @param {Number} executeTimeLimit - 程序执行时间限制（秒）
+ * @param {Number} checkInterval - 检查间隔（秒）
+ * @returns {object} 返回结果对象
+ */
+export function checkFinishStatus(
+  finishResponseUrl,
+  executeTimeLimit = 3600,
+  checkInterval = 20
+) {
+  return new Promise((resolve, reject) => {
+    const startTime = Date.now(); // 获取开始时间
+    const timeLimit = executeTimeLimit * 1000; // 时间限制 (单位：毫秒)
+
+    const intervalId = setInterval(async () => {
+      try {
+        // 检查是否超时
+        if (Date.now() - startTime > timeLimit) {
+          clearInterval(intervalId); // 停止定时器
+          console.log("时间已到，未找到 finish.txt 文件");
+          resolve(false); // 返回失败标志
+          return;
+        }
+
+        // 尝试获取文件夹中的文件
+        const response = await axios.get(finishResponseUrl);
+
+        // 查找是否存在 finish.txt 文件
+        const finishFile = response.data.files.find(
+          (file) => file === "finish.txt"
+        );
+
+        // 如果 finish.txt 文件存在，表示 main.py 执行完成
+        if (finishFile) {
+          clearInterval(intervalId); // 停止定时器
+          console.log("main.py 执行完成，文件夹中存在 finish.txt");
+          resolve(true); // 返回执行完成的标志
+        }
+      } catch (error) {
+        console.error("获取文件列表时出错:", error);
+      }
+    }, checkInterval * 1000); // 每30秒检查一次
+  });
+}

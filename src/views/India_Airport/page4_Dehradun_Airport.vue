@@ -62,7 +62,11 @@ import * as GeoTIFF from "geotiff";
 import proj4 from "proj4";
 import { Calendar, DatePicker } from "v-calendar";
 import "v-calendar/style.css";
-import { decode_CSV, checkFolderExists } from "../utils/utils.js";
+import {
+  decode_CSV,
+  checkFolderExists,
+  checkFinishStatus,
+} from "../utils/utils.js";
 
 // Reactive state
 const isSplit = ref(false);
@@ -179,7 +183,9 @@ async function runMainPythonScript() {
     console.log("返回消息:", response.data.message);
 
     if (response.data.message === "main.py 执行已启动") {
-      const isFinished = await checkFolderAndLoadFiles();
+      // 等待文件夹生成并检查是否有 finish.txt 文件
+      const finishResponseUrl = "http://localhost:3017/api/files_txt_Dehradun";
+      const isFinished = await checkFinishStatus(finishResponseUrl);
 
       if (isFinished) {
         console.log("执行成功，main.py 执行完成");
@@ -198,39 +204,6 @@ async function runMainPythonScript() {
   } finally {
     isLoading.value = false;
   }
-}
-
-function checkFolderAndLoadFiles() {
-  return new Promise((resolve, reject) => {
-    const startTime = Date.now();
-    const timeLimit = 20 * 60 * 1000;
-
-    const intervalId = setInterval(async () => {
-      try {
-        if (Date.now() - startTime > timeLimit) {
-          clearInterval(intervalId);
-          console.log("时间已到，未找到 finish.txt 文件");
-          resolve(false);
-          return;
-        }
-
-        const response = await axios.get(
-          "http://localhost:3017/api/files_txt_Dehradun"
-        );
-        const finishFile = response.data.files.find(
-          (file) => file === "finish.txt"
-        );
-
-        if (finishFile) {
-          clearInterval(intervalId);
-          console.log("main.py 执行完成，文件夹中存在 finish.txt");
-          resolve(true);
-        }
-      } catch (error) {
-        console.error("获取文件列表时出错:", error);
-      }
-    }, 30000);
-  });
 }
 
 async function fetchTiffFiles() {
