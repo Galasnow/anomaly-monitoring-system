@@ -362,9 +362,7 @@ function initChart() {
     .then((csv_data) => {
       // 提取日期、面积（保留4位小数）和abnormal值
       const date_list = csv_data.map((item) => item.date);
-      const area_list = csv_data.map((item) =>
-        parseFloat(item.number).toFixed(0)
-      ); // 保留4位小数
+      const area_list = csv_data.map((item) => parseInt(item.number));
       const abnormal_list = csv_data.map(
         (item) => parseInt(item.abnormal, 10) || 0
       );
@@ -395,10 +393,12 @@ function initChart() {
           type: "value",
           name: "数量 (架)",
           nameTextStyle: { fontSize: 18 },
-          min: Math.min(...area_list) * 0.95,
-          max: Math.max(...area_list) * 1.05,
+          min: 0,
+          max: 1,
           axisLabel: {
-            formatter: (value) => value.toFixed(1),
+            formatter: (value) => {
+              return [0, 1].includes(value) ? value.toFixed(0) : "";
+            },
             fontSize: 18,
           },
         },

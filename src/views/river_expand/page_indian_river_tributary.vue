@@ -368,7 +368,9 @@ function initChart() {
   decode_CSV("/River_Expand/River_area.csv")
     .then((csv_data) => {
       const date_list = csv_data.map((item) => item.date);
-      const area_list = csv_data.map((item) => parseFloat(item.area));
+      const area_list = csv_data.map((item) =>
+        parseFloat(item.area).toFixed(2)
+      );
       const abnormal_list = csv_data.map(
         (item) => parseInt(item.abnormal, 10) || 0
       );

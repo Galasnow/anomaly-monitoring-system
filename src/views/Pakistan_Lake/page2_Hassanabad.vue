@@ -385,7 +385,7 @@ function initChart() {
           min: 0.5, //Math.min(...area_list) * 0.95
           max: 0, //Math.max(...area_list) * 1.05
           axisLabel: {
-            formatter: (value) => value.toFixed(3),
+            formatter: (value) => value.toFixed(2),
             fontSize: 18,
           },
         },
