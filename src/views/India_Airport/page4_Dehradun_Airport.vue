@@ -6,7 +6,7 @@
       <div class="time-selector-box">
         <h2 class="title">德拉敦机场监测时间</h2>
         <h3>开始日期</h3>
-        <input type="date" v-model="selectedDate" @change="onDateChange" />
+        <input type="date" v-model="firstDate" @change="onDateChange" />
         <h3>截止日期</h3>
         <input type="date" v-model="secondDate" @change="onSecondDateChange" />
         <button @click="analyzeData">分析</button>
@@ -78,6 +78,8 @@ const cesiumContainer = ref(null);
 const chartContainer = ref(null);
 const isImageSelectorVisible = ref(false);
 const mark_dates = ref([]);
+const firstDate = ref("2016-01-01");
+const secondDate = ref("2025-01-01");
 const calendarDate = ref(null);
 const selectedDate = defineModel();
 const calendarRef = ref(null);
