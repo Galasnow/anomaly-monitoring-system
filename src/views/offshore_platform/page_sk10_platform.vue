@@ -1,10 +1,10 @@
-<!-- SK10海上油气平台异常出现与消失动态监测 -->
+<!-- SK10海上钻井平台异常出现与消失动态监测 -->
 <template>
   <div class="container">
     <div class="top-panel">
       <!-- 左上角的截止时间选择框 -->
       <div class="time-selector-box">
-        <h2 class="title">SK10海上油气平台异常出现与消失动态监测</h2>
+        <h2 class="title">SK10海上钻井平台异常出现与消失动态监测</h2>
         <h3>开始日期</h3>
         <input type="date" v-model="firstDate" @change="onDateChange" />
         <h3>截止日期</h3>
@@ -14,7 +14,7 @@
 
       <!-- 选择影像文件的独立窗体 -->
       <div class="image-selector-box" v-if="isImageSelectorVisible">
-        <h2 class="title">SK10海上油气平台提取结果</h2>
+        <h2 class="title">SK10海上钻井平台提取结果</h2>
         <Calendar
           ref="calendarRef"
           transparent
@@ -45,7 +45,7 @@
     <!-- 右侧内容容器 -->
     <div v-if="isChartModalVisible" class="modal">
       <div class="modal-content">
-        <h2 class="title">SK10海上油气平台数量监测曲线</h2>
+        <h2 class="title">SK10海上钻井平台数量监测曲线</h2>
         <div ref="chartContainer" style="width: 600px; height: 400px"></div>
       </div>
     </div>

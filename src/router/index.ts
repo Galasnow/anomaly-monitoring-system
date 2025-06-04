@@ -280,7 +280,8 @@ export const constantRoutes: RouteRecordRaw[] = [
       {
         path: "page1_India_Airplane_all",
         name: "page1_India_Airplane_all",
-        component: () => import("@/views/India_Airplane/page1_India_Airplane_all.vue"),
+        component: () =>
+          import("@/views/India_Airplane/page1_India_Airplane_all.vue"),
         meta: {
           title: "监测区域",
           icon: "",
@@ -289,7 +290,8 @@ export const constantRoutes: RouteRecordRaw[] = [
       {
         path: "page2_Thoise_Airplane",
         name: "page2_Thoise_Airplane",
-        component: () => import("@/views/India_Airplane/page2_Thoise_Airplane.vue"),
+        component: () =>
+          import("@/views/India_Airplane/page2_Thoise_Airplane.vue"),
         meta: {
           title: "托伊斯空军基地",
           icon: "",
@@ -298,7 +300,8 @@ export const constantRoutes: RouteRecordRaw[] = [
       {
         path: "page3_Leh_Airplane",
         name: "page3_Leh_Airplane",
-        component: () => import("@/views/India_Airplane/page3_Leh_Airplane.vue"),
+        component: () =>
+          import("@/views/India_Airplane/page3_Leh_Airplane.vue"),
         meta: {
           title: "列城机场",
           icon: "",
@@ -506,7 +509,7 @@ export const constantRoutes: RouteRecordRaw[] = [
     ],
   },
 
-  // 海上油气平台
+  // 海上钻井平台
   {
     path: "/offshore_platform",
     component: Layout,
@@ -537,7 +540,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         component: () =>
           import("@/views/offshore_platform/page_sk10_platform.vue"),
         meta: {
-          title: "Sk10海上油气平台异常动态监测",
+          title: "Sk10海上钻井平台异常动态监测",
         },
       },
     ],
