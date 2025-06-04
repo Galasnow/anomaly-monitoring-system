@@ -7,7 +7,6 @@ from typing import List
 
 import cv2
 import numpy as np
-import onnxruntime
 import torch
 from imagesize import imagesize
 from matplotlib import pyplot as plt
@@ -79,20 +78,15 @@ if __name__ == "__main__":
 
     ###########################################################################
 
-    if DEVICE == torch.device('cuda'):
-        use_onnxruntime_inference = False
-        print('Use pytorch inference')
-        model = create_model(num_classes=NUM_CLASSES)
-        model.load_state_dict(
-            torch.load(f'./run/2025-03-27_16-08-11/best_model.pth', map_location=DEVICE,
-                       weights_only=True))  # final#红海108-all  178-2个 140-1个
-        model.eval()  # 确保模型处于评估模式
-        model.to(DEVICE)
-    else:
-        use_onnxruntime_inference = True
-        print('Use onnxruntime inference')
-        model_path = os.path.join(current_path, f'./run/2025-03-27_16-08-11/faster_rcnn_simplify.onnx')
-        model = onnxruntime.InferenceSession(model_path)
+    use_onnxruntime_inference = False
+    print('Use pytorch inference')
+    model = create_model(num_classes=NUM_CLASSES)
+    model_path = os.path.join(current_path, f'./run/2025-03-27_16-08-11/best_model.pth')
+    model.load_state_dict(
+        torch.load(model_path, map_location=DEVICE,
+                    weights_only=True))
+    model.eval()  # 确保模型处于评估模式
+    model.to(DEVICE)
 
     grid_list, grid_image_name_list = read_grid_image_list(input_path, original_image_path, support_file_list)
     pbar = tqdm(grid_image_name_list)

@@ -4,7 +4,6 @@ import os
 import cv2
 import imagesize
 import numpy as np
-import onnxruntime
 import torch
 from natsort import natsorted
 from osgeo import gdal
