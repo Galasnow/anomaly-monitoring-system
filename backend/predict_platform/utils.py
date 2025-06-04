@@ -1,8 +1,10 @@
 import csv
 import logging
 import os
+import re
 import time
 import datetime
+import imagesize
 from typing import Callable
 import numpy as np
 import scipy

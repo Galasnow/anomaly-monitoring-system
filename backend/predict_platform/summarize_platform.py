@@ -255,8 +255,8 @@ def search_special_events(occur_array, disappear_array, platform_geo_location):
 
 def calculate_size_score(size):
     if size >= 0:
-        if size <= 32:
-            score = size / 32.0
+        if size <= 48:
+            score = size / 48.0
         else:
             score = 1.0
     else:
