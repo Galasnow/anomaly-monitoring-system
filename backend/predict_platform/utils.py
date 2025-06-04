@@ -596,3 +596,40 @@ def read_polygon_shapefile(shapefile_path):
         pts = np.array(polygon_list)
         # logging.info(pts)
     return pts
+
+class Sentinel1:
+    def __init__(self, file_path: str, pattern=r'1SDV_(.*)T(.*)_(.*)T'):
+        self.type = None
+        self.filename = os.path.basename(file_path)
+        self.filename_stem = os.path.splitext(self.filename)[0]
+        with gdal.Open(file_path) as tiff_file:
+            self.geo_transform = tiff_file.GetGeoTransform()
+            self.projection = tiff_file.GetProjection()
+        self.shape = imagesize.get(file_path)
+        acquire_time_select = re.search(pattern, self.filename)
+        if acquire_time_select:
+            acquire_year_month_day_str = str(acquire_time_select.group(1))
+            acquire_hour_minute_second_str = str(acquire_time_select.group(2))
+            acquire_year_month_day_str_formated = (f'{acquire_year_month_day_str[0:4]}-'
+                                                   f'{acquire_year_month_day_str[4:6]}-'
+                                                   f'{acquire_year_month_day_str[6:8]}-'
+                                                   f'{acquire_hour_minute_second_str[0:2]}-'
+                                                   f'{acquire_hour_minute_second_str[2:4]}-'
+                                                   f'{acquire_hour_minute_second_str[4:6]}'
+                                                   )
+
+            self.acquire_time = datetime.datetime.strptime(acquire_year_month_day_str_formated, '%Y-%m-%d-%H-%M-%S')
+        else:
+            raise RuntimeError('Acquire time not found for given pattern!')
+
+    def __lt__(self, other):
+        return self.acquire_time < other.acquire_time
+
+    def __gt__(self, other):
+        return self.acquire_time == other.acquire_time
+
+
+def build_sorted_sentinel_1_list(path):
+    sorted_sentinel_1_list = sorted([Sentinel1(os.path.join(path, filename)) for filename in os.listdir(path)
+                                     if (filename.endswith('.tif') and filename.startswith('S1'))])
+    return sorted_sentinel_1_list

@@ -27,7 +27,7 @@ from util.labels import number2yolo, write_txt_label, convert_boxes, remove_inva
     yolo2number, image_coordinates_2_latitude_longitude
 from utils import create_folder, initial_logging_formatter, get_platform_ship_coordinates_by_id, \
     get_platform_ship_coordinates_by_day, get_platform_coordinates, get_platform_sizes, calculate_iou, write_shp_file, \
-    generate_trend_by_date
+    generate_trend_by_date, build_sorted_sentinel_1_list
 
 stem_path = '../public/sk10_platform'
 
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     output_shp_path_disappear = f'{output_stem_path}/shapefile_disappear'
     output_shp_path_occur_and_disappear = f'{output_stem_path}/shapefile_occur_and_disappear'
     output_shp_path_by_day = f'{output_stem_path}/by_day'
-    print(f'{output_stem_path}/finish.txt')
+    # print(f'{output_stem_path}/finish.txt')
 
     create_folder(input_path)
     create_folder(output_path)
@@ -121,8 +121,7 @@ if __name__ == "__main__":
     for i, cluster in enumerate(tqdm(grid_list_cluster)):
         # grid_image_name_list = [image['grid_image_name'] for image in cluster]
         # grid_image_stem_list = [image['grid_image_stem'] for image in cluster]
-        label_in_name = cluster[j]['grid_image_stem']
-        annotations_list = [arrange_label(f'{output_grid_label_path}/{label_in_name}.txt',
+        annotations_list = [arrange_label(f'{output_grid_label_path}/{cluster[j]['grid_image_stem']}.txt',
                                           cluster[j]['shape']) for j in range(len(cluster))]
         # logging.info(annotations_list)
         # logging.info(len(annotations_list))
@@ -172,34 +171,87 @@ if __name__ == "__main__":
         write_txt_label(f'{output_combine_label_path}/{label_out_name}.txt', out_annotations_list)
 
     ##
-    print(f'Loading original images')
-    ori_list = read_original_image_list(original_image_path, support_file_list)
+    ori_list = build_sorted_sentinel_1_list(original_image_path)
+    original_name_list = [file.filename for file in ori_list]
+
     annotations_name_list = [os.path.splitext(annotation_name)[0]
                              for annotation_name in natsorted(os.listdir(output_combine_label_path))
                              if os.path.splitext(annotation_name)[1] == '.txt']
-    out_annotations_list = [arrange_label(f'{output_combine_label_path}/{annotations_name}.txt', ori_list[i]['shape'])
-                            for i, annotations_name in enumerate(annotations_name_list)]
 
+    out_annotations_list = [arrange_label(f'{output_combine_label_path}/{annotations_name}.txt',
+                                          ori_list[i].shape)
+                            for i, annotations_name in enumerate(annotations_name_list)]
+    acquire_time_list = [item.acquire_time for item in ori_list]
     platform_count_list = np.zeros(len(ori_list) - 2)
     ship_count_list = np.zeros(len(ori_list) - 2)
-    # result_list = []
     max_platform_id = 0
 
     for i in tqdm(range(len(ori_list) - 1)):
-        # logging.info(i)
-        ori_image_stem = ori_list[i]['image_original_stem']
-        ori_image_name = ori_list[i]['image_original_name']
-        # logging.info(f'ori_image = {ori_image_name}')
-
-        out_annotations_list[i], out_annotations_list[i + 1], platform_args, max_platform_id = (
+        out_annotations_list[i], out_annotations_list[i + 1], _, max_platform_id = (
             valid_box_on_2_images(out_annotations_list[i], out_annotations_list[i + 1], max_platform_id))
-        if i == 0:
-            continue
-        info = out_annotations_list[i].copy()
-        info[:, 1:5] = number2yolo(ori_list[i]['shape'], info[:, 1:5])
-        # logging.info(f'info = {info}')
-        label_out_name = ori_list[i]['image_original_stem']
-        write_txt_label(f'{modified_label_path}/{label_out_name}.txt', info)
+
+    remove_ids = []
+    # filter IOU and time
+    for i in tqdm(range(1, max_platform_id + 1)):
+        annotations_i = []
+        acquire_time_i = []
+        for acquire_time, annotations in zip(acquire_time_list, out_annotations_list):
+            for annotation in annotations:
+                if annotation[-1] == i:
+                    annotations_i.append(annotation)
+                    acquire_time_i.append(acquire_time)
+                    break
+
+        platform_ious = np.zeros(len(annotations_i) - 1, dtype=np.float32)
+        platform_i_bboxes_array = np.asarray(
+            [item[..., 1:5] for item in annotations_i]).squeeze()
+
+        if platform_i_bboxes_array.ndim < 2:
+            platform_i_bboxes_array = np.concatenate(
+                (np.reshape(platform_i_bboxes_array, (1, 4)), np.reshape(platform_i_bboxes_array, (1, 4))), axis=0)
+        platform_ious = [calculate_iou(platform_i_bboxes_array[i], platform_i_bboxes_array[i + 1]) for i in
+                            range(len(platform_i_bboxes_array) - 1)]
+        platform_size = np.mean([(item[2] - item[0]) * (item[3] - item[1]) for item in platform_i_bboxes_array])
+
+        iou_score = calculate_iou_score(platform_ious)
+        time_score = calculate_time_score((acquire_time_i[-1] - acquire_time_i[0]).days)
+        p1 = iou_score * time_score
+        if p1 < 0.5 or calculate_size_score(platform_size) < 0.5:
+            remove_ids.append(i)
+
+    remove_index = np.asarray(remove_ids) - 1
+
+    map_list = np.zeros((max_platform_id - len(remove_ids), 2), dtype=np.intp)
+    map_list[..., 0] = np.reshape(np.delete(range(1, max_platform_id + 1), remove_index), -1)
+    modified_map_list = map_list.copy()
+    for i, item in enumerate(map_list):
+        j = item[0]
+        index = np.searchsorted(remove_ids, j)
+        modified_map_list[i, 1] = index
+
+    modified_out_annotations_list = out_annotations_list.copy()
+
+    # refresh ids
+    for i in tqdm(range(len(ori_list))):
+        for j in range(len(out_annotations_list[i])):
+            item = out_annotations_list[i][j]
+
+            if item[0] == 2:
+                id = int(item[-1])
+                if id in remove_ids:
+                    modified_out_annotations_list[i][j][0] = 1
+                    modified_out_annotations_list[i][j][-1] = 0
+                else:
+                    index = np.searchsorted(modified_map_list[..., 0], id)
+                    modified_out_annotations_list[i][j][-1] -= modified_map_list[index, 1]
+
+    for i in tqdm(range(1, len(ori_list) - 1)):
+        ori_image_stem = os.path.splitext(ori_list[i].filename)[0]
+        ori_image_name = ori_list[i].filename
+        info = modified_out_annotations_list[i].copy()
+        info[..., 1:5] = number2yolo(ori_list[i].shape, info[..., 1:5])
+        # logging.info(f'{info = }')
+        write_txt_label(f'{modified_label_path}/{ori_image_stem}.txt', info)
 
         _, suffix = os.path.splitext(ori_image_name)
         if suffix in ['.tif', '.tiff']:
@@ -208,9 +260,9 @@ if __name__ == "__main__":
         else:
             ori_image = cv2.imread(f'{original_image_path}/{ori_image_name}')
 
-        geo_transform = ori_list[i]['geo_transform']
-        projection = ori_list[i]['projection']
-        draw_box_on_one_image(output_path, out_annotations_list[i], ori_image, ori_image_stem, geo_transform,
+        geo_transform = ori_list[i].geo_transform
+        projection = ori_list[i].projection
+        draw_box_on_one_image(output_path, modified_out_annotations_list[i], ori_image, ori_image_stem, geo_transform,
                               projection, write_tif=True)
 
     ###############################################################################################################

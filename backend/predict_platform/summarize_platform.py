@@ -254,10 +254,9 @@ def search_special_events(occur_array, disappear_array, platform_geo_location):
 
 
 def calculate_size_score(size):
-    # 300: 1
     if size >= 0:
-        if size <= 100:
-            score = size / 100
+        if size <= 32:
+            score = size / 32.0
         else:
             score = 1.0
     else:
@@ -266,10 +265,9 @@ def calculate_size_score(size):
 
 
 def calculate_time_score(days):
-    # 0: 0.02, 50: 1
     if days >= 0:
-        if days <= 60:
-            score = 1.0 / 60 * days
+        if days <= 24:
+            score = days / 24.0
         else:
             score = 1.0
     else:
