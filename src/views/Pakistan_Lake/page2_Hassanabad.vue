@@ -455,7 +455,7 @@ body,
 .container {
   display: flex;
   width: 100%;
-  height: 91vh;
+  height: 100%;
 }
 
 /* 左上角控制面板 */
@@ -534,9 +534,9 @@ option {
 
 /* Cesium容器样式 */
 .cesium-container {
-  /* position: absolute;
+  position: absolute;
   top: 0;
-  left: 0; */
+  left: 0;
   width: 100%;
   height: 100%;
 
