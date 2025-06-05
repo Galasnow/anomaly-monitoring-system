@@ -369,10 +369,9 @@ function initChart() {
           name: "数量 (架)",
           nameTextStyle: { fontSize: 18 },
           min: 0,
-          max: 1,
           axisLabel: {
             formatter: (value) => {
-              return [0, 1].includes(value) ? value.toFixed(0) : "";
+              return [0, 1, 2, 3].includes(value) ? value.toFixed(0) : "";
             },
             fontSize: 18,
           },
