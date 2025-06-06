@@ -621,9 +621,9 @@ option {
 
 /* Echart弹框的位置 */
 .modal {
-  position: fixed;
-  top: 405px;
-  left: 340px;
+  position: absolute;
+  top: 330px;
+  left: 10px;
   display: flex;
   width: 500px;
   height: 450px;
