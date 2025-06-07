@@ -61,13 +61,13 @@ import * as echarts from "echarts";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import axios from "axios";
 import * as GeoTIFF from "geotiff";
-import proj4 from "proj4"; // 导入 proj4 用于坐标转换
 import { Calendar, DatePicker } from "v-calendar";
 import "v-calendar/style.css";
 import {
   decode_CSV,
   checkFolderExists,
   checkFinishStatus,
+  reprojectGeoTiff,
 } from "../utils/utils.js";
 
 // 响应式数据
@@ -257,21 +257,7 @@ async function loadTiffImage(tiffUrl) {
     console.log("Image width:", width, "height:", height);
     console.log("Rasters data:", rasters);
 
-    const bbox = image.getBoundingBox();
-    console.log("Bounding box:", bbox);
-
-    if (!bbox || bbox.length !== 4) {
-      throw new Error("Invalid bounding box retrieved from TIFF image.");
-    }
-
-    const [minLon, minLat, maxLon, maxLat] = bbox;
-
-    console.log("Converted Bounding box (WGS84):", [
-      minLon,
-      minLat,
-      maxLon,
-      maxLat,
-    ]);
+    const [minLon, minLat, maxLon, maxLat] = await reprojectGeoTiff(image);
 
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");

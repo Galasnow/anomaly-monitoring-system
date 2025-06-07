@@ -1,5 +1,6 @@
 import * as d3 from "d3";
 import axios from "axios";
+import proj4 from "proj4";
 
 // 解析 CSV 文件
 export function decode_CSV(csv_path) {
@@ -80,4 +81,81 @@ export function checkFinishStatus(
       }
     }, checkInterval * 1000); // 每30秒检查一次
   });
+}
+
+export async function reprojectGeoTiff(image) {
+  try {
+    // 3. 自动获取投影信息
+    const geoKeys = image.getGeoKeys();
+
+    // 尝试从不同来源获取投影信息
+    let sourceProjection;
+    if (geoKeys.ProjectedCSTypeGeoKey) {
+      // 使用EPSG代码
+      sourceProjection = `EPSG:${geoKeys.ProjectedCSTypeGeoKey}`;
+    } else if (geoKeys.GeographicTypeGeoKey) {
+      // 地理坐标系
+      sourceProjection = `EPSG:${geoKeys.GeographicTypeGeoKey}`;
+    }
+
+    if (!sourceProjection) {
+      console.warn(
+        "Could not automatically determine projection, defaulting to WGS84"
+      );
+      sourceProjection = "EPSG:4326"; // 默认假设为WGS84
+    }
+
+    console.log("Detected source projection:", sourceProjection);
+
+    // 4. 获取边界框并重投影
+    const bbox = image.getBoundingBox();
+    console.log("Original bounding box:", bbox);
+
+    if (!bbox || bbox.length !== 4) {
+      throw new Error("Invalid bounding box retrieved from TIFF image.");
+    }
+
+    // 目标投影 (WGS84)
+    const targetProjection = "EPSG:4326";
+    let reprojectedBbox = null;
+    if (sourceProjection === targetProjection) {
+      reprojectedBbox = bbox;
+    } else {
+      // 定义proj4投影 (如果尚未定义)
+      if (!proj4.defs(sourceProjection)) {
+        // 这里可以添加常见投影的定义
+        // 例如UTM zones等
+        console.warn(
+          `Projection ${sourceProjection} not defined in proj4, attempting to use EPSG.io`
+        );
+        // 在实际应用中，你可能需要预先定义这些投影
+      }
+
+      // 重投影四个角点
+      const reprojectedCorners = [
+        proj4(sourceProjection, targetProjection, [bbox[0], bbox[1]]), // 左下
+        proj4(sourceProjection, targetProjection, [bbox[2], bbox[1]]), // 右下
+        proj4(sourceProjection, targetProjection, [bbox[2], bbox[3]]), // 右上
+        proj4(sourceProjection, targetProjection, [bbox[0], bbox[3]]), // 左上
+      ];
+
+      console.log("Reprojected corners (WGS84):", reprojectedCorners);
+
+      // 计算重投影后的边界框
+      reprojectedBbox = [
+        Math.min(...reprojectedCorners.map((c) => c[0])), // minX
+        Math.min(...reprojectedCorners.map((c) => c[1])), // minY
+        Math.max(...reprojectedCorners.map((c) => c[0])), // maxX
+        Math.max(...reprojectedCorners.map((c) => c[1])), // maxY
+      ];
+    }
+
+    console.log("Reprojected bounding box (WGS84):", reprojectedBbox);
+
+    // 5. 返回处理结果
+    return reprojectedBbox;
+  } catch (error) {
+    console.error("Error processing GeoTIFF:", error);
+    throw error;
+  }
 }

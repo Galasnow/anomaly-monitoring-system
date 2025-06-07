@@ -59,13 +59,13 @@ import * as echarts from "echarts";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import axios from "axios";
 import * as GeoTIFF from "geotiff";
-import proj4 from "proj4";
 import { Calendar, DatePicker } from "v-calendar";
 import "v-calendar/style.css";
 import {
   decode_CSV,
   checkFolderExists,
   checkFinishStatus,
+  reprojectGeoTiff,
 } from "../utils/utils.js";
 
 // Reactive state
@@ -265,21 +265,7 @@ async function loadTiffImage(tiffUrl) {
     console.log("Image width:", width, "height:", height);
     console.log("Rasters data:", rasters);
 
-    const bbox = image.getBoundingBox();
-    console.log("Bounding box (UTM):", bbox);
-
-    if (!bbox || bbox.length !== 4) {
-      throw new Error("Invalid bounding box retrieved from TIFF image.");
-    }
-
-    const [minLon, minLat, maxLon, maxLat] = bbox;
-
-    console.log("Converted Bounding box (WGS84):", [
-      minLon,
-      minLat,
-      maxLon,
-      maxLat,
-    ]);
+    const [minLon, minLat, maxLon, maxLat] = await reprojectGeoTiff(image);
 
     if (rasters.length < 3) {
       throw new Error("This TIFF image doesn't have 3 bands.");
