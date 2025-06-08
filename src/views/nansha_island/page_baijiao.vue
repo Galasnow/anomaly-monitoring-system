@@ -89,6 +89,9 @@ const calendarRef = ref(null);
 const isLoading = ref(false);
 const isChartModalVisible = ref(false);
 
+const tiffRootPath = "/Nansha_Island/01_Baijiao/test/merge";
+const csvPath = "/Nansha_Island/01_Baijiao/02_Output/Baijiao_Area.csv";
+
 // 计算属性
 const attributes = computed(() => {
   return [
@@ -229,11 +232,11 @@ async function onDayClickHandler(day) {
   const date_str = `${year_str}${month_str}${day_str}`;
   console.log("date_str:", date_str);
 
-  const selected = tifFiles_baijiao.value.filter(
+  const selectedTiff = tifFiles_baijiao.value.filter(
     (element) => element.shortName == date_str
   )[0];
-  if (selected) {
-    const tiffUrl = `/Nansha_Island/01_Baijiao/test/merge/${selected.fullName}`;
+  if (selectedTiff) {
+    const tiffUrl = `${tiffRootPath}/${selectedTiff.fullName}`;
     console.log(tiffUrl);
     await loadTiffImage(tiffUrl);
   }
@@ -302,7 +305,7 @@ async function loadTiffImage(tiffUrl) {
 
 // 初始化图表
 function initChart() {
-  decode_CSV("/Nansha_Island/01_Baijiao/02_Output/Baijiao_Area.csv")
+  decode_CSV(csvPath)
     .then((csv_data) => {
       const date_list = csv_data.map((item) => item.date);
       const area_list = csv_data.map((item) =>
@@ -391,11 +394,11 @@ function initChart() {
         console.log("Clicked date:", date_str);
 
         // 查找对应的TIFF文件并加载
-        const selected = tifFiles_baijiao.value.filter(
+        const selectedTiff = tifFiles_baijiao.value.filter(
           (element) => element.shortName == date_str
         )[0];
-        if (selected) {
-          const tiffUrl = `/Nansha_Island/01_Baijiao/test/merge/${selected.fullName}`;
+        if (selectedTiff) {
+          const tiffUrl = `${tiffRootPath}/${selectedTiff.fullName}`;
           console.log(tiffUrl);
           loadTiffImage(tiffUrl);
         }

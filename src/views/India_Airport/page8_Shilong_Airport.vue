@@ -86,6 +86,9 @@ const calendarRef = ref(null);
 const isChartModalVisible = ref(false);
 const isLoading = ref(false);
 
+const tiffRootPath = "/03_India_Airport/07_Shilong_Airport/02_Output";
+const csvPath = "/03_India_Airport/07_Shilong_Airport/Shilong_Airport_Area.csv";
+
 // Computed properties
 const attributes = computed(() => [
   {
@@ -244,7 +247,7 @@ async function onDayClickHandler(day) {
     (element) => element.shortName == date_str
   )[0];
   if (selectedTiff) {
-    const tiffUrl = `public/03_India_Airport/07_Shilong_Airport/02_Output/${selectedTiff.fullName}`;
+    const tiffUrl = `${tiffRootPath}/${selectedTiff.fullName}`;
     await loadTiffImage(tiffUrl);
   }
 }
@@ -305,9 +308,7 @@ async function loadTiffImage(tiffUrl) {
 }
 
 function initChart() {
-  decode_CSV(
-    "public/03_India_Airport/07_Shilong_Airport/Shilong_Airport_Area.csv"
-  )
+  decode_CSV(csvPath)
     .then((csv_data) => {
       const date_list = csv_data.map((item) => item.date);
       const area_list = csv_data.map((item) =>
@@ -403,7 +404,7 @@ function initChart() {
           (element) => element.shortName == date_str
         )[0];
         if (selectedTiff) {
-          const tiffUrl = `public/03_India_Airport/07_Shilong_Airport/02_Output/${selectedTiff.fullName}`;
+          const tiffUrl = `${tiffRootPath}/${selectedTiff.fullName}`;
           loadTiffImage(tiffUrl);
         }
       });

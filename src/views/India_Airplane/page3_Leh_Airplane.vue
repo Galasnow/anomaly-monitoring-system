@@ -86,6 +86,9 @@ const calendarRef = ref(null);
 const isChartModalVisible = ref(false);
 const isLoading = ref(false);
 
+const tiffRootPath = "/05_India_Airplane/02_Leh/02_Output";
+const csvPath = "/05_India_Airplane/02_Leh/Leh_Airplane_Number.csv";
+
 // Computed properties
 const attributes = computed(() => [
   {
@@ -246,7 +249,7 @@ async function onDayClickHandler(day) {
     (element) => element.shortName == date_str
   )[0];
   if (selectedTiff) {
-    const tiffUrl = `public/05_India_Airplane/02_Leh/02_Output/${selectedTiff.fullName}`;
+    const tiffUrl = `${tiffRootPath}/${selectedTiff.fullName}`;
     await loadTiffImage(tiffUrl);
   }
 }
@@ -307,7 +310,7 @@ async function loadTiffImage(tiffUrl) {
 }
 
 function initChart() {
-  decode_CSV("public/05_India_Airplane/02_Leh/Leh_Airplane_Number.csv")
+  decode_CSV(csvPath)
     .then((csv_data) => {
       // 提取日期、面积（保留4位小数）和abnormal值
       const date_list = csv_data.map((item) => item.date);
@@ -404,7 +407,7 @@ function initChart() {
           (element) => element.shortName == date_str
         )[0];
         if (selectedTiff) {
-          const tiffUrl = `public/05_India_Airplane/02_Leh/02_Output/${selectedTiff.fullName}`;
+          const tiffUrl = `${tiffRootPath}/${selectedTiff.fullName}`;
           loadTiffImage(tiffUrl);
         }
       });

@@ -90,8 +90,8 @@ const calendarRef = ref(null);
 const isLoading = ref(false);
 const isChartModalVisible = ref(false);
 
-const tiffUrlSentinel1 = "/sk10_platform/output/predict/";
-const tiffUrlGaofen = "/sk10_platform/gaofen/";
+const tiffRootPathSentinel1 = "/sk10_platform/output/predict/";
+const tiffRootPathGaofen = "/sk10_platform/gaofen/";
 const csvPath = "/sk10_platform/output/platform_number.csv";
 
 // 计算属性
@@ -272,19 +272,19 @@ async function onDayClickHandler(day) {
   const date_str = `${year_str}${month_str}${day_str}`;
   console.log("date_str:", date_str);
 
-  const selected = tifFilesSk10Gaofen.value.filter(
+  const selectedTiff = tifFilesSk10Gaofen.value.filter(
     (element) => element.shortName == date_str
   )[0];
-  if (selected) {
-    const tiffUrl = `${tiffUrlGaofen}${selected.fullName}`;
+  if (selectedTiff) {
+    const tiffUrl = `${tiffRootPathGaofen}${selectedTiff.fullName}`;
     console.log(tiffUrl);
     await loadTiffImage(tiffUrl);
   } else {
-    const selected = tifFilesSk10Sentinel1.value.filter(
+    const selectedTiff = tifFilesSk10Sentinel1.value.filter(
       (element) => element.shortName == date_str
     )[0];
-    if (selected) {
-      const tiffUrl = `${tiffUrlSentinel1}${selected.fullName}`;
+    if (selectedTiff) {
+      const tiffUrl = `${tiffRootPathSentinel1}${selectedTiff.fullName}`;
       console.log(tiffUrl);
       await loadTiffImage(tiffUrl);
     }
@@ -488,19 +488,19 @@ function initChart() {
         console.log("Clicked date:", date_str);
 
         // 查找对应的TIFF文件并加载
-        const selected = tifFilesSk10Gaofen.value.filter(
+        const selectedTiff = tifFilesSk10Gaofen.value.filter(
           (element) => element.shortName == date_str
         )[0];
-        if (selected) {
-          const tiffUrl = `${tiffUrlGaofen}${selected.fullName}`;
+        if (selectedTiff) {
+          const tiffUrl = `${tiffRootPathGaofen}${selectedTiff.fullName}`;
           console.log(tiffUrl);
           loadTiffImage(tiffUrl);
         } else {
-          const selected = tifFilesSk10Sentinel1.value.filter(
+          const selectedTiff = tifFilesSk10Sentinel1.value.filter(
             (element) => element.shortName == date_str
           )[0];
-          if (selected) {
-            const tiffUrl = `${tiffUrlSentinel1}${selected.fullName}`;
+          if (selectedTiff) {
+            const tiffUrl = `${tiffRootPathSentinel1}${selectedTiff.fullName}`;
             console.log(tiffUrl);
             loadTiffImage(tiffUrl);
           }
