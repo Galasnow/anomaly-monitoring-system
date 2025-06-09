@@ -1,11 +1,11 @@
-import * as d3 from "d3";
+import { csv as d3csv } from "d3";
 import axios from "axios";
 import proj4 from "proj4";
 
 // 解析 CSV 文件
 export function decode_CSV(csv_path) {
   return new Promise((resolve, reject) => {
-    d3.csv(csv_path)
+    d3csv(csv_path)
       .then((data) => {
         resolve(data);
       })
