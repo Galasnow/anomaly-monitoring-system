@@ -44,6 +44,13 @@ def write_txt_label(path, label):
             label_file.write(f"{int(lb[0])} {' '.join(formatted_coords)}\n")
 
 
+def arrange_label(label_path, image_shape):
+    bbox = read_txt_label(label_path)
+    bbox[..., 1:5] = yolo2number(image_shape, bbox[..., 1:5])
+    # logging.info(bbox)
+    return bbox
+
+
 def remove_invalid_annotations(label, image_shape):
     is_torch = isinstance(label, torch.Tensor)
     invalid_annotation_args = []

@@ -16,15 +16,14 @@ from torchvision.ops import nms
 from tqdm import tqdm
 
 from config import DEVICE, NUM_CLASSES, support_file_list, NMS_THRESHOLD
-from combine_label import arrange_label
 from model import create_model
 from modify_type import valid_box_on_2_images, draw_box_on_one_image
 from predict import read_grid_image_list, get_boxes_per_image, read_original_image_list, generate_cluster, build_mask
 from auto_crop import batch_crop_image_by_grid
 from summarize_platform import calculate_iou_score, search_special_events, write_csv, calculate_time_score, \
     calculate_size_score
-from util.labels import number2yolo, write_txt_label, convert_boxes, remove_invalid_tensor_by_mask, read_txt_label, \
-    yolo2number, image_coordinates_2_latitude_longitude
+from util.labels import number2yolo, write_txt_label, arrange_label, convert_boxes, remove_invalid_tensor_by_mask, \
+    read_txt_label, yolo2number, image_coordinates_2_latitude_longitude
 from utils import create_folder, initial_logging_formatter, get_platform_ship_coordinates_by_id, \
     get_platform_ship_coordinates_by_day, get_platform_coordinates, get_platform_sizes, calculate_iou, write_shp_file, \
     generate_trend_by_date, build_sorted_sentinel_1_list
@@ -42,7 +41,6 @@ if __name__ == "__main__":
     ground_truth_path = f'{stem_path}/labels_t'
     output_path = f'{output_stem_path}/predict'
     output_preview_path = f'{output_stem_path}/preview'
-    output_grid_label_path = f'{output_stem_path}/labels/grid'
     output_combine_label_path = f'{output_stem_path}/labels/combine'
     original_image_path = f'{stem_path}/original_images'
     modified_label_path = f'{output_stem_path}/labels/modified'
@@ -58,7 +56,6 @@ if __name__ == "__main__":
 
     create_folder(input_path)
     create_folder(output_path)
-    create_folder(output_grid_label_path)
     create_folder(output_combine_label_path)
     create_folder(modified_label_path)
     create_folder(output_shp_path_stable)
@@ -73,11 +70,7 @@ if __name__ == "__main__":
     if not os.path.isabs(original_image_path):
         input_image_path = os.path.join(current_path, original_image_path)
 
-    batch_crop_image_by_grid(original_image_path, input_path, crop_size, gap_size, output_format='jpg',
-                             jpg_quality=100, fill_value=(0, 0, 0))
-
     ###########################################################################
-
     use_onnxruntime_inference = False
     print('Use pytorch inference')
     model = create_model(num_classes=NUM_CLASSES)
@@ -88,87 +81,25 @@ if __name__ == "__main__":
     model.eval()  # 确保模型处于评估模式
     model.to(DEVICE)
 
-    grid_list, grid_image_name_list = read_grid_image_list(input_path, original_image_path, support_file_list)
-    pbar = tqdm(grid_image_name_list)
+    original_list = build_sorted_sentinel_1_list(original_image_path)
+    logging.info(f'{original_list = }')
+    pbar = tqdm(range(len(original_list)))
     pbar.set_description(f'Predicting')
-    for i, image_name in enumerate(pbar):
-        annotations = get_boxes_per_image(model, input_path, image_name, use_onnxruntime_inference)
-        # annotations_list = get_boxes_all_images(model, input_path, grid_image_name_list, use_onnxruntime_inference)
-
-        annotations[..., 1:5] = number2yolo(grid_list[i]['shape'], annotations[..., 1:5])
-        # logging.info(f'info = {info}')
-        label_out_name = grid_list[i]['grid_image_stem']
-        write_txt_label(f'{output_grid_label_path}/{label_out_name}.txt', annotations)
-
-    ##
-    ori_list = read_original_image_list(original_image_path, support_file_list)
-
-    # grid_image_name_list = [image_name for image_name in natsorted(os.listdir(input_image_path))
-    #                    if os.path.splitext(image_name)[-1].replace('.', '') in support_file_list]
-    grid_list, _ = read_grid_image_list(input_path, original_image_path, support_file_list)
-    grid_list_cluster, unique_image_original_stem_list = generate_cluster(grid_list)
-    label_name_list = [label_name for label_name in os.listdir(output_grid_label_path)]
-    # label_name_list, grid_label_list = read_grid_label_list(input_label_path, input_image_path, grid_image_name_list, None)
-    # logging.info(image_name_list)
-    # length = len(label_name_list)
-    # logging.info(length)
-    # batch_size = int(len(label_name_list) / len(ori_list))
-    # logging.info(batch_size)
-    # annotations_list = [arrange_label(f'{output_grid_label_path}/{label_name_list[i]}', grid_list[i]['shape']) for i in range(len(label_name_list))]
-    # logging.info(annotations_list)
-    out_annotations_list = [np.array([]) for _ in range(len(ori_list))]
-
-    for i, cluster in enumerate(tqdm(grid_list_cluster)):
-        # grid_image_name_list = [image['grid_image_name'] for image in cluster]
-        # grid_image_stem_list = [image['grid_image_stem'] for image in cluster]
-        annotations_list = [arrange_label(f'{output_grid_label_path}/{cluster[j]['grid_image_stem']}.txt',
-                                          cluster[j]['shape']) for j in range(len(cluster))]
-        # logging.info(annotations_list)
-        # logging.info(len(annotations_list))
-        # mask = build_mask(original_image_shape)
-        geo_transform = ori_list[i]['geo_transform']
-        original_image_shape = ori_list[i]['shape']
+    for i in pbar:
+        geo_transform = original_list[i].geo_transform
         modified_input_shp_path = os.path.join(current_path, input_shp_path)
-        mask = build_mask([original_image_shape[1], original_image_shape[0]], geo_transform, modified_input_shp_path)
-        # batch_size = int(len(grid_list) / len(ori_list))
-
-        # out_annotations_list = [np.array([]) for _ in range(len(ori_list))]
-
-        for j in range(len(annotations_list)):
-            # logging.info(cluster[j]['x_start'], cluster[j]['y_start'])
-            if annotations_list[j].size != 0:
-                convert_boxes(annotations_list[j][..., 1:5], cluster[j]['x_start'],
-                              cluster[j]['y_start'])
-        annotations_list = [x for x in annotations_list if x.size != 0]
-        all_annotations_list = torch.tensor(np.concatenate(annotations_list, axis=0))
-        # logging.info(all_annotations_list)
-        valid_annotations_list = remove_invalid_tensor_by_mask(all_annotations_list, mask)
-        # new_annotation_list = remove_invalid_annotations(new_annotation_list, (340, 160))
-        # logging.info(valid_annotation_list)
+        mask = build_mask(list(reversed(original_list[i].shape)), geo_transform, modified_input_shp_path)
+        annotations_list = get_boxes_per_image(model, f'{original_image_path}/{original_list[i].filename}',
+                                               use_onnxruntime_inference)
+        valid_annotations_list = remove_invalid_tensor_by_mask(annotations_list, mask)
+        # valid_annotations_list = all_annotations_list
+        # logging.info(f'{valid_annotation_list = }')
         nms_index = nms(valid_annotations_list[..., 1:5], valid_annotations_list[..., 5], NMS_THRESHOLD)
         out_annotations_list = valid_annotations_list[nms_index].cpu().numpy()
         ids = np.zeros((len(out_annotations_list), 1))
         out_annotations_list = np.concatenate((out_annotations_list, ids), axis=1)
-
-        ori_image_stem = ori_list[i]['image_original_stem']
-        ori_image_name = ori_list[i]['image_original_name']
-        _, suffix = os.path.splitext(ori_image_name)
-        if suffix in ['.tif', '.tiff']:
-            tiff_file = gdal.Open(f'{original_image_path}/{ori_image_name}')
-            ori_image = tiff_file.ReadAsArray().astype(np.float32)
-        else:
-            ori_image = cv2.imread(f'{original_image_path}/{ori_image_name}').astype(np.float32)
-
-        # geo_transform = ori_list[i]['geo_transform']
-        projection = ori_list[i]['projection']
-        # draw_box_on_one_image(output_preview_path, out_annotations_list, ori_image, ori_image_stem, geo_transform, projection,
-        #                        write_tif=False)
-
-        # info = out_annotations_list
-        out_annotations_list[:, 1:5] = number2yolo(ori_list[i]['shape'], out_annotations_list[:, 1:5])
-        # logging.info(f'info = {info}')
-        label_out_name = ori_list[i]['image_original_stem']
-        write_txt_label(f'{output_combine_label_path}/{label_out_name}.txt', out_annotations_list)
+        out_annotations_list[..., 1:5] = number2yolo(original_list[i].shape, out_annotations_list[..., 1:5])
+        write_txt_label(f'{output_combine_label_path}/{original_list[i].filename_stem}.txt', out_annotations_list)
 
     ##
     ori_list = build_sorted_sentinel_1_list(original_image_path)

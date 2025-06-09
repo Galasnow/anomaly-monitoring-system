@@ -2,7 +2,7 @@ import cv2
 from osgeo import gdal
 from ultralytics.utils.ops import clip_boxes
 
-from combine_label import arrange_label
+from util.labels import arrange_label
 
 gdal.UseExceptions()
 
@@ -97,7 +97,6 @@ def draw_box_on_one_image(output_path, annotations_list: np.ndarray, ori_image, 
     draw_box_on_image(ori_image, boxes_label_2, None, expansion_factor='auto', color=(0, 0, 255), thickness=4)
 
     # 保存结果图像
-    cv2.imwrite(f'{output_path}/{ori_image_stem}.jpg', ori_image)
     if write_tif:
         driver = gdal.GetDriverByName('GTiff')
         # ########### ?
@@ -106,7 +105,7 @@ def draw_box_on_one_image(output_path, annotations_list: np.ndarray, ori_image, 
         band_count = ori_image.shape[-1] if ori_image.ndim == 3 else 1
         # Create a new GeoTIFF file to store the result
         with driver.Create(f'{output_path}/{ori_image_stem}.tif', ori_image.shape[1], ori_image.shape[0], band_count,
-                           gdal.GDT_Byte) as out_tiff:
+                           gdal.GDT_Byte, options=['COMPRESS=LZW']) as out_tiff:
             # Set the geotransform and projection information for the out TIFF based on the input tif
             out_tiff.SetGeoTransform(geo_transform)
             out_tiff.SetProjection(projection)
