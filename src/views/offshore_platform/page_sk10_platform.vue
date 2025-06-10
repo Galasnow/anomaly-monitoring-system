@@ -60,7 +60,6 @@ import * as Cesium from "cesium";
 import * as echarts from "echarts";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import axios from "axios";
-import * as GeoTIFF from "geotiff";
 import { Calendar, DatePicker } from "v-calendar";
 import "v-calendar/style.css";
 import "../../styles/sub_area_page.scss";
@@ -68,7 +67,7 @@ import {
   decode_CSV,
   checkFolderExists,
   checkFinishStatus,
-  reprojectGeoTiff,
+  loadSelectTiff,
 } from "../utils/utils.js";
 
 // 响应式数据
@@ -77,7 +76,6 @@ const viewer = ref(null);
 const chartInstance = ref(null);
 const tifFilesSk10Sentinel1 = ref([]);
 const tifFilesSk10Gaofen = ref([]);
-const selectedTiff = ref(null);
 const isImageSelectorVisible = ref(false);
 const markDatesSentinel1 = ref([]);
 const markDatesGaofen = ref([]);
@@ -273,23 +271,14 @@ async function onDayClickHandler(day) {
   const date_str = `${year_str}${month_str}${day_str}`;
   console.log("date_str:", date_str);
 
-  const selectedTiff = tifFilesSk10Gaofen.value.filter(
-    (element) => element.shortName == date_str
-  )[0];
-  if (selectedTiff) {
-    const tiffUrl = `${tiffRootPathGaofen}${selectedTiff.fullName}`;
-    console.log(tiffUrl);
-    await loadTiffImage(tiffUrl);
-  } else {
-    const selectedTiff = tifFilesSk10Sentinel1.value.filter(
-      (element) => element.shortName == date_str
-    )[0];
-    if (selectedTiff) {
-      const tiffUrl = `${tiffRootPathSentinel1}${selectedTiff.fullName}`;
-      console.log(tiffUrl);
-      await loadTiffImage(tiffUrl);
-    }
-  }
+  // 查找对应的TIFF文件并加载
+  loadSelectTiff(
+    tifFilesSk10Sentinel1,
+    date_str,
+    tiffRootPathSentinel1,
+    viewer
+  );
+  loadSelectTiff(tifFilesSk10Gaofen, date_str, tiffRootPathGaofen, viewer);
 }
 
 // 加载点数据
@@ -337,68 +326,6 @@ async function onDayClickHandler(day) {
 //     alert("加载 GeoJSON 失败，请检查数据格式");
 //   }
 // }
-
-// 加载TIFF图像
-async function loadTiffImage(tiffUrl) {
-  try {
-    const response = await fetch(tiffUrl);
-    console.log(tiffUrl);
-    const arrayBuffer = await response.arrayBuffer();
-    const tiff = await GeoTIFF.fromArrayBuffer(arrayBuffer);
-
-    const image = await tiff.getImage();
-    const width = image.getWidth();
-    const height = image.getHeight();
-    const rasters = await image.readRasters();
-
-    console.log("Image width:", width, "height:", height);
-    console.log("Rasters data:", rasters);
-
-    const [minLon, minLat, maxLon, maxLat] = await reprojectGeoTiff(image);
-
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    canvas.width = width;
-    canvas.height = height;
-
-    const imageData = ctx.createImageData(width, height);
-
-    const redBand = ref([]);
-    const greenBand = ref([]);
-    const blueBand = ref([]);
-    if (rasters.length == 1) {
-      redBand.value = rasters[0];
-      greenBand.value = rasters[0];
-      blueBand.value = rasters[0];
-    } else if (rasters.length == 3) {
-      redBand.value = rasters[0];
-      greenBand.value = rasters[1];
-      blueBand.value = rasters[2];
-    }
-    for (let i = 0; i < redBand.value.length; i++) {
-      imageData.data[i * 4] = redBand.value[i];
-      imageData.data[i * 4 + 1] = greenBand.value[i];
-      imageData.data[i * 4 + 2] = blueBand.value[i];
-      imageData.data[i * 4 + 3] = 255;
-    }
-
-    ctx.putImageData(imageData, 0, 0);
-
-    canvas.toBlob(async (blob) => {
-      const blobUrl = URL.createObjectURL(blob);
-      const imageryProvider = new Cesium.SingleTileImageryProvider({
-        url: blobUrl,
-        rectangle: Cesium.Rectangle.fromDegrees(minLon, minLat, maxLon, maxLat),
-        tileWidth: width,
-        tileHeight: height,
-      });
-
-      viewer.value.imageryLayers.addImageryProvider(imageryProvider);
-    });
-  } catch (error) {
-    console.error("Error loading TIFF image:", error);
-  }
-}
 
 // 初始化图表
 function initChart() {
@@ -489,23 +416,18 @@ function initChart() {
         console.log("Clicked date:", date_str);
 
         // 查找对应的TIFF文件并加载
-        const selectedTiff = tifFilesSk10Gaofen.value.filter(
-          (element) => element.shortName == date_str
-        )[0];
-        if (selectedTiff) {
-          const tiffUrl = `${tiffRootPathGaofen}${selectedTiff.fullName}`;
-          console.log(tiffUrl);
-          loadTiffImage(tiffUrl);
-        } else {
-          const selectedTiff = tifFilesSk10Sentinel1.value.filter(
-            (element) => element.shortName == date_str
-          )[0];
-          if (selectedTiff) {
-            const tiffUrl = `${tiffRootPathSentinel1}${selectedTiff.fullName}`;
-            console.log(tiffUrl);
-            loadTiffImage(tiffUrl);
-          }
-        }
+        loadSelectTiff(
+          tifFilesSk10Sentinel1,
+          date_str,
+          tiffRootPathSentinel1,
+          viewer
+        );
+        loadSelectTiff(
+          tifFilesSk10Gaofen,
+          date_str,
+          tiffRootPathGaofen,
+          viewer
+        );
       });
       chartInstance.value = myChart;
     })

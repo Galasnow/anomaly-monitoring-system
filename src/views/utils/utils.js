@@ -1,6 +1,8 @@
 import { csv as d3csv } from "d3";
 import axios from "axios";
 import proj4 from "proj4";
+import * as GeoTIFF from "geotiff";
+import * as Cesium from "cesium";
 
 // 解析 CSV 文件
 export function decode_CSV(csv_path) {
@@ -83,6 +85,7 @@ export function checkFinishStatus(
   });
 }
 
+// Tif重投影
 export async function reprojectGeoTiff(image) {
   try {
     // 3. 自动获取投影信息
@@ -157,5 +160,81 @@ export async function reprojectGeoTiff(image) {
   } catch (error) {
     console.error("Error processing GeoTIFF:", error);
     throw error;
+  }
+}
+
+// 加载TIFF图像到Cesium
+async function loadTiffImage(tiffUrl, viewer) {
+  try {
+    const response = await fetch(tiffUrl);
+    console.log(tiffUrl);
+    const arrayBuffer = await response.arrayBuffer();
+    const tiff = await GeoTIFF.fromArrayBuffer(arrayBuffer);
+
+    const image = await tiff.getImage();
+    const width = image.getWidth();
+    const height = image.getHeight();
+    const rasters = await image.readRasters();
+
+    console.log("Image width:", width, "height:", height);
+    console.log("Rasters data:", rasters);
+
+    const [minLon, minLat, maxLon, maxLat] = await reprojectGeoTiff(image);
+
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = width;
+    canvas.height = height;
+    const imageData = ctx.createImageData(width, height);
+
+    const redBand = ref([]);
+    const greenBand = ref([]);
+    const blueBand = ref([]);
+    if (rasters.length == 1) {
+      redBand.value = rasters[0];
+      greenBand.value = rasters[0];
+      blueBand.value = rasters[0];
+    } else if (rasters.length == 3) {
+      redBand.value = rasters[0];
+      greenBand.value = rasters[1];
+      blueBand.value = rasters[2];
+    }
+    for (let i = 0; i < redBand.value.length; i++) {
+      imageData.data[i * 4] = redBand.value[i];
+      imageData.data[i * 4 + 1] = greenBand.value[i];
+      imageData.data[i * 4 + 2] = blueBand.value[i];
+      imageData.data[i * 4 + 3] = 255;
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+
+    canvas.toBlob(async (blob) => {
+      const blobUrl = URL.createObjectURL(blob);
+      const imageryProvider = new Cesium.SingleTileImageryProvider({
+        url: blobUrl,
+        rectangle: Cesium.Rectangle.fromDegrees(minLon, minLat, maxLon, maxLat),
+        tileWidth: width,
+        tileHeight: height,
+      });
+
+      viewer.value.imageryLayers.addImageryProvider(imageryProvider);
+    });
+  } catch (error) {
+    console.error("Error loading TIFF image:", error);
+  }
+}
+
+// 加载选择的Tif
+export async function loadSelectTiff(tifFiles, dateStr, tifRootPath, viewer) {
+  try {
+    const selectedTiff = tifFiles.value.filter(
+      (element) => element.shortName == dateStr
+    )[0];
+    if (selectedTiff) {
+      const tiffUrl = `${tifRootPath}/${selectedTiff.fullName}`;
+      await loadTiffImage(tiffUrl, viewer);
+    }
+  } catch (error) {
+    console.error("加载影像时出错:", error);
   }
 }

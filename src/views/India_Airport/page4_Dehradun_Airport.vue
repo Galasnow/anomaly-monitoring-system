@@ -58,7 +58,6 @@ import * as Cesium from "cesium";
 import * as echarts from "echarts";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import axios from "axios";
-import * as GeoTIFF from "geotiff";
 import { Calendar, DatePicker } from "v-calendar";
 import "v-calendar/style.css";
 import "../../styles/sub_area_page.scss";
@@ -66,7 +65,7 @@ import {
   decode_CSV,
   checkFolderExists,
   checkFinishStatus,
-  reprojectGeoTiff,
+  loadSelectTiff,
 } from "../utils/utils.js";
 
 // Reactive state
@@ -74,7 +73,6 @@ const isSplit = ref(false);
 const viewer = ref(null);
 const chartInstance = ref(null);
 const tifFiles = ref([]);
-const selectedTiff = ref(null);
 const cesiumContainer = ref(null);
 const chartContainer = ref(null);
 const isImageSelectorVisible = ref(false);
@@ -247,68 +245,9 @@ async function onDayClickHandler(day) {
   const day_str = ("0" + day.day).slice(-2);
   const date_str = `${year_str}${month_str}${day_str}`;
   console.log("date_str:", date_str);
-  const selectedTiff = tifFiles.value.filter(
-    (element) => element.shortName == date_str
-  )[0];
-  if (selectedTiff) {
-    const tiffUrl = `${tiffRootPath}/${selectedTiff.fullName}`;
-    await loadTiffImage(tiffUrl);
-  }
-}
 
-async function loadTiffImage(tiffUrl) {
-  try {
-    const response = await fetch(tiffUrl);
-    const arrayBuffer = await response.arrayBuffer();
-    const tiff = await GeoTIFF.fromArrayBuffer(arrayBuffer);
-
-    const image = await tiff.getImage();
-    const width = image.getWidth();
-    const height = image.getHeight();
-    const rasters = await image.readRasters();
-
-    console.log("Image width:", width, "height:", height);
-    console.log("Rasters data:", rasters);
-
-    const [minLon, minLat, maxLon, maxLat] = await reprojectGeoTiff(image);
-
-    if (rasters.length < 3) {
-      throw new Error("This TIFF image doesn't have 3 bands.");
-    }
-
-    const redBand = rasters[0];
-    const greenBand = rasters[1];
-    const blueBand = rasters[2];
-
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    canvas.width = width;
-    canvas.height = height;
-
-    const imageData = ctx.createImageData(width, height);
-    for (let i = 0; i < redBand.length; i++) {
-      imageData.data[i * 4] = redBand[i];
-      imageData.data[i * 4 + 1] = greenBand[i];
-      imageData.data[i * 4 + 2] = blueBand[i];
-      imageData.data[i * 4 + 3] = 255;
-    }
-
-    ctx.putImageData(imageData, 0, 0);
-
-    canvas.toBlob(async (blob) => {
-      const blobUrl = URL.createObjectURL(blob);
-      const imageryProvider = new Cesium.SingleTileImageryProvider({
-        url: blobUrl,
-        rectangle: Cesium.Rectangle.fromDegrees(minLon, minLat, maxLon, maxLat),
-        tileWidth: width,
-        tileHeight: height,
-      });
-
-      viewer.value.imageryLayers.addImageryProvider(imageryProvider);
-    });
-  } catch (error) {
-    console.error("Error loading TIFF image:", error);
-  }
+  // 查找对应的TIFF文件并加载
+  loadSelectTiff(tifFiles, date_str, tiffRootPath, viewer);
 }
 
 function initChart() {
@@ -404,13 +343,7 @@ function initChart() {
         console.log("Clicked date:", date_str);
 
         // 查找对应的TIFF文件并加载
-        const selectedTiff = tifFiles.value.filter(
-          (element) => element.shortName == date_str
-        )[0];
-        if (selectedTiff) {
-          const tiffUrl = `${tiffRootPath}/${selectedTiff.fullName}`;
-          loadTiffImage(tiffUrl);
-        }
+        loadSelectTiff(tifFiles, date_str, tiffRootPath, viewer);
       });
       chartInstance.value = myChart;
     })
