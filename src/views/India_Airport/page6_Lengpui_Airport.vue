@@ -89,6 +89,8 @@ const isLoading = ref(false);
 const tiffRootPath = "/03_India_Airport/05_Lengpui_Airport/02_Output";
 const csvPath = "/03_India_Airport/05_Lengpui_Airport/Lengpui_Airport_Area.csv";
 const tiffApiUrl = "http://localhost:3017/api/files_Lengpui";
+const mainScriptUrl = "http://localhost:3017/api/run_main_Lengpui";
+const finishResponseUrl = "http://localhost:3017/api/files_txt_Lengpui";
 
 // Computed properties
 const attributes = computed(() => [
@@ -185,14 +187,11 @@ async function onAnalyzeButtonClick() {
 async function runMainPythonScript() {
   try {
     isLoading.value = true;
-    const response = await axios.get(
-      "http://localhost:3017/api/run_main_Lengpui"
-    );
+    const response = await axios.get(mainScriptUrl);
     console.log("返回消息:", response.data.message);
 
     if (response.data.message === "main.py 执行已启动") {
       // 等待文件夹生成并检查是否有 finish.txt 文件
-      const finishResponseUrl = "http://localhost:3017/api/files_txt_Lengpui";
       const isFinished = await checkFinishStatus(finishResponseUrl);
 
       if (isFinished) {

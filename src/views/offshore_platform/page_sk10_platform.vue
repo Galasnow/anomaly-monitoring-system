@@ -95,6 +95,8 @@ const tiffRootPathGaofen = "/sk10_platform/gaofen/";
 const csvPath = "/sk10_platform/output/platform_number.csv";
 const tiffApiUrlSentinel1 = "http://localhost:3017/api/files_sk10_sentinel-1";
 const tiffApiUrlGaofen = "http://localhost:3017/api/files_sk10_Gaofen";
+const mainScriptUrl = "http://localhost:3017/api/run-main_offshore_platform";
+const finishResponseUrl = "http://localhost:3017/api/sk10_platform_finish_txt";
 
 // 计算属性
 const attributes = computed(() => {
@@ -189,16 +191,12 @@ async function runMainPythonScript() {
     isLoading.value = true; // 显示加载框
 
     // 点击“分析”按钮时，先执行 main.py 生成 .tif 文件
-    const response = await axios.get(
-      "http://localhost:3017/api/run-main_offshore_platform"
-    );
+    const response = await axios.get(mainScriptUrl);
     console.log("返回消息:", response.data.message); // 确认是否成功执行
 
     // 检查返回值
     if (response.data.message === "main.py 执行已启动") {
       // 等待文件夹生成并检查是否有 finish.txt 文件
-      const finishResponseUrl =
-        "http://localhost:3017/api/sk10_platform_finish_txt";
       const isFinished = await checkFinishStatus(finishResponseUrl);
 
       if (isFinished) {

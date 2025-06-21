@@ -91,6 +91,8 @@ const isChartModalVisible = ref(false);
 const tiffRootPath = "/Nansha_Island/02_Bishengjiao/test/merge";
 const csvPath = "/Nansha_Island/02_Bishengjiao/02_Output/Bishengjiao_Area.csv";
 const tiffApiUrl = "http://localhost:3017/api/files_bishengjiao";
+const mainScriptUrl = "http://localhost:3017/api/run-main_bishengjiao";
+const finishResponseUrl = "http://localhost:3017/api/bishengjiao_finish_txt";
 
 // 计算属性
 const attributes = computed(() => {
@@ -166,16 +168,12 @@ async function runMainPythonScript() {
     isLoading.value = true; // 显示加载框
 
     // 点击“分析”按钮时，先执行 main.py 生成 .tif 文件
-    const response = await axios.get(
-      "http://localhost:3017/api/run-main_bishengjiao"
-    );
+    const response = await axios.get(mainScriptUrl);
     console.log("返回消息:", response.data.message); // 确认是否成功执行
 
     // 检查返回值
     if (response.data.message === "main.py 执行已启动") {
       // 等待文件夹生成并检查是否有 finish.txt 文件
-      const finishResponseUrl =
-        "http://localhost:3017/api/bishengjiao_finish_txt";
       const isFinished = await checkFinishStatus(finishResponseUrl);
 
       if (isFinished) {
