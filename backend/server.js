@@ -8,7 +8,7 @@ const app = express();
 app.use(cors());
 
 // 任务进度存储，任务ID -> 进度
-let taskProgress = {};
+const taskProgress = {};
 
 /**
  * 检查文件夹并获取文件列表（同步版本）
@@ -28,7 +28,7 @@ function getFolderFiles(folderPath, suffix) {
     }
 
     // 读取文件列表
-    let filesList = fs
+    const filesList = fs
       .readdirSync(folderPath)
       .filter((f) => f.endsWith(suffix));
 
@@ -49,7 +49,7 @@ function getFolderFiles(folderPath, suffix) {
       };
     });
 
-    let files = filesWithStats
+    const files = filesWithStats
       .sort((a, b) => b.mtime - a.mtime)
       .map((item) => item.name);
 
@@ -498,7 +498,7 @@ app.get("/api/files_Leh_Airplane", async (req, res) => {
   return res.status(result.statusCode).json(result);
 });
 
-const Indian_River_Tributary_OUTPUT_PATH = "../public/River_Expand";
+// const Indian_River_Tributary_OUTPUT_PATH = "../public/River_Expand";
 const TIF_FOLDER_Indian_River_Tributary = "../public/River_Expand/result";
 
 // 获取文件夹中的.tif文件
@@ -510,8 +510,8 @@ app.get("/api/files_indian_river_tributary", async (req, res) => {
   return res.status(result.statusCode).json(result);
 });
 
-const Xianbinjiao_OUTPUT_PATH = "../public/Ship_Gather/01_Xianbinjiao";
-const Nanhuajiao_OUTPUT_PATH = "../public/Ship_Gather/02_Nanhuajiao";
+// const Xianbinjiao_OUTPUT_PATH = "../public/Ship_Gather/01_Xianbinjiao";
+// const Nanhuajiao_OUTPUT_PATH = "../public/Ship_Gather/02_Nanhuajiao";
 const TIF_FOLDER_Xianbinjiao = "../public/Ship_Gather/01_Xianbinjiao/result";
 const TIF_FOLDER_Nanhuajiao = "../public/Ship_Gather/02_Nanhuajiao/result";
 
@@ -527,7 +527,7 @@ app.get("/api/files_nanhuajiao", async (req, res) => {
   return res.status(result.statusCode).json(result);
 });
 
-const Mandehaixia_OUTPUT_PATH = "../public/Ship_Disperse/";
+// const Mandehaixia_OUTPUT_PATH = "../public/Ship_Disperse/";
 const TIF_FOLDER_Mandehaixia = "../public/Ship_Disperse//result";
 
 // 获取文件夹中的.tif文件
