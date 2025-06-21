@@ -6,14 +6,14 @@
       <div class="time-selector-box">
         <h2 class="title">SK10海上钻井平台异常出现与消失动态监测</h2>
         <h3>开始日期</h3>
-        <input type="date" v-model="firstDate" @change="onDateChange" />
+        <input v-model="firstDate" type="date" @change="onDateChange" />
         <h3>截止日期</h3>
-        <input type="date" v-model="secondDate" @change="onSecondDateChange" />
+        <input v-model="secondDate" type="date" @change="onSecondDateChange" />
         <button @click="analyzeData">分析</button>
       </div>
 
       <!-- 选择影像文件的独立窗体 -->
-      <div class="image-selector-box" v-if="isImageSelectorVisible">
+      <div v-if="isImageSelectorVisible" class="image-selector-box">
         <h2 class="title">SK10海上钻井平台提取结果</h2>
         <Calendar
           ref="calendarRef"
@@ -32,7 +32,7 @@
       </div>
     </div>
 
-    <div id="loading" v-show="isLoading">
+    <div v-show="isLoading" id="loading">
       <p>正在执行，请稍候...</p>
     </div>
 
@@ -53,7 +53,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { cesium_token } from "../../../my_package.json";
 import { Viewer } from "cesium";
 import * as Cesium from "cesium";
@@ -92,6 +92,9 @@ const isChartModalVisible = ref(false);
 const tiffRootPathSentinel1 = "/sk10_platform/output/predict/";
 const tiffRootPathGaofen = "/sk10_platform/gaofen/";
 const csvPath = "/sk10_platform/output/platform_number.csv";
+const tiffApiUrlSentinel1 =
+  "http://localhost:3017/api/files_files_sk10_sentinel-1";
+const tiffApiUrlGaofen = "http://localhost:3017/api/files_files_sk10_Gaofen";
 
 // 计算属性
 const attributes = computed(() => {
@@ -146,9 +149,7 @@ async function initCesium() {
 // 获取TIFF文件列表
 async function fetchTiffFiles_Gaofen() {
   try {
-    const response = await axios.get(
-      "http://localhost:3017/api/files_sk10_Gaofen"
-    );
+    const response = await axios.get(tiffApiUrlGaofen);
     console.log("返回的数据:", response.data);
 
     tifFilesSk10Gaofen.value = response.data.files.map((file) => ({
@@ -173,8 +174,7 @@ async function fetchTiffFiles_Gaofen() {
 async function analyzeData() {
   try {
     // 1. 先检查文件夹是否存在
-    const outTifFileUrl = "http://localhost:3017/api/files_sk10_sentinel-1";
-    const folderExists = await checkFolderExists(outTifFileUrl);
+    const folderExists = await checkFolderExists(tiffApiUrlSentinel1);
 
     if (folderExists) {
       // 2. 如果文件夹存在，直接加载 .tif 文件并展示
@@ -187,7 +187,7 @@ async function analyzeData() {
     } else {
       // 3. 如果文件夹不存在，调用后端的 main.py 进行处理
       console.log("文件夹不存在，正在调用 Python 脚本进行处理...");
-      const result = await runMainPythonScript();
+      await runMainPythonScript();
       console.log("执行完成，已加载 .tif 文件"); // 返回 Python 脚本的执行结果
     }
   } catch (error) {
@@ -238,9 +238,7 @@ async function runMainPythonScript() {
 // 获取TIFF文件列表
 async function fetchTiffFiles() {
   try {
-    const response = await axios.get(
-      "http://localhost:3017/api/files_sk10_sentinel-1"
-    );
+    const response = await axios.get(tiffApiUrlSentinel1);
     console.log("返回的数据:", response.data);
 
     tifFilesSk10Sentinel1.value = response.data.files.map((file) => ({
@@ -343,7 +341,7 @@ function initChart() {
       const option = {
         tooltip: {
           trigger: "axis",
-          valueFormatter: function (value) {
+          valueFormatter(value) {
             return value;
           },
         },

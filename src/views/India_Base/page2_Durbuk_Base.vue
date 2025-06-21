@@ -6,14 +6,14 @@
       <div class="time-selector-box">
         <h2 class="title">杜尔布克营地异常扩建监测</h2>
         <h3>开始日期</h3>
-        <input type="date" v-model="firstDate" @change="onDateChange" />
+        <input v-model="firstDate" type="date" @change="onDateChange" />
         <h3>截止日期</h3>
-        <input type="date" v-model="secondDate" @change="onSecondDateChange" />
+        <input v-model="secondDate" type="date" @change="onSecondDateChange" />
         <button @click="analyzeData">分析</button>
       </div>
 
       <!-- 选择影像文件的独立窗体 -->
-      <div class="image-selector-box" v-if="isImageSelectorVisible">
+      <div v-if="isImageSelectorVisible" class="image-selector-box">
         <h2 class="title">营地提取结果</h2>
         <Calendar
           ref="calendarRef"
@@ -30,7 +30,7 @@
       </div>
     </div>
 
-    <div id="loading" v-show="isLoading">
+    <div v-show="isLoading" id="loading">
       <p>正在执行，请稍候...</p>
     </div>
 
@@ -87,6 +87,7 @@ const isLoading = ref(false);
 
 const tiffRootPath = "/02_India_Base/01_Durbuk_Base/02_Output";
 const csvPath = "/02_India_Base/01_Durbuk_Base/Durbuk_Base_Area.csv";
+const tiffApiUrl = "http://localhost:3017/api/files_Durbuk";
 
 // Computed properties
 const attributes = computed(() => [
@@ -157,8 +158,7 @@ function analyzeData() {
 async function onAnalyzeButtonClick() {
   try {
     // 1. 先检查文件夹是否存在
-    const outTifFileUrl = "http://localhost:3017/api/files_Durbuk";
-    const folderExists = await checkFolderExists(outTifFileUrl);
+    const folderExists = await checkFolderExists(tiffApiUrl);
 
     if (folderExists) {
       await fetchTiffFiles();
@@ -169,7 +169,7 @@ async function onAnalyzeButtonClick() {
       return { success: true, message: "文件夹存在，已加载 .tif 文件" };
     } else {
       console.log("文件夹不存在，正在调用 Python 脚本进行处理...");
-      const result = await runMainPythonScript();
+      await runMainPythonScript();
       return { success: true, message: "，已加载 .tif 文件" };
     }
   } catch (error) {
@@ -212,7 +212,7 @@ async function runMainPythonScript() {
 
 async function fetchTiffFiles() {
   try {
-    const response = await axios.get("http://localhost:3017/api/files_Durbuk");
+    const response = await axios.get(tiffApiUrl);
     console.log("返回的数据:", response.data);
 
     tifFiles.value = response.data.files.map((file) => ({
@@ -268,7 +268,7 @@ function initChart() {
       const option = {
         tooltip: {
           trigger: "axis",
-          valueFormatter: function (value) {
+          valueFormatter(value) {
             return value + " m²";
           },
         },
