@@ -68,6 +68,7 @@ import {
   checkFolderExists,
   checkFinishStatus,
   loadSelectTiff,
+  fetchTiffFiles,
 } from "../utils/utils.js";
 
 // 响应式数据
@@ -140,7 +141,10 @@ async function analyzeData() {
 
     if (folderExists) {
       // 2. 如果文件夹存在，直接加载 .tif 文件并展示
-      await fetchTiffFiles();
+      const { files, markDates } = await fetchTiffFiles(tiffApiUrl, 0);
+      tifFiles.value = files;
+      mark_dates.value = markDates;
+
       isChartModalVisible.value = true; // 显示ECharts弹窗
       initChart(); // 初始化ECharts图表
       isImageSelectorVisible.value = true; // 点击分析按钮后展示“港口提取结果”窗体  // 成功提示
@@ -177,8 +181,11 @@ async function runMainPythonScript() {
         console.log("Python 脚本执行完成");
         // 执行完成后，继续后续的操作，如加载文件
         loadpoint(viewer.value);
-        await fetchTiffFiles();
-        isChartModalVisible.value = true; // 显示ECharts弹窗
+        const { files, markDates } = await fetchTiffFiles(tiffApiUrl, 0);
+        tifFiles.value = files;
+        mark_dates.value = markDates;
+
+        isChartModalVisible.value = true;
         initChart(); // 初始化ECharts图表
         isImageSelectorVisible.value = true; // 点击分析按钮后展示“港口提取结果”窗体  // 成功提示
       } else {
@@ -192,32 +199,6 @@ async function runMainPythonScript() {
   } finally {
     // 执行完毕后隐藏加载框
     isLoading.value = false; // 隐藏加载框
-  }
-}
-
-// 获取TIFF文件列表
-async function fetchTiffFiles() {
-  try {
-    const response = await axios.get(tiffApiUrl);
-    console.log("返回的数据:", response.data);
-
-    tifFiles.value = response.data.files.map((file) => ({
-      fullName: file,
-      shortName: file.substring(0, 8),
-    }));
-
-    mark_dates.value = [];
-    const files = tifFiles.value;
-    // console.log(files)
-    for (let i = 0; i < tifFiles.value.length; i++) {
-      const file = files[i].fullName;
-      const year = file.substring(0, 4);
-      const month = file.substring(4, 6);
-      const day = file.substring(6, 8);
-      mark_dates.value.push(new Date(year, month - 1, day));
-    }
-  } catch (error) {
-    console.error("获取文件列表时出错:", error);
   }
 }
 

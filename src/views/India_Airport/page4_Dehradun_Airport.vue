@@ -66,6 +66,7 @@ import {
   checkFolderExists,
   checkFinishStatus,
   loadSelectTiff,
+  fetchTiffFiles,
 } from "../utils/utils.js";
 
 // Reactive state
@@ -162,7 +163,10 @@ async function onAnalyzeButtonClick() {
     const folderExists = await checkFolderExists(tiffApiUrl);
 
     if (folderExists) {
-      await fetchTiffFiles();
+      const { files, markDates } = await fetchTiffFiles(tiffApiUrl, 0);
+      tifFiles.value = files;
+      mark_dates.value = markDates;
+
       isChartModalVisible.value = true;
       initChart();
       isImageSelectorVisible.value = true;
@@ -194,7 +198,10 @@ async function runMainPythonScript() {
 
       if (isFinished) {
         console.log("执行成功，main.py 执行完成");
-        await fetchTiffFiles();
+        const { files, markDates } = await fetchTiffFiles(tiffApiUrl, 0);
+        tifFiles.value = files;
+        mark_dates.value = markDates;
+
         isChartModalVisible.value = true;
         initChart();
         isImageSelectorVisible.value = true;
@@ -208,30 +215,6 @@ async function runMainPythonScript() {
     console.error("分析执行失败:", error);
   } finally {
     isLoading.value = false;
-  }
-}
-
-async function fetchTiffFiles() {
-  try {
-    const response = await axios.get(tiffApiUrl);
-    console.log("返回的数据:", response.data);
-
-    tifFiles.value = response.data.files.map((file) => ({
-      fullName: file,
-      shortName: file.substring(0, 8),
-    }));
-
-    mark_dates.value = [];
-    const files = tifFiles.value;
-    for (let i = 0; i < tifFiles.value.length; i++) {
-      const file = files[i].fullName;
-      const year = file.substring(0, 4);
-      const month = file.substring(4, 6);
-      const day = file.substring(6, 8);
-      mark_dates.value.push(new Date(year, month - 1, day));
-    }
-  } catch (error) {
-    console.error("获取文件列表时出错:", error);
   }
 }
 

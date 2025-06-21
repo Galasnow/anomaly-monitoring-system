@@ -68,6 +68,7 @@ import {
   checkFolderExists,
   checkFinishStatus,
   loadSelectTiff,
+  fetchTiffFiles,
 } from "../utils/utils.js";
 
 // 响应式数据
@@ -92,9 +93,8 @@ const isChartModalVisible = ref(false);
 const tiffRootPathSentinel1 = "/sk10_platform/output/predict/";
 const tiffRootPathGaofen = "/sk10_platform/gaofen/";
 const csvPath = "/sk10_platform/output/platform_number.csv";
-const tiffApiUrlSentinel1 =
-  "http://localhost:3017/api/files_files_sk10_sentinel-1";
-const tiffApiUrlGaofen = "http://localhost:3017/api/files_files_sk10_Gaofen";
+const tiffApiUrlSentinel1 = "http://localhost:3017/api/files_sk10_sentinel-1";
+const tiffApiUrlGaofen = "http://localhost:3017/api/files_sk10_Gaofen";
 
 // 计算属性
 const attributes = computed(() => {
@@ -148,27 +148,9 @@ async function initCesium() {
 
 // 获取TIFF文件列表
 async function fetchTiffFiles_Gaofen() {
-  try {
-    const response = await axios.get(tiffApiUrlGaofen);
-    console.log("返回的数据:", response.data);
-
-    tifFilesSk10Gaofen.value = response.data.files.map((file) => ({
-      fullName: file,
-      shortName: file.substring(4, 12),
-    }));
-
-    markDatesGaofen.value = [];
-    const files = tifFilesSk10Gaofen.value;
-    for (let i = 0; i < tifFilesSk10Gaofen.value.length; i++) {
-      const file = files[i].fullName;
-      const year = file.substring(4, 8);
-      const month = file.substring(8, 10);
-      const day = file.substring(10, 12);
-      markDatesGaofen.value.push(new Date(year, month - 1, day));
-    }
-  } catch (error) {
-    console.error("获取文件列表时出错:", error);
-  }
+  const { files, markDates } = await fetchTiffFiles(tiffApiUrlGaofen, 4);
+  tifFilesSk10Gaofen.value = files;
+  markDatesGaofen.value = markDates;
 }
 
 async function analyzeData() {
@@ -178,7 +160,13 @@ async function analyzeData() {
 
     if (folderExists) {
       // 2. 如果文件夹存在，直接加载 .tif 文件并展示
-      await fetchTiffFiles();
+      const { files, markDates } = await fetchTiffFiles(
+        tiffApiUrlSentinel1,
+        17
+      );
+      tifFilesSk10Sentinel1.value = files;
+      markDatesSentinel1.value = markDates;
+
       // loadpoint(viewer.value);
       isChartModalVisible.value = true; // 显示ECharts弹窗
       initChart(); // 初始化ECharts图表
@@ -217,7 +205,13 @@ async function runMainPythonScript() {
         console.log("Python 脚本执行完成");
         // 执行完成后，继续后续的操作，如加载文件
         // loadpoint(viewer.value);
-        await fetchTiffFiles();
+        const { files, markDates } = await fetchTiffFiles(
+          tiffApiUrlSentinel1,
+          17
+        );
+        tifFilesSk10Sentinel1.value = files;
+        markDatesSentinel1.value = markDates;
+
         isChartModalVisible.value = true; // 显示ECharts弹窗
         initChart(); // 初始化ECharts图表
         isImageSelectorVisible.value = true; // 点击分析按钮后展示“港口提取结果”窗体  // 成功提示
@@ -232,31 +226,6 @@ async function runMainPythonScript() {
   } finally {
     // 执行完毕后隐藏加载框
     isLoading.value = false; // 隐藏加载框
-  }
-}
-
-// 获取TIFF文件列表
-async function fetchTiffFiles() {
-  try {
-    const response = await axios.get(tiffApiUrlSentinel1);
-    console.log("返回的数据:", response.data);
-
-    tifFilesSk10Sentinel1.value = response.data.files.map((file) => ({
-      fullName: file,
-      shortName: file.substring(17, 25),
-    }));
-
-    markDatesSentinel1.value = [];
-    const files = tifFilesSk10Sentinel1.value;
-    for (let i = 0; i < tifFilesSk10Sentinel1.value.length; i++) {
-      const file = files[i].fullName;
-      const year = file.substring(17, 21);
-      const month = file.substring(21, 23);
-      const day = file.substring(23, 25);
-      markDatesSentinel1.value.push(new Date(year, month - 1, day));
-    }
-  } catch (error) {
-    console.error("获取文件列表时出错:", error);
   }
 }
 

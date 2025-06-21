@@ -50,7 +50,7 @@ export function checkFinishStatus(
   executeTimeLimit = 3600,
   checkInterval = 20
 ) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const startTime = Date.now(); // 获取开始时间
     const timeLimit = executeTimeLimit * 1000; // 时间限制 (单位：毫秒)
 
@@ -236,5 +236,38 @@ export async function loadSelectTiff(tifFiles, dateStr, tifRootPath, viewer) {
     }
   } catch (error) {
     console.error("加载影像时出错:", error);
+  }
+}
+
+// 获取Tif文件列表
+export async function fetchTiffFiles(tiffUrl, dateStrStartPosition = 0) {
+  try {
+    const response = await axios.get(tiffUrl);
+    console.log("返回的数据:", response.data);
+
+    const files = response.data.files.map((file) => ({
+      fullName: file,
+      shortName: file.substring(dateStrStartPosition, dateStrStartPosition + 8),
+    }));
+
+    const markDates = files.map((file) => {
+      const fileStr = file.fullName;
+      const year = fileStr.substring(
+        dateStrStartPosition,
+        dateStrStartPosition + 4
+      );
+      const month = fileStr.substring(
+        dateStrStartPosition + 4,
+        dateStrStartPosition + 6
+      );
+      const day = fileStr.substring(
+        dateStrStartPosition + 6,
+        dateStrStartPosition + 8
+      );
+      return new Date(year, month - 1, day);
+    });
+    return { files, markDates };
+  } catch (error) {
+    console.error("获取文件列表时出错:", error);
   }
 }
