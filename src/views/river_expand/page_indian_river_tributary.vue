@@ -151,7 +151,7 @@ async function analyzeData() {
 
       isChartModalVisible.value = true; // 显示ECharts弹窗
       initChart(); // 初始化ECharts图表
-      isImageSelectorVisible.value = true; // 点击分析按钮后展示“港口提取结果”窗体  // 成功提示
+      isImageSelectorVisible.value = true; // 点击分析按钮后展示“提取结果”窗体  // 成功提示
       console.log("文件夹存在，已加载 .tif 文件");
     } else {
       // 3. 如果文件夹不存在，调用后端的 main.py 进行处理
@@ -188,7 +188,7 @@ async function runMainPythonScript() {
 
         isChartModalVisible.value = true;
         initChart(); // 初始化ECharts图表
-        isImageSelectorVisible.value = true; // 点击分析按钮后展示“港口提取结果”窗体  // 成功提示
+        isImageSelectorVisible.value = true; // 点击分析按钮后展示“提取结果”窗体  // 成功提示
       } else {
         console.error("执行失败：没有找到 finish.txt 文件");
       }

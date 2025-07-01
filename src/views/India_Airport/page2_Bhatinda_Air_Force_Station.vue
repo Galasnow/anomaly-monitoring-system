@@ -146,21 +146,7 @@ async function initCesium() {
   });
 }
 
-function analyzeData() {
-  onAnalyzeButtonClick()
-    .then((result) => {
-      if (result.success) {
-        console.log(result.message);
-      } else {
-        console.error(result.message);
-      }
-    })
-    .catch((error) => {
-      console.error("分析过程中出错:", error);
-    });
-}
-
-async function onAnalyzeButtonClick() {
+async function analyzeData() {
   try {
     // 1. 先检查文件夹是否存在
     const folderExists = await checkFolderExists(tiffApiUrl);
