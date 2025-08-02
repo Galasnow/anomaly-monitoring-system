@@ -92,9 +92,9 @@ const tiffRootPath = "/River_Expand/result";
 const csvPath = "/River_Expand/River_area.csv";
 const tiffApiUrl = "http://localhost:3017/api/files_indian_river_tributary";
 const mainScriptUrl =
-  "http://localhost:3017/api/run-main_indian_river_tributary";
+  "http://localhost:3017/api/run_main_indian_river_tributary";
 const finishResponseUrl =
-  "http://localhost:3017/api/indian_river_tributary_finish_txt";
+  "http://localhost:3017/api/files_txt_indian_river_tributary";
 
 // 计算属性
 const attributes = computed(() => {
@@ -145,7 +145,7 @@ async function analyzeData() {
 
     if (folderExists) {
       // 2. 如果文件夹存在，直接加载 .tif 文件并展示
-      const { files, markDates } = await fetchTiffFiles(tiffApiUrl, 0);
+      const { files, markDates } = await fetchTiffFiles(tiffApiUrl, 19);
       tifFiles.value = files;
       mark_dates.value = markDates;
 
@@ -182,7 +182,7 @@ async function runMainPythonScript() {
         console.log("Python 脚本执行完成");
         // 执行完成后，继续后续的操作，如加载文件
         loadpoint(viewer.value);
-        const { files, markDates } = await fetchTiffFiles(tiffApiUrl, 0);
+        const { files, markDates } = await fetchTiffFiles(tiffApiUrl, 19);
         tifFiles.value = files;
         mark_dates.value = markDates;
 

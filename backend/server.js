@@ -139,7 +139,7 @@ app.get("/api/files_Gaoxiong", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run-main_Gaoxiong", async (req, res) => {
+app.get("/api/run_main_Gaoxiong", async (req, res) => {
   try {
     const result = await runMainPythonScript(
       MAIN_PY_PATH_Gaoxiong,
@@ -170,7 +170,7 @@ app.get("/api/files_Taibei", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run-main_Taibei", async (req, res) => {
+app.get("/api/run_main_Taibei", async (req, res) => {
   try {
     const result = await runMainPythonScript(MAIN_PY_PATH_Taibei, taskProgress);
     res.json(result);
@@ -199,7 +199,7 @@ app.get("/api/files_Durbuk", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run-main_Durbuk", async (req, res) => {
+app.get("/api/run_main_Durbuk", async (req, res) => {
   try {
     const result = await runMainPythonScript(MAIN_PY_PATH_Durbuk, taskProgress);
     res.json(result);
@@ -227,7 +227,7 @@ app.get("/api/files_Chummur", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run-main_Chummur", async (req, res) => {
+app.get("/api/run_main_Chummur", async (req, res) => {
   try {
     const result = await runMainPythonScript(
       MAIN_PY_PATH_Chummur,
@@ -262,7 +262,7 @@ app.get("/api/files_Bhatinda", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run-main_Bhatinda", async (req, res) => {
+app.get("/api/run_main_Bhatinda", async (req, res) => {
   try {
     const result = await runMainPythonScript(
       MAIN_PY_PATH_Bhatinda,
@@ -294,7 +294,7 @@ app.get("/api/files_Silchar", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run-main_Silchar", async (req, res) => {
+app.get("/api/run_main_Silchar", async (req, res) => {
   try {
     const result = await runMainPythonScript(
       MAIN_PY_PATH_Silchar,
@@ -326,7 +326,7 @@ app.get("/api/files_Dehradun", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run-main_Dehradun", async (req, res) => {
+app.get("/api/run_main_Dehradun", async (req, res) => {
   try {
     const result = await runMainPythonScript(
       MAIN_PY_PATH_Dehradun,
@@ -357,7 +357,7 @@ app.get("/api/files_Leh", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run-main_Leh", async (req, res) => {
+app.get("/api/run_main_Leh", async (req, res) => {
   try {
     const result = await runMainPythonScript(MAIN_PY_PATH_Leh, taskProgress);
     res.json(result);
@@ -386,7 +386,7 @@ app.get("/api/files_Lengpui", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run-main_Lengpui", async (req, res) => {
+app.get("/api/run_main_Lengpui", async (req, res) => {
   try {
     const result = await runMainPythonScript(
       MAIN_PY_PATH_Lengpui,
@@ -420,7 +420,7 @@ app.get("/api/files_Chabua", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run-main_Chabua", async (req, res) => {
+app.get("/api/run_main_Chabua", async (req, res) => {
   try {
     const result = await runMainPythonScript(MAIN_PY_PATH_Chabua, taskProgress);
     res.json(result);
@@ -449,7 +449,7 @@ app.get("/api/files_Shilong", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run-main_Shilong", async (req, res) => {
+app.get("/api/run_main_Shilong", async (req, res) => {
   try {
     const result = await runMainPythonScript(
       MAIN_PY_PATH_Shilong,
@@ -558,7 +558,7 @@ app.get("/api/files_bishengjiao", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run-main_baijiao", async (req, res) => {
+app.get("/api/run_main_baijiao", async (req, res) => {
   try {
     const result = await runMainPythonScript(
       Baijiao_MAIN_PY_PATH,
@@ -572,7 +572,7 @@ app.get("/api/run-main_baijiao", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run-main_bishengjiao", async (req, res) => {
+app.get("/api/run_main_bishengjiao", async (req, res) => {
   try {
     const result = await runMainPythonScript(
       Bishengjiao_MAIN_PY_PATH,
@@ -586,13 +586,13 @@ app.get("/api/run-main_bishengjiao", async (req, res) => {
 });
 
 // 获取文件夹中的.txt文件
-app.get("/api/baijiao_finish_txt", async (req, res) => {
+app.get("/api/files_txt_baijiao", async (req, res) => {
   const result = await getFolderFiles(Baijiao_OUTPUT_PATH, ".txt");
   return res.status(result.statusCode).json(result);
 });
 
 // 获取文件夹中的.txt文件
-app.get("/api/bishengjiao_finish_txt", async (req, res) => {
+app.get("/api/files_txt_bishengjiao", async (req, res) => {
   const result = await getFolderFiles(Bishengjiao_OUTPUT_PATH, ".txt");
   return res.status(result.statusCode).json(result);
 });
@@ -615,7 +615,7 @@ app.get("/api/files_sk10_gaofen", async (req, res) => {
 });
 
 // 运行 main.py，返回任务ID
-app.get("/api/run-main_offshore_platform", async (req, res) => {
+app.get("/api/run_main_offshore_platform", async (req, res) => {
   try {
     const result = await runMainPythonScript(
       OFFSHORE_PLATFORM_MAIN_PY_PATH,
@@ -629,7 +629,7 @@ app.get("/api/run-main_offshore_platform", async (req, res) => {
 });
 
 // 获取文件夹中的.txt文件
-app.get("/api/sk10_platform_finish_txt", async (req, res) => {
+app.get("/api/files_txt_sk10_platform", async (req, res) => {
   const result = await getFolderFiles(SK10_OUTPUT_PATH, ".txt");
   return res.status(result.statusCode).json(result);
 });

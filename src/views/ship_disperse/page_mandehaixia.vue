@@ -91,7 +91,7 @@ const isChartModalVisible = ref(false);
 const tiffRootPath = "/Ship_Disperse/result";
 const csvPath = "/Ship_Disperse/Honghai_Number.csv";
 const tiffApiUrl = "http://localhost:3017/api/files_mandehaixia";
-const mainScriptUrl = "http://localhost:3017/api/run-main_mandehaixia";
+const mainScriptUrl = "http://localhost:3017/api/run_main_mandehaixia";
 const finishResponseUrl = "http://localhost:3017/api/mandehaixia_finish_txt";
 
 // 计算属性

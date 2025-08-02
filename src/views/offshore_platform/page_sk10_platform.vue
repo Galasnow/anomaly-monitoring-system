@@ -95,8 +95,8 @@ const tiffRootPathGaofen = "/sk10_platform/gaofen/";
 const csvPath = "/sk10_platform/output/platform_number.csv";
 const tiffApiUrlSentinel1 = "http://localhost:3017/api/files_sk10_sentinel-1";
 const tiffApiUrlGaofen = "http://localhost:3017/api/files_sk10_Gaofen";
-const mainScriptUrl = "http://localhost:3017/api/run-main_offshore_platform";
-const finishResponseUrl = "http://localhost:3017/api/sk10_platform_finish_txt";
+const mainScriptUrl = "http://localhost:3017/api/run_main_offshore_platform";
+const finishResponseUrl = "http://localhost:3017/api/files_txt_sk10_platform";
 
 // 计算属性
 const attributes = computed(() => {

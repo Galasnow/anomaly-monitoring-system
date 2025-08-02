@@ -91,8 +91,8 @@ const isChartModalVisible = ref(false);
 const tiffRootPath = "/Nansha_Island/02_Bishengjiao/test/merge";
 const csvPath = "/Nansha_Island/02_Bishengjiao/02_Output/Bishengjiao_Area.csv";
 const tiffApiUrl = "http://localhost:3017/api/files_bishengjiao";
-const mainScriptUrl = "http://localhost:3017/api/run-main_bishengjiao";
-const finishResponseUrl = "http://localhost:3017/api/bishengjiao_finish_txt";
+const mainScriptUrl = "http://localhost:3017/api/run_main_bishengjiao";
+const finishResponseUrl = "http://localhost:3017/api/files_txt_bishengjiao";
 
 // 计算属性
 const attributes = computed(() => {

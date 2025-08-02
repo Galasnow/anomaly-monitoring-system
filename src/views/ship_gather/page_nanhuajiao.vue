@@ -91,8 +91,8 @@ const isChartModalVisible = ref(false);
 const tiffRootPath = "/Ship_Gather/02_Nanhuajiao/result";
 const csvPath = "/Ship_Gather/02_Nanhuajiao/02_nanhuajiao_Number.csv";
 const tiffApiUrl = "http://localhost:3017/api/files_nanhuajiao";
-const mainScriptUrl = "http://localhost:3017/api/run-main_nanhuajiao";
-const finishResponseUrl = "http://localhost:3017/api/nanhuajiao_finish_txt";
+const mainScriptUrl = "http://localhost:3017/api/run_main_nanhuajiao";
+const finishResponseUrl = "http://localhost:3017/api/files_txt_nanhuajiao";
 
 // 计算属性
 const attributes = computed(() => {

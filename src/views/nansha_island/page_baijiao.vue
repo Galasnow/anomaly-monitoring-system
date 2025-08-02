@@ -91,8 +91,8 @@ const isChartModalVisible = ref(false);
 const tiffRootPath = "/Nansha_Island/01_Baijiao/test/merge";
 const csvPath = "/Nansha_Island/01_Baijiao/02_Output/Baijiao_Area.csv";
 const tiffApiUrl = "http://localhost:3017/api/files_baijiao";
-const mainScriptUrl = "http://localhost:3017/api/run-main_baijiao";
-const finishResponseUrl = "http://localhost:3017/api/baijiao_finish_txt";
+const mainScriptUrl = "http://localhost:3017/api/run_main_baijiao";
+const finishResponseUrl = "http://localhost:3017/api/files_txt_baijiao";
 
 // 计算属性
 const attributes = computed(() => {
