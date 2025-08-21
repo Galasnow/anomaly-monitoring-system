@@ -59,6 +59,7 @@ import * as echarts from "echarts";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import axios from "axios";
 import { Calendar, DatePicker } from "v-calendar";
+import { backendUrlPrefix } from "../utils/global_variable.js";
 import "v-calendar/style.css";
 import "../../styles/sub_area_page.scss";
 import {
@@ -89,9 +90,9 @@ const isLoading = ref(false);
 const tiffRootPath = "/03_India_Airport/06_Chabua_Air_Force_Station/02_Output";
 const csvPath =
   "/03_India_Airport/06_Chabua_Air_Force_Station/Chabua_Airport_Area.csv";
-const tiffApiUrl = "http://localhost:3017/api/files_Chabua";
-const mainScriptUrl = "http://localhost:3017/api/run_main_Chabua";
-const finishResponseUrl = "http://localhost:3017/api/files_txt_Chabua";
+const tiffApiUrl = `${backendUrlPrefix}/files_Chabua`;
+const mainScriptUrl = `${backendUrlPrefix}/run_main_Chabua`;
+const finishResponseUrl = `${backendUrlPrefix}/files_txt_Chabua`;
 
 // Computed properties
 const attributes = computed(() => [

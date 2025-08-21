@@ -61,6 +61,7 @@ import * as echarts from "echarts";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import axios from "axios";
 import { Calendar, DatePicker } from "v-calendar";
+import { backendUrlPrefix } from "../utils/global_variable.js";
 import "v-calendar/style.css";
 import "../../styles/sub_area_page.scss";
 import {
@@ -93,10 +94,10 @@ const isChartModalVisible = ref(false);
 const tiffRootPathSentinel1 = "/sk10_platform/output/predict/";
 const tiffRootPathGaofen = "/sk10_platform/gaofen/";
 const csvPath = "/sk10_platform/output/platform_number.csv";
-const tiffApiUrlSentinel1 = "http://localhost:3017/api/files_sk10_sentinel-1";
-const tiffApiUrlGaofen = "http://localhost:3017/api/files_sk10_Gaofen";
-const mainScriptUrl = "http://localhost:3017/api/run_main_offshore_platform";
-const finishResponseUrl = "http://localhost:3017/api/files_txt_sk10_platform";
+const tiffApiUrlSentinel1 = `${backendUrlPrefix}/files_sk10_sentinel-1`;
+const tiffApiUrlGaofen = `${backendUrlPrefix}/files_sk10_Gaofen`;
+const mainScriptUrl = `${backendUrlPrefix}/run_main_offshore_platform`;
+const finishResponseUrl = `${backendUrlPrefix}/files_txt_sk10_platform`;
 
 // 计算属性
 const attributes = computed(() => {

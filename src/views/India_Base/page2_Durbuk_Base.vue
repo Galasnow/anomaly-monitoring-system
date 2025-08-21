@@ -59,6 +59,7 @@ import * as echarts from "echarts";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import axios from "axios";
 import { Calendar, DatePicker } from "v-calendar";
+import { backendUrlPrefix } from "../utils/global_variable.js";
 import "v-calendar/style.css";
 import "../../styles/sub_area_page.scss";
 import {
@@ -88,9 +89,9 @@ const isLoading = ref(false);
 
 const tiffRootPath = "/02_India_Base/01_Durbuk_Base/02_Output";
 const csvPath = "/02_India_Base/01_Durbuk_Base/Durbuk_Base_Area.csv";
-const tiffApiUrl = "http://localhost:3017/api/files_Durbuk";
-const mainScriptUrl = "http://localhost:3017/api/run_main_Durbuk";
-const finishResponseUrl = "http://localhost:3017/api/files_txt_Durbuk";
+const tiffApiUrl = `${backendUrlPrefix}/files_Durbuk`;
+const mainScriptUrl = `${backendUrlPrefix}/run_main_Durbuk`;
+const finishResponseUrl = `${backendUrlPrefix}/files_txt_Durbuk`;
 
 // Computed properties
 const attributes = computed(() => [

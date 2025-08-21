@@ -59,6 +59,7 @@ import * as echarts from "echarts";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import axios from "axios";
 import { Calendar, DatePicker } from "v-calendar";
+import { backendUrlPrefix } from "../utils/global_variable.js";
 import "v-calendar/style.css";
 import "../../styles/sub_area_page.scss";
 import {
@@ -88,9 +89,9 @@ const isLoading = ref(false);
 
 const tiffRootPath = "/01_Taiwan_Port/01_Gaoxiong_Port/02_Output";
 const csvPath = "/01_Taiwan_Port/01_Gaoxiong_Port/Gaoxiong_Port_Area.csv";
-const tiffApiUrl = "http://localhost:3017/api/files_Gaoxiong";
-const mainScriptUrl = "http://localhost:3017/api/run_main_Gaoxiong";
-const finishResponseUrl = "http://localhost:3017/api/files_txt_Gaoxiong";
+const tiffApiUrl = `${backendUrlPrefix}/files_Gaoxiong`;
+const mainScriptUrl = `${backendUrlPrefix}/run_main_Gaoxiong`;
+const finishResponseUrl = `${backendUrlPrefix}/files_txt_Gaoxiong`;
 
 // Computed properties
 const attributes = computed(() => [

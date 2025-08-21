@@ -61,6 +61,7 @@ import * as echarts from "echarts";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import axios from "axios";
 import { Calendar, DatePicker } from "v-calendar";
+import { backendUrlPrefix } from "../utils/global_variable.js";
 import "v-calendar/style.css";
 import "../../styles/sub_area_page.scss";
 import {
@@ -90,9 +91,9 @@ const isChartModalVisible = ref(false);
 
 const tiffRootPath = "/Nansha_Island/02_Bishengjiao/test/merge";
 const csvPath = "/Nansha_Island/02_Bishengjiao/02_Output/Bishengjiao_Area.csv";
-const tiffApiUrl = "http://localhost:3017/api/files_bishengjiao";
-const mainScriptUrl = "http://localhost:3017/api/run_main_bishengjiao";
-const finishResponseUrl = "http://localhost:3017/api/files_txt_bishengjiao";
+const tiffApiUrl = `${backendUrlPrefix}/files_bishengjiao`;
+const mainScriptUrl = `${backendUrlPrefix}/run_main_bishengjiao`;
+const finishResponseUrl = `${backendUrlPrefix}/files_txt_bishengjiao`;
 
 // 计算属性
 const attributes = computed(() => {

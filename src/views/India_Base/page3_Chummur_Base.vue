@@ -59,6 +59,7 @@ import * as echarts from "echarts";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import axios from "axios";
 import { Calendar, DatePicker } from "v-calendar";
+import { backendUrlPrefix } from "../utils/global_variable.js";
 import "v-calendar/style.css";
 import "../../styles/sub_area_page.scss";
 import {
@@ -88,9 +89,9 @@ const isLoading = ref(false);
 
 const tiffRootPath = "/02_India_Base/02_Chummur_Base/02_Output";
 const csvPath = "/02_India_Base/02_Chummur_Base/Chummur_Base_Area.csv";
-const tiffApiUrl = "http://localhost:3017/api/files_Chummur";
-const mainScriptUrl = "http://localhost:3017/api/run_main_Chummur";
-const finishResponseUrl = "http://localhost:3017/api/files_txt_Chummur";
+const tiffApiUrl = `${backendUrlPrefix}/files_Chummur`;
+const mainScriptUrl = `${backendUrlPrefix}/run_main_Chummur`;
+const finishResponseUrl = `${backendUrlPrefix}/files_txt_Chummur`;
 
 // Computed properties
 const attributes = computed(() => [

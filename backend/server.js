@@ -646,4 +646,4 @@ app.get("/api/task-progress/:taskId", (req, res) => {
   }
 });
 
-app.listen(3017, () => console.log("Server running on port 3017"));
+app.listen(3017, "0.0.0.0", () => console.log("Server running on port 3017"));

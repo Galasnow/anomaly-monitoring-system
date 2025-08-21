@@ -59,6 +59,7 @@ import * as echarts from "echarts";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import axios from "axios";
 import { Calendar, DatePicker } from "v-calendar";
+import { backendUrlPrefix } from "../utils/global_variable.js";
 import "v-calendar/style.css";
 import "../../styles/sub_area_page.scss";
 import {
@@ -88,9 +89,9 @@ const isLoading = ref(false);
 
 const tiffRootPath = "/05_India_Airplane/02_Leh/02_Output";
 const csvPath = "/05_India_Airplane/02_Leh/Leh_Airplane_Number.csv";
-const tiffApiUrl = "http://localhost:3017/api/files_Leh_Airplane";
-const mainScriptUrl = "http://localhost:3017/api/run_main_Silchar";
-const finishResponseUrl = "http://localhost:3017/api/files_txt_Silchar";
+const tiffApiUrl = `${backendUrlPrefix}/files_Leh_Airplane`;
+const mainScriptUrl = `${backendUrlPrefix}/run_main_Silchar`;
+const finishResponseUrl = `${backendUrlPrefix}/files_txt_Silchar`;
 
 // Computed properties
 const attributes = computed(() => [

@@ -61,6 +61,7 @@ import * as echarts from "echarts";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import axios from "axios";
 import { Calendar, DatePicker } from "v-calendar";
+import { backendUrlPrefix } from "../utils/global_variable.js";
 import "v-calendar/style.css";
 import "../../styles/sub_area_page.scss";
 import {
@@ -90,9 +91,9 @@ const isChartModalVisible = ref(false);
 
 const tiffRootPath = "/Ship_Disperse/result";
 const csvPath = "/Ship_Disperse/Honghai_Number.csv";
-const tiffApiUrl = "http://localhost:3017/api/files_mandehaixia";
-const mainScriptUrl = "http://localhost:3017/api/run_main_mandehaixia";
-const finishResponseUrl = "http://localhost:3017/api/mandehaixia_finish_txt";
+const tiffApiUrl = `${backendUrlPrefix}/files_mandehaixia`;
+const mainScriptUrl = `${backendUrlPrefix}/run_main_mandehaixia`;
+const finishResponseUrl = `${backendUrlPrefix}/mandehaixia_finish_txt`;
 
 // 计算属性
 const attributes = computed(() => {
