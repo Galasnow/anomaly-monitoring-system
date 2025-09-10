@@ -44,7 +44,7 @@
     <div v-if="isChartModalVisible" class="modal">
       <div class="modal-content">
         <h2 class="title">高雄港异常扩建动态监测曲线</h2>
-        <div ref="chartContainer" style="width: 600px; height: 400px"></div>
+        <div ref="chartContainer" style="width: 500px; height: 300px"></div>
       </div>
     </div>
   </div>
@@ -467,7 +467,7 @@ body,
 .container {
   display: flex;
   width: 100%;
-  height: 91vh;
+  height: 100%;
 }
 
 /* 左上角控制面板 */
@@ -486,7 +486,7 @@ body,
   width: 280px;
 
   /* 设置面板的宽度 */
-  height: 280px;
+  height: 300px;
   padding: 15px;
   background-color: white;
   border-radius: 8px;
@@ -546,9 +546,9 @@ option {
 
 /* Cesium容器样式 */
 .cesium-container {
-  /* position: absolute;
+  position: absolute;
   top: 0;
-  left: 0; */
+  left: 0;
   width: 100%;
   height: 100%;
 
@@ -568,7 +568,7 @@ option {
 .responsive-image {
   display: block;
   width: auto;
-  height: 91%;
+  height: 80%;
   margin-top: 5px;
   margin-right: auto;
   margin-left: auto;
@@ -588,11 +588,11 @@ option {
 /* Echart弹框的位置 */
 .modal {
   position: fixed;
-  top: 410px;
-  left: 340px;
+  top: 400px;
+  left: 350px;
   display: flex;
-  width: 500px;
-  height: 450px;
+  width: 400px;
+  height: 350px;
   background-color: rgb(0 0 0 / 50%);
 }
 
