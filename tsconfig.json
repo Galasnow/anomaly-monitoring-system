@@ -1,40 +1,39 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "useDefineForClassFields": true,
     "module": "esnext",
     "moduleResolution": "node",
-    "strict": true,
-    "noLib": false,
-    "sourceMap": true,
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
     "lib": ["esnext", "dom"],
     "baseUrl": ".",
-    "allowJs": true,
     "paths": {
       "@/*": ["src/*"]
     },
-    "types": ["vite/client", "unplugin-icons/types/vue", "element-plus/global"],
-    "skipLibCheck": true /* Skip type checking all .d.ts files. */,
-    "allowSyntheticDefaultImports": true /* 允许默认导入 */,
-    "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
 
-    "jsx": "preserve",
-    "jsxFactory": "h",
-    "jsxFragmentFactory": "Fragment"
+    // 严格性和类型检查相关配置
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // 模块和兼容性相关配置
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+
+    // 调试和兼容性相关配置
+    "sourceMap": true,
+    "useDefineForClassFields": true,
+    "allowJs": true,
+
+    // 类型声明相关配置
+    "types": ["node", "vite/client", "element-plus/global"]
   },
+
   "include": [
+    "mock/**/*.ts",
     "src/**/*.ts",
     "src/**/*.vue",
-    "src/typings/**/*.d.ts",
-    "mock/**/*.ts",
-    "vite.config.ts"
+    "vite.config.ts",
+    "eslint.config.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.js",
-    "src/assets/CircleRippleMaterial.mjs"
-  ]
+  "exclude": ["node_modules", "dist"]
 }

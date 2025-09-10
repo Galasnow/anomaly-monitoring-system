@@ -16,8 +16,10 @@ dist-ssr
 *.sln
 *.local
 
+stats.html
+pnpm-lock.yaml
 my_package.json
 my_package.txt
 package-lock.json
-pnpm-lock.yaml
-stats.html
+.stylelintcache
+.eslintcache

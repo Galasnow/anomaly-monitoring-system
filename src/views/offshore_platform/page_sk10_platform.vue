@@ -6,14 +6,14 @@
       <div class="time-selector-box">
         <h2 class="title">SK10海上钻井平台异常出现与消失动态监测</h2>
         <h3>开始日期</h3>
-        <input type="date" v-model="firstDate" @change="onDateChange" />
+        <input v-model="firstDate" type="date" @change="onDateChange" />
         <h3>截止日期</h3>
-        <input type="date" v-model="secondDate" @change="onSecondDateChange" />
+        <input v-model="secondDate" type="date" @change="onSecondDateChange" />
         <button @click="analyzeData">分析</button>
       </div>
 
       <!-- 选择影像文件的独立窗体 -->
-      <div class="image-selector-box" v-if="isImageSelectorVisible">
+      <div v-if="isImageSelectorVisible" class="image-selector-box">
         <h2 class="title">SK10海上钻井平台提取结果</h2>
         <Calendar
           ref="calendarRef"
@@ -32,7 +32,7 @@
       </div>
     </div>
 
-    <div id="loading" v-show="isLoading">
+    <div v-show="isLoading" id="loading">
       <p>正在执行，请稍候...</p>
     </div>
 
@@ -53,20 +53,23 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { cesium_token } from "../../../my_package.json";
 import { Viewer } from "cesium";
 import * as Cesium from "cesium";
 import * as echarts from "echarts";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import axios from "axios";
-import * as GeoTIFF from "geotiff";
 import { Calendar, DatePicker } from "v-calendar";
+import { backendUrlPrefix } from "../utils/global_variable.js";
 import "v-calendar/style.css";
+import "../../styles/sub_area_page.scss";
 import {
   decode_CSV,
   checkFolderExists,
   checkFinishStatus,
+  loadSelectTiff,
+  fetchTiffFiles,
 } from "../utils/utils.js";
 
 // 响应式数据
@@ -75,7 +78,6 @@ const viewer = ref(null);
 const chartInstance = ref(null);
 const tifFilesSk10Sentinel1 = ref([]);
 const tifFilesSk10Gaofen = ref([]);
-const selectedTiff = ref(null);
 const isImageSelectorVisible = ref(false);
 const markDatesSentinel1 = ref([]);
 const markDatesGaofen = ref([]);
@@ -84,14 +86,18 @@ const chartContainer = ref(null);
 const firstDate = ref("2017-02-20");
 const secondDate = ref("2025-02-02");
 const calendarDate = ref(null);
-const selectedDate = defineModel();
+const selectedDate = defineModel({ type: Date });
 const calendarRef = ref(null);
 const isLoading = ref(false);
 const isChartModalVisible = ref(false);
 
-const tiffUrlSentinel1 = "/sk10_platform/output/predict/";
-const tiffUrlGaofen = "/sk10_platform/gaofen/";
+const tiffRootPathSentinel1 = "/sk10_platform/output/predict/";
+const tiffRootPathGaofen = "/sk10_platform/gaofen/";
 const csvPath = "/sk10_platform/output/platform_number.csv";
+const tiffApiUrlSentinel1 = `${backendUrlPrefix}/files_sk10_sentinel-1`;
+const tiffApiUrlGaofen = `${backendUrlPrefix}/files_sk10_Gaofen`;
+const mainScriptUrl = `${backendUrlPrefix}/run_main_offshore_platform`;
+const finishResponseUrl = `${backendUrlPrefix}/files_txt_sk10_platform`;
 
 // 计算属性
 const attributes = computed(() => {
@@ -145,49 +151,34 @@ async function initCesium() {
 
 // 获取TIFF文件列表
 async function fetchTiffFiles_Gaofen() {
-  try {
-    const response = await axios.get(
-      "http://localhost:3017/api/files_sk10_Gaofen"
-    );
-    console.log("返回的数据:", response.data);
-
-    tifFilesSk10Gaofen.value = response.data.files.map((file) => ({
-      fullName: file,
-      shortName: file.substring(4, 12),
-    }));
-
-    markDatesGaofen.value = [];
-    const files = tifFilesSk10Gaofen.value;
-    for (let i = 0; i < tifFilesSk10Gaofen.value.length; i++) {
-      const file = files[i].fullName;
-      const year = file.substring(4, 8);
-      const month = file.substring(8, 10);
-      const day = file.substring(10, 12);
-      markDatesGaofen.value.push(new Date(year, month - 1, day));
-    }
-  } catch (error) {
-    console.error("获取文件列表时出错:", error);
-  }
+  const { files, markDates } = await fetchTiffFiles(tiffApiUrlGaofen, 4);
+  tifFilesSk10Gaofen.value = files;
+  markDatesGaofen.value = markDates;
 }
 
 async function analyzeData() {
   try {
     // 1. 先检查文件夹是否存在
-    const outTifFileUrl = "http://localhost:3017/api/files_sk10_sentinel-1";
-    const folderExists = await checkFolderExists(outTifFileUrl);
+    const folderExists = await checkFolderExists(tiffApiUrlSentinel1);
 
     if (folderExists) {
       // 2. 如果文件夹存在，直接加载 .tif 文件并展示
-      await fetchTiffFiles();
+      const { files, markDates } = await fetchTiffFiles(
+        tiffApiUrlSentinel1,
+        17
+      );
+      tifFilesSk10Sentinel1.value = files;
+      markDatesSentinel1.value = markDates;
+
       // loadpoint(viewer.value);
       isChartModalVisible.value = true; // 显示ECharts弹窗
       initChart(); // 初始化ECharts图表
-      isImageSelectorVisible.value = true; // 点击分析按钮后展示“港口提取结果”窗体  // 成功提示
+      isImageSelectorVisible.value = true; // 点击分析按钮后展示“提取结果”窗体  // 成功提示
       console.log("文件夹存在，已加载 .tif 文件");
     } else {
       // 3. 如果文件夹不存在，调用后端的 main.py 进行处理
       console.log("文件夹不存在，正在调用 Python 脚本进行处理...");
-      const result = await runMainPythonScript();
+      await runMainPythonScript();
       console.log("执行完成，已加载 .tif 文件"); // 返回 Python 脚本的执行结果
     }
   } catch (error) {
@@ -201,26 +192,28 @@ async function runMainPythonScript() {
     isLoading.value = true; // 显示加载框
 
     // 点击“分析”按钮时，先执行 main.py 生成 .tif 文件
-    const response = await axios.get(
-      "http://localhost:3017/api/run-main_offshore_platform"
-    );
+    const response = await axios.get(mainScriptUrl);
     console.log("返回消息:", response.data.message); // 确认是否成功执行
 
     // 检查返回值
     if (response.data.message === "main.py 执行已启动") {
       // 等待文件夹生成并检查是否有 finish.txt 文件
-      const finishResponseUrl =
-        "http://localhost:3017/api/sk10_platform_finish_txt";
       const isFinished = await checkFinishStatus(finishResponseUrl);
 
       if (isFinished) {
         console.log("Python 脚本执行完成");
         // 执行完成后，继续后续的操作，如加载文件
         // loadpoint(viewer.value);
-        await fetchTiffFiles();
+        const { files, markDates } = await fetchTiffFiles(
+          tiffApiUrlSentinel1,
+          17
+        );
+        tifFilesSk10Sentinel1.value = files;
+        markDatesSentinel1.value = markDates;
+
         isChartModalVisible.value = true; // 显示ECharts弹窗
         initChart(); // 初始化ECharts图表
-        isImageSelectorVisible.value = true; // 点击分析按钮后展示“港口提取结果”窗体  // 成功提示
+        isImageSelectorVisible.value = true; // 点击分析按钮后展示“提取结果”窗体  // 成功提示
       } else {
         console.error("执行失败：没有找到 finish.txt 文件");
       }
@@ -235,33 +228,6 @@ async function runMainPythonScript() {
   }
 }
 
-// 获取TIFF文件列表
-async function fetchTiffFiles() {
-  try {
-    const response = await axios.get(
-      "http://localhost:3017/api/files_sk10_sentinel-1"
-    );
-    console.log("返回的数据:", response.data);
-
-    tifFilesSk10Sentinel1.value = response.data.files.map((file) => ({
-      fullName: file,
-      shortName: file.substring(17, 25),
-    }));
-
-    markDatesSentinel1.value = [];
-    const files = tifFilesSk10Sentinel1.value;
-    for (let i = 0; i < tifFilesSk10Sentinel1.value.length; i++) {
-      const file = files[i].fullName;
-      const year = file.substring(17, 21);
-      const month = file.substring(21, 23);
-      const day = file.substring(23, 25);
-      markDatesSentinel1.value.push(new Date(year, month - 1, day));
-    }
-  } catch (error) {
-    console.error("获取文件列表时出错:", error);
-  }
-}
-
 // 日期点击处理
 async function onDayClickHandler(day) {
   selectedDate.value = day.date;
@@ -271,23 +237,14 @@ async function onDayClickHandler(day) {
   const date_str = `${year_str}${month_str}${day_str}`;
   console.log("date_str:", date_str);
 
-  const selected = tifFilesSk10Gaofen.value.filter(
-    (element) => element.shortName == date_str
-  )[0];
-  if (selected) {
-    const tiffUrl = `${tiffUrlGaofen}${selected.fullName}`;
-    console.log(tiffUrl);
-    await loadTiffImage(tiffUrl);
-  } else {
-    const selected = tifFilesSk10Sentinel1.value.filter(
-      (element) => element.shortName == date_str
-    )[0];
-    if (selected) {
-      const tiffUrl = `${tiffUrlSentinel1}${selected.fullName}`;
-      console.log(tiffUrl);
-      await loadTiffImage(tiffUrl);
-    }
-  }
+  // 查找对应的TIFF文件并加载
+  loadSelectTiff(
+    tifFilesSk10Sentinel1,
+    date_str,
+    tiffRootPathSentinel1,
+    viewer
+  );
+  loadSelectTiff(tifFilesSk10Gaofen, date_str, tiffRootPathGaofen, viewer);
 }
 
 // 加载点数据
@@ -336,75 +293,6 @@ async function onDayClickHandler(day) {
 //   }
 // }
 
-// 加载TIFF图像
-async function loadTiffImage(tiffUrl) {
-  try {
-    const response = await fetch(tiffUrl);
-    console.log(tiffUrl);
-    const arrayBuffer = await response.arrayBuffer();
-    const tiff = await GeoTIFF.fromArrayBuffer(arrayBuffer);
-
-    const image = await tiff.getImage();
-    const width = image.getWidth();
-    const height = image.getHeight();
-    const rasters = await image.readRasters();
-
-    console.log("Image width:", width, "height:", height);
-    console.log("Rasters data:", rasters);
-
-    const bbox = image.getBoundingBox();
-    console.log("Bounding box:", bbox);
-
-    if (!bbox || bbox.length !== 4) {
-      throw new Error("Invalid bounding box retrieved from TIFF image.");
-    }
-
-    const [minLon, minLat, maxLon, maxLat] = bbox;
-
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    canvas.width = width;
-    canvas.height = height;
-
-    const imageData = ctx.createImageData(width, height);
-
-    const redBand = ref([]);
-    const greenBand = ref([]);
-    const blueBand = ref([]);
-    if (rasters.length == 1) {
-      redBand.value = rasters[0];
-      greenBand.value = rasters[0];
-      blueBand.value = rasters[0];
-    } else if (rasters.length == 3) {
-      redBand.value = rasters[0];
-      greenBand.value = rasters[1];
-      blueBand.value = rasters[2];
-    }
-    for (let i = 0; i < redBand.value.length; i++) {
-      imageData.data[i * 4] = redBand.value[i];
-      imageData.data[i * 4 + 1] = greenBand.value[i];
-      imageData.data[i * 4 + 2] = blueBand.value[i];
-      imageData.data[i * 4 + 3] = 255;
-    }
-
-    ctx.putImageData(imageData, 0, 0);
-
-    canvas.toBlob(async (blob) => {
-      const blobUrl = URL.createObjectURL(blob);
-      const imageryProvider = new Cesium.SingleTileImageryProvider({
-        url: blobUrl,
-        rectangle: Cesium.Rectangle.fromDegrees(minLon, minLat, maxLon, maxLat),
-        tileWidth: width,
-        tileHeight: height,
-      });
-
-      viewer.value.imageryLayers.addImageryProvider(imageryProvider);
-    });
-  } catch (error) {
-    console.error("Error loading TIFF image:", error);
-  }
-}
-
 // 初始化图表
 function initChart() {
   decode_CSV(csvPath)
@@ -421,7 +309,7 @@ function initChart() {
       const option = {
         tooltip: {
           trigger: "axis",
-          valueFormatter: function (value) {
+          valueFormatter(value) {
             return value;
           },
         },
@@ -494,23 +382,18 @@ function initChart() {
         console.log("Clicked date:", date_str);
 
         // 查找对应的TIFF文件并加载
-        const selected = tifFilesSk10Gaofen.value.filter(
-          (element) => element.shortName == date_str
-        )[0];
-        if (selected) {
-          const tiffUrl = `${tiffUrlGaofen}${selected.fullName}`;
-          console.log(tiffUrl);
-          loadTiffImage(tiffUrl);
-        } else {
-          const selected = tifFilesSk10Sentinel1.value.filter(
-            (element) => element.shortName == date_str
-          )[0];
-          if (selected) {
-            const tiffUrl = `${tiffUrlSentinel1}${selected.fullName}`;
-            console.log(tiffUrl);
-            loadTiffImage(tiffUrl);
-          }
-        }
+        loadSelectTiff(
+          tifFilesSk10Sentinel1,
+          date_str,
+          tiffRootPathSentinel1,
+          viewer
+        );
+        loadSelectTiff(
+          tifFilesSk10Gaofen,
+          date_str,
+          tiffRootPathGaofen,
+          viewer
+        );
       });
       chartInstance.value = myChart;
     })
@@ -558,187 +441,3 @@ function onSecondDateChange() {
   // 实现日期变化逻辑
 }
 </script>
-
-/* 页面主容器 */
-<style scoped>
-/* 确保全屏布局 */
-html,
-body,
-#app {
-  height: 100%;
-  padding: 0;
-  margin: 0;
-  overflow: hidden;
-}
-
-/* 页面主容器 */
-.container {
-  display: flex;
-  width: 100%;
-  height: 91vh;
-}
-
-/* 左上角控制面板 */
-.time-selector-box {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-
-  /* 垂直排列 */
-  gap: 5px;
-
-  /* 两个日期选择框之间的间隔 */
-  width: 280px;
-
-  /* 设置面板的宽度 */
-  height: 280px;
-  padding: 15px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgb(0 0 0 / 10%);
-
-  /* 设置面板的高度 */
-}
-
-.time-selector-box h3 {
-  margin-bottom: 8px;
-  font-size: 16px;
-}
-
-.time-selector-box input[type="date"] {
-  padding: 5px;
-  margin-right: 10px;
-}
-
-.time-selector-box button {
-  padding: 5px 10px;
-  color: white;
-  cursor: pointer;
-  background-color: #007bff;
-  border: none;
-  border-radius: 4px;
-}
-
-.time-selector-box button:hover {
-  background-color: #0056b3;
-}
-
-/* 港口提取结果选择面板 */
-.image-selector-box {
-  position: absolute;
-  top: 10px;
-  left: 300px;
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  width: auto;
-  height: 300px;
-  padding: 15px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgb(0 0 0 / 10%);
-
-  /* 根据内容自动调整高度 */
-}
-
-/* 确保每个 option 不会压缩 */
-option {
-  white-space: nowrap;
-
-  /* 防止文件名被压缩到一行 */
-}
-
-/* Cesium容器样式 */
-.cesium-container {
-  /* position: absolute;
-  top: 0;
-  left: 0; */
-  width: 100%;
-  height: 100%;
-
-  /* transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); */
-}
-
-.cesium-container.split-left {
-  width: 45%;
-}
-
-/* ECharts 图表样式 */
-.chart-container {
-  width: 100%;
-  height: 100%;
-}
-
-/* .image-container {
-  height: 50%;
-  padding: 15px;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.chart-container {
-  flex: 1;
-  padding: 15px;
-  /* min-height: 300px;
-} */
-
-.responsive-image {
-  display: block;
-  width: auto;
-  height: 91%;
-  margin-top: 5px;
-  margin-right: auto;
-  margin-left: auto;
-}
-
-/* 标题样式 */
-.title {
-  padding-bottom: 8px;
-  margin: 0;
-  font-size: 20px;
-  font-weight: bold;
-  color: #002060;
-  text-align: left;
-  border-bottom: 2px solid #000;
-}
-
-/* Echart弹框的位置 */
-.modal {
-  position: fixed;
-  top: 405px;
-  left: 340px;
-  display: flex;
-  width: 500px;
-  height: 450px;
-  background-color: rgb(0 0 0 / 50%);
-}
-
-.modal-content {
-  padding: 20px;
-  background: white;
-  border-radius: 10px;
-}
-
-#loading {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  z-index: 9999;
-
-  /* 将元素居中 */
-  padding: 20px;
-  font-size: 20px;
-
-  /* 半透明背景 */
-  color: white;
-  background-color: rgb(0 0 0 / 70%);
-  border-radius: 5px;
-  transform: translate(-50%, -50%);
-
-  /* 确保 loading 层位于其他内容之上 */
-}
-</style>

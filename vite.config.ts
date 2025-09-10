@@ -9,7 +9,7 @@ import Icons from "unplugin-icons/vite";
 import IconsResolver from "unplugin-icons/resolver";
 
 import { createSvgIconsPlugin } from "vite-plugin-svg-icons";
-import mockDevServerPlugin from "vite-plugin-mock-dev-server";
+import { mockDevServerPlugin } from "vite-plugin-mock-dev-server";
 
 import UnoCSS from "unocss/vite";
 import { resolve } from "path";

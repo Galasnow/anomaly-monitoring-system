@@ -18,6 +18,30 @@ torch.manual_seed(42)
 np.random.seed(42)
 
 
+def read_image_as_ndarray(image_path, as_rgb=True, gray2rgb=True, channel_combination=(0,1,2), ndarray_dtype=np.float32) -> np.ndarray:
+    _, suffix = os.path.splitext(image_path)
+    if suffix in ['.tif', '.tiff']:
+        with gdal.Open(image_path) as tiff_file:
+            image = tiff_file.ReadAsArray().astype(ndarray_dtype)
+            if image.ndim == 3:
+                image = np.transpose(image, (1, 2, 0))
+                if as_rgb and image.shape[-1] != 3:
+                    if np.max(channel_combination) >= image.shape[-1]:
+                        raise RuntimeError('select band exceed image bands count')
+                    new_image = np.zeros((image.shape[0], image.shape[1], 3), dtype=ndarray_dtype)
+                    new_image[:, :, 0] = image[:, :, channel_combination[0]]
+                    new_image[:, :, 1] = image[:, :, channel_combination[1]]
+                    new_image[:, :, 2] = image[:, :, channel_combination[2]]
+                    image = new_image
+            else:
+                if gray2rgb:
+                    image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+    else:
+        image = cv2.imread(image_path).astype(ndarray_dtype)
+    if not image.flags['C_CONTIGUOUS']:
+        image = np.ascontiguousarray(image)
+    return image
+
 def valid_box_on_2_images(annotation_array_1, annotation_array_2, max_platform_id, iou_min = 0.00001, pixel_size=(10, 10), area_min = 500):
     boxes_1 = annotation_array_1[..., 1:5]
     boxes_2 = annotation_array_2[..., 1:5]
@@ -54,8 +78,8 @@ def draw_box_on_image(image, boxes: np.ndarray, ids=None, expansion_factor=None,
     height = boxes[..., 3] - boxes[..., 1]
 
     if expansion_factor == 'auto':
-        half_width_expand_size = 5
-        half_height_expand_size = 5
+        half_width_expand_size = 6
+        half_height_expand_size = 6
     else:
         half_width_expand_size = width * (expansion_factor - 1) / 2
         half_height_expand_size = height * (expansion_factor - 1) / 2
@@ -90,11 +114,11 @@ def draw_box_on_one_image(output_path, annotations_list: np.ndarray, ori_image, 
         ori_image = cv2.cvtColor(ori_image, cv2.COLOR_GRAY2RGB)
 
     boxes_label_1 = boxes[labels == 1]
-    boxes_label_2 = boxes[labels == 2]
+    # boxes_label_2 = boxes[labels == 2]
     # ids_label_1 = ids[labels == 1]
     # ids_label_2 = ids[labels == 2]
-    draw_box_on_image(ori_image, boxes_label_1, None, expansion_factor='auto', color=(0, 255, 0), thickness=4)
-    draw_box_on_image(ori_image, boxes_label_2, None, expansion_factor='auto', color=(0, 0, 255), thickness=4)
+    draw_box_on_image(ori_image, boxes_label_1, None, expansion_factor='auto', color=(0, 0, 255), thickness=4)
+    # draw_box_on_image(ori_image, boxes_label_2, None, expansion_factor='auto', color=(0, 0, 255), thickness=4)
 
     # 保存结果图像
     if write_tif:
@@ -149,12 +173,13 @@ if __name__ == "__main__":
         write_txt_label(f'{modified_label_path}/{ori_list[i]['image_original_stem']}.txt', info)
 
         _, suffix = os.path.splitext(ori_image_name)
-        if suffix in ['.tif', '.tiff']:
-            with gdal.Open(f'{original_image_path}/{ori_image_name}') as tiff_file:
-                ori_image = tiff_file.ReadAsArray()
-        else:
-            ori_image = cv2.imread(f'{original_image_path}/{ori_image_name}')
-
+        # if suffix in ['.tif', '.tiff']:
+        #     with gdal.Open(f'{original_image_path}/{ori_image_name}') as tiff_file:
+        #         ori_image = tiff_file.ReadAsArray()
+        # else:
+        #     ori_image = cv2.imread(f'{original_image_path}/{ori_image_name}')
+        ori_image = read_image_as_ndarray(f'{original_image_path}/{ori_image_name}',
+                                          as_rgb=True, channel_combination=(0,0,0), ndarray_dtype=np.uint8)
         geo_transform = ori_list[i]['geo_transform']
         projection = ori_list[i]['projection']
         draw_box_on_one_image(output_path, out_annotations_list[i], ori_image, ori_image_stem, geo_transform, projection, write_tif=False)
