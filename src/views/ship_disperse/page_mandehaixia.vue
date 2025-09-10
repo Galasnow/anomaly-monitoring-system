@@ -89,11 +89,11 @@ const calendarRef = ref(null);
 const isLoading = ref(false);
 const isChartModalVisible = ref(false);
 
-const tiffRootPath = "/Ship_Disperse/result";
-const csvPath = "/Ship_Disperse/Honghai_Number.csv";
+const tiffRootPath = "/Ship_Disperse/output/predict/";
+const csvPath = "/Ship_Disperse/output/ship_number.csv";
 const tiffApiUrl = `${backendUrlPrefix}/files_mandehaixia`;
 const mainScriptUrl = `${backendUrlPrefix}/run_main_mandehaixia`;
-const finishResponseUrl = `${backendUrlPrefix}/mandehaixia_finish_txt`;
+const finishResponseUrl = `${backendUrlPrefix}/files_txt_mandehaixia`;
 
 // 计算属性
 const attributes = computed(() => {
@@ -175,12 +175,12 @@ async function runMainPythonScript() {
     // 检查返回值
     if (response.data.message === "main.py 执行已启动") {
       // 等待文件夹生成并检查是否有 finish.txt 文件
-      const isFinished = await checkFinishStatus(finishResponseUrl);
+      const isFinished = await checkFinishStatus(finishResponseUrl, 3600, 10);
 
       if (isFinished) {
         console.log("Python 脚本执行完成");
         // 执行完成后，继续后续的操作，如加载文件
-        loadpoint(viewer.value);
+        // loadpoint(viewer.value);
         const { files, markDates } = await fetchTiffFiles(tiffApiUrl, 17);
         tifFiles.value = files;
         mark_dates.value = markDates;
@@ -221,8 +221,8 @@ function initChart() {
     .then((csv_data) => {
       const date_list = csv_data.map((item) => item.date);
       const number_list = csv_data.map((item) => parseInt(item.number));
-      const abnormal_list = csv_data.map(
-        (item) => parseInt(item.abnormal, 10) || 0
+      const anomaly_list = csv_data.map(
+        (item) => parseInt(item.anomaly, 10) || 0
       );
 
       const myChart = echarts.init(chartContainer.value, null, {
@@ -249,7 +249,7 @@ function initChart() {
           type: "value",
           name: "数量",
           nameTextStyle: { fontSize: 18 },
-          min: Math.min(...number_list),
+          min: Math.min(...number_list) - 1,
           max: Math.max(...number_list),
           interval: 2,
           axisLabel: {
@@ -270,14 +270,14 @@ function initChart() {
             showSymbol: true,
             symbol: "circle",
             symbolSize: (value, params) =>
-              abnormal_list[params.dataIndex] === 1 ? 15 : 0,
+              anomaly_list[params.dataIndex] === 1 ? 15 : 0,
             lineStyle: {
               color: "red",
               width: 3,
             },
             itemStyle: {
               color: (params) =>
-                abnormal_list[params.dataIndex] === 1
+                anomaly_list[params.dataIndex] === 1
                   ? "#FAFA33"
                   : "transparent",
               borderColor: "black",

@@ -108,7 +108,7 @@ function runMainPythonScript(pythonScriptPath, taskProgress) {
         console.log(`main.py 执行成功，任务ID: ${taskId}`);
       } else {
         taskProgress[taskId].status = "failed";
-        console.error(`main.py 执行失败，任务ID: ${taskId}`);
+        console.error(`main.py 执行失败，任务ID: ${taskId}, code: ${code}`);
       }
       resolve({
         taskId,
@@ -527,12 +527,34 @@ app.get("/api/files_nanhuajiao", async (req, res) => {
   return res.status(result.statusCode).json(result);
 });
 
-// const Mandehaixia_OUTPUT_PATH = "../public/Ship_Disperse/";
-const TIF_FOLDER_Mandehaixia = "../public/Ship_Disperse//result";
+const Mandehaixia_OUTPUT_PATH = "../public/Ship_Disperse/output";
+// const TIF_FOLDER_Mandehaixia = "../public/Ship_Disperse/result";
+const TIF_FOLDER_Mandehaixia = "../public/Ship_Disperse/output/predict";
+const Mandehaixia_MAIN_PY_PATH = "./Ship_Disperse/all_in_one.py";
 
 // 获取文件夹中的.tif文件
 app.get("/api/files_mandehaixia", async (req, res) => {
   const result = await getFolderFiles(TIF_FOLDER_Mandehaixia, ".tif");
+  return res.status(result.statusCode).json(result);
+});
+
+// 运行 main.py，返回任务ID
+app.get("/api/run_main_mandehaixia", async (req, res) => {
+  try {
+    const result = await runMainPythonScript(
+      Mandehaixia_MAIN_PY_PATH,
+      taskProgress
+    );
+    res.json(result);
+  } catch (error) {
+    console.error("执行失败:", error);
+    res.status(500).json({ error: "执行过程中出错" });
+  }
+});
+
+// 获取文件夹中的.txt文件
+app.get("/api/files_txt_mandehaixia", async (req, res) => {
+  const result = await getFolderFiles(Mandehaixia_OUTPUT_PATH, ".txt");
   return res.status(result.statusCode).json(result);
 });
 
