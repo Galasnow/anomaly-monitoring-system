@@ -22,6 +22,7 @@ from predict import read_grid_image_list, get_boxes_per_image, read_original_ima
 from auto_crop import batch_crop_image_by_grid
 from summarize_platform import calculate_iou_score, search_special_events, write_csv, calculate_time_score, \
     calculate_size_score
+from util.image_io import read_image_as_ndarray
 from util.labels import number2yolo, write_txt_label, arange_label, convert_boxes, remove_invalid_tensor_by_mask, \
     read_txt_label, yolo2number, image_coordinates_2_latitude_longitude
 from utils import create_folder, initial_logging_formatter, get_platform_ship_coordinates_by_id, \
@@ -37,7 +38,7 @@ if __name__ == "__main__":
     # stem_path = os.path.join(current_path, f'/public/sk10_platform')
 
     output_stem_path = f'{stem_path}/output'
-    input_path = f'{stem_path}/grid_images'
+    # input_path = f'{stem_path}/grid_images'
     ground_truth_path = f'{stem_path}/labels_t'
     output_path = f'{output_stem_path}/predict'
     output_preview_path = f'{output_stem_path}/preview'
@@ -54,7 +55,7 @@ if __name__ == "__main__":
     output_shp_path_by_day = f'{output_stem_path}/by_day'
     # print(f'{output_stem_path}/finish.txt')
 
-    create_folder(input_path)
+    # create_folder(input_path)
     create_folder(output_path)
     create_folder(output_combine_label_path)
     create_folder(modified_label_path)
@@ -185,11 +186,8 @@ if __name__ == "__main__":
         write_txt_label(f'{modified_label_path}/{ori_image_stem}.txt', info)
 
         _, suffix = os.path.splitext(ori_image_name)
-        if suffix in ['.tif', '.tiff']:
-            with gdal.Open(f'{original_image_path}/{ori_image_name}') as tiff_file:
-                ori_image = tiff_file.ReadAsArray()
-        else:
-            ori_image = cv2.imread(f'{original_image_path}/{ori_image_name}')
+        ori_image = read_image_as_ndarray(f'{original_image_path}/{ori_image_name}',
+                                            as_rgb=True, channel_combination=(0,0,0), ndarray_dtype=np.uint8)
 
         geo_transform = ori_list[i].geo_transform
         projection = ori_list[i].projection
