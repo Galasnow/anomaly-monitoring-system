@@ -176,8 +176,10 @@ if __name__ == "__main__":
                 else:
                     index = np.searchsorted(modified_map_list[..., 0], id)
                     modified_out_annotations_list[i][j][-1] -= modified_map_list[index, 1]
-
-    for i in tqdm(range(1, len(ori_list) - 1)):
+                    
+    pbar = tqdm(range(1, len(ori_list) - 1))
+    pbar.set_description(f'writing images')
+    for i in pbar:
         ori_image_stem = os.path.splitext(ori_list[i].filename)[0]
         ori_image_name = ori_list[i].filename
         info = modified_out_annotations_list[i].copy()

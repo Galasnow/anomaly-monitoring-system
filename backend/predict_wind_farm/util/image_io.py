@@ -9,7 +9,7 @@ from utils import convert_np_dtype_to_gdal_type
 
 def read_image_as_ndarray(image_path, as_rgb=True, gray2rgb=True, channel_combination=(0,1,2), ndarray_dtype=np.float32) -> np.ndarray:
     _, suffix = os.path.splitext(image_path)
-    if suffix in ['.tifff', '.tiff']:
+    if suffix in ['.tiff', '.tif']:
         with gdal.Open(image_path) as tiff_file:
             image = tiff_file.ReadAsArray().astype(ndarray_dtype)
             if image.ndim == 3:

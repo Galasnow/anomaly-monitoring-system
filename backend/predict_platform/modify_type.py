@@ -89,11 +89,11 @@ def draw_box_on_one_image(output_path, annotations_list: np.ndarray, ori_image, 
     if ori_image.ndim == 2:
         ori_image = cv2.cvtColor(ori_image, cv2.COLOR_GRAY2RGB)
 
-    boxes_label_1 = boxes[labels == 1]
+    # boxes_label_1 = boxes[labels == 1]
     boxes_label_2 = boxes[labels == 2]
     # ids_label_1 = ids[labels == 1]
     # ids_label_2 = ids[labels == 2]
-    draw_box_on_image(ori_image, boxes_label_1, None, expansion_factor='auto', color=(0, 255, 0), thickness=4)
+    # draw_box_on_image(ori_image, boxes_label_1, None, expansion_factor='auto', color=(0, 255, 0), thickness=4)
     draw_box_on_image(ori_image, boxes_label_2, None, expansion_factor='auto', color=(0, 0, 255), thickness=4)
 
     # 保存结果图像
