@@ -180,7 +180,7 @@ async function runMainPythonScript() {
       if (isFinished) {
         console.log("Python 脚本执行完成");
         // 执行完成后，继续后续的操作，如加载文件
-        loadpoint(viewer.value);
+        // loadpoint(viewer.value);
         const { files, markDates } = await fetchTiffFiles(tiffApiUrl, 0);
         tifFiles.value = files;
         mark_dates.value = markDates;

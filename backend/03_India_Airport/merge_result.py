@@ -33,7 +33,7 @@ def merge_tiles_with_min_value(tile_files, output_path, geo_transform, projectio
 
     # Create the output image
     driver = gdal.GetDriverByName('GTiff')
-    output_ds = driver.Create(output_path, x_res, y_res, 1, gdal.GDT_Byte)
+    output_ds = driver.Create(output_path, x_res, y_res, 1, gdal.GDT_Byte, options=['COMPRESS=LZW'])
     output_ds.SetGeoTransform((min_x, geo_transform[1], 0, max_y, 0, geo_transform[5]))
     output_ds.SetProjection(projection)
 
@@ -74,8 +74,9 @@ def stitch_tiles(image_tile_files, label_tile_files, stitched_image_path, stitch
     projection = original_image.GetProjection()
 
     # Create mosaic for image tiles
+    warp_options = gdal.WarpOptions(creationOptions=['COMPRESS=LZW'])
     gdal.Warp(stitched_image_path, image_tile_files, format='GTiff', outputBounds=output_bounds,
-              xRes=geo_transform[1], yRes=-geo_transform[5], srcSRS=projection, dstSRS=projection)
+              xRes=geo_transform[1], yRes=-geo_transform[5], srcSRS=projection, dstSRS=projection, options=warp_options)
 
     # Create mosaic for label tiles with min value in overlap regions
     merge_tiles_with_min_value(label_tile_files, stitched_label_path, geo_transform, projection, output_bounds)
