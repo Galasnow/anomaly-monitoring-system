@@ -656,6 +656,36 @@ app.get("/api/files_txt_sk10_platform", async (req, res) => {
   return res.status(result.statusCode).json(result);
 });
 
+const GreaterZhangHua_OUTPUT_PATH = "../public/Wind_Farm/output";
+const TIF_FOLDER_GreaterZhangHua = "../public/Wind_Farm/output/predict";
+const WIND_FARM_MAIN_PY_PATH = "./predict_wind_farm/all_in_one.py";
+
+// 获取文件夹中的.tif文件
+app.get("/api/files_GreaterZhangHua", async (req, res) => {
+  const result = await getFolderFiles(TIF_FOLDER_GreaterZhangHua, ".tif");
+  return res.status(result.statusCode).json(result);
+});
+
+// 运行 main.py，返回任务ID
+app.get("/api/run_main_wind_farm", async (req, res) => {
+  try {
+    const result = await runMainPythonScript(
+      WIND_FARM_MAIN_PY_PATH,
+      taskProgress
+    );
+    res.json(result);
+  } catch (error) {
+    console.error("执行失败:", error);
+    res.status(500).json({ error: "执行过程中出错" });
+  }
+});
+
+// 获取文件夹中的.txt文件
+app.get("/api/files_txt_GreaterZhangHua", async (req, res) => {
+  const result = await getFolderFiles(GreaterZhangHua_OUTPUT_PATH, ".txt");
+  return res.status(result.statusCode).json(result);
+});
+
 // all
 // 获取任务进度
 app.get("/api/task-progress/:taskId", (req, res) => {

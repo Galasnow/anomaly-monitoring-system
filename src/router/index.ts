@@ -545,6 +545,43 @@ export const constantRoutes: RouteRecordRaw[] = [
       },
     ],
   },
+
+  // 海上风电场
+  {
+    path: "/offshore_wind_farm",
+    component: Layout,
+    redirect: "noredirect",
+    name: "OffshoreWindFarm",
+    meta: {
+      title: "台海海上风电场异常新建动态监测",
+      hidden: false,
+      roles: ["ADMIN"],
+      alwaysShow: false,
+      params: null,
+    },
+    children: [
+      {
+        path: "page_area_of_wind_farm_monitoring",
+        name: "page_area_of_wind_farm_monitoring",
+        component: () =>
+          import(
+            "@/views/offshore_wind_farm/page_area_of_wind_farm_monitoring.vue"
+          ),
+        meta: {
+          title: "监测区域",
+        },
+      },
+      {
+        path: "page_greater_zhanghua",
+        name: "page_greater_zhanghua",
+        component: () =>
+          import("@/views/offshore_wind_farm/page_greater_zhanghua.vue"),
+        meta: {
+          title: "大彰化风力发电场异常新建动态监测",
+        },
+      },
+    ],
+  },
 ];
 
 /**

@@ -252,10 +252,7 @@ def batch_crop_image_by_grid(input_image_path: str, output_image_path: str, *arg
 if __name__ == "__main__":
     input_image_path = r'D:\zhongyan\test_area\original_images'
     output_image_path = r'D:\zhongyan\test_area\grid_images'
-    output_format = 'jpg'
-
-    # crop_size = (256, 256)
-    # gap_size = 128
+    output_format = 'tif'
 
     crop_size = (1024, 1024)
     gap_size = 64
