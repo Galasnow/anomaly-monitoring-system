@@ -19,7 +19,7 @@ from util.labels import read_txt_label
 from utils import initial_logging_formatter, build_sorted_sentinel_1_list
 
 
-def arrange_label(label_path, image_shape):
+def arange_label(label_path, image_shape):
     bbox = read_txt_label(label_path)
     bbox[..., 1:5] = yolo2number(image_shape, bbox[..., 1:5])
     return bbox
@@ -36,14 +36,14 @@ if __name__ == "__main__":
     label_name_list = [label_name for label_name in os.listdir(output_grid_label_path)]
     # label_name_list, grid_label_list = read_grid_label_list(input_label_path, input_image_path, grid_image_name_list, None)
     # logging.info(image_name_list)
-    # annotations_list = [arrange_label(f'{output_grid_label_path}/{label_name_list[i]}', grid_list[i]['shape']) for i in range(len(label_name_list))]
+    # annotations_list = [arange_label(f'{output_grid_label_path}/{label_name_list[i]}', grid_list[i]['shape']) for i in range(len(label_name_list))]
     # logging.info(annotations_list)
     out_annotations_list = [np.array([]) for _ in range(len(ori_list))]
 
     for i, cluster in enumerate(tqdm(grid_list_cluster)):
         # grid_image_name_list = [image['grid_image_name'] for image in cluster]
         # grid_image_stem_list = [image['grid_image_stem'] for image in cluster]
-        annotations_list = [arrange_label(f'{output_grid_label_path}/{cluster[j]['grid_image_stem']}.txt',
+        annotations_list = [arange_label(f'{output_grid_label_path}/{cluster[j]['grid_image_stem']}.txt',
                                           cluster[j]['shape']) for j in range(len(cluster))]
         # logging.info(annotations_list)
         # logging.info(len(annotations_list))

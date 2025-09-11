@@ -16,7 +16,7 @@ import albumentations as A
 from utils import initial_logging_formatter
 
 
-def arrange_label(label_path, image_shape):
+def arange_label(label_path, image_shape):
     bbox_yolo = read_txt_label(label_path)
 
     out_list = yolo2number(image_shape, bbox_yolo[..., 1:])
@@ -66,7 +66,7 @@ class PlatformDataset(Dataset):
 
         # with open('../data/annotations_ship_dataset_v0.csv', newline='') as f:
         self.annotations = {
-            img: [arrange_label(f'{label_path}/{os.path.splitext(img)[0]}.txt', (height, width)), 'ship'] for img in
+            img: [arange_label(f'{label_path}/{os.path.splitext(img)[0]}.txt', (height, width)), 'ship'] for img in
             tmp}
 
         # with open(annotations_file_path, newline='') as f:

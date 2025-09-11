@@ -21,7 +21,7 @@ from modify_type import read_image_as_ndarray, valid_box_on_2_images, draw_box_o
 from predict import read_grid_image_list, get_boxes_per_image, read_original_image_list, generate_cluster, build_mask
 from auto_crop import batch_crop_image_by_grid
 from summarize_platform import write_csv
-from util.labels import number2yolo, write_txt_label, arrange_label, convert_boxes, remove_invalid_tensor_by_mask, \
+from util.labels import number2yolo, write_txt_label, arange_label, convert_boxes, remove_invalid_tensor_by_mask, \
     read_txt_label, yolo2number, image_coordinates_2_latitude_longitude
 from utils import create_folder, initial_logging_formatter, get_platform_ship_coordinates_by_id, \
     get_platform_ship_coordinates_by_day, get_platform_coordinates, get_platform_sizes, calculate_iou, write_shp_file, \
@@ -104,7 +104,7 @@ if __name__ == "__main__":
                              for annotation_name in natsorted(os.listdir(output_combine_label_path))
                              if os.path.splitext(annotation_name)[1] == '.txt']
 
-    out_annotations_list = [arrange_label(f'{output_combine_label_path}/{annotations_name}.txt',
+    out_annotations_list = [arange_label(f'{output_combine_label_path}/{annotations_name}.txt',
                                           ori_list[i].shape)
                             for i, annotations_name in enumerate(annotations_name_list)]
     acquire_time_list = [item.acquire_time for item in ori_list]

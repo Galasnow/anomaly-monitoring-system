@@ -2,7 +2,7 @@ import cv2
 from osgeo import gdal
 from ultralytics.utils.ops import clip_boxes
 
-from util.labels import arrange_label
+from util.labels import arange_label
 
 gdal.UseExceptions()
 
@@ -125,7 +125,7 @@ if __name__ == "__main__":
     annotations_name_list = [os.path.splitext(annotation_name)[0]
                              for annotation_name in natsorted(os.listdir(output_combine_label_path))
                              if os.path.splitext(annotation_name)[1] == '.txt']
-    out_annotations_list = [arrange_label(f'{output_combine_label_path}/{annotations_name}.txt', ori_list[i]['shape'])
+    out_annotations_list = [arange_label(f'{output_combine_label_path}/{annotations_name}.txt', ori_list[i]['shape'])
                             for i, annotations_name in enumerate(annotations_name_list)]
 
     platform_count_list = np.zeros(len(ori_list) - 2)

@@ -6,7 +6,7 @@ from summarize_platform_final import round_day
 from util.image_io import read_image_as_ndarray
 
 gdal.UseExceptions()
-# from combine_label_new import arrange_label
+# from combine_label_new import arange_label
 
 from util.labels import *
 from utils import *
@@ -15,7 +15,7 @@ from config import output_path, original_image_path, modified_label_path, output
     support_file_list
 
 
-def arrange_label(label_path, image_shape):
+def arange_label(label_path, image_shape):
     bbox = read_txt_label(label_path)
     bbox[..., 1:5] = yolo2number(image_shape, bbox[..., 1:5])
     return bbox
@@ -203,7 +203,7 @@ if __name__ == "__main__":
 
     annotations_name_list = [file.filename.replace('tif', 'txt') for file in ori_list]
 
-    out_annotations_list = [arrange_label(f'{output_combine_label_path}/{annotations_name}',
+    out_annotations_list = [arange_label(f'{output_combine_label_path}/{annotations_name}',
                                           ori_list[i].shape)
                             for i, annotations_name in enumerate(annotations_name_list)]
     acquire_time_list = [item.acquire_time for item in ori_list]
