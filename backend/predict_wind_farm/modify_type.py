@@ -124,16 +124,16 @@ def draw_box_on_one_image(output_path, annotations_list: np.ndarray, ori_image, 
     if len(annotations_list) != 0:
         boxes = annotations_list[..., 1:5]
         labels = annotations_list[..., 0]
-        ids = annotations_list[..., 6].astype(np.intp)
+        # ids = annotations_list[..., 6].astype(np.intp)
         if ori_image.ndim == 2:
             ori_image = cv2.cvtColor(ori_image, cv2.COLOR_GRAY2RGB)
 
-        boxes_label_1 = boxes[labels == 1]
+        # boxes_label_1 = boxes[labels == 1]
         boxes_label_2 = boxes[labels == 2]
         # ids_label_1 = ids[labels == 1]
         # ids_label_2 = ids[labels == 2]
         ids_label_2 = None
-        draw_box_on_image(ori_image, boxes_label_1, None, expansion_factor=4, color=(0, 255, 0), thickness=4)
+        # draw_box_on_image(ori_image, boxes_label_1, None, expansion_factor=4, color=(0, 255, 0), thickness=4)
         draw_box_on_image(ori_image, boxes_label_2, ids_label_2, expansion_factor=4, color=(0, 0, 255), thickness=4)
 
     # 保存结果图像
