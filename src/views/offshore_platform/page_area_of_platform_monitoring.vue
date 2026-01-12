@@ -45,10 +45,10 @@ onMounted(async () => {
   // });
   // cesium_viewer.imageryLayers.addImageryProvider(provider);
 
-  // 添加SK10实体
-  const sk10_oil_gas_field = cesium_viewer.entities.add({
-    id: "sk10_oil_gas_field",
-    position: Cesium.Cartesian3.fromDegrees(113.45, 4.784, 10),
+  // 添加涠洲油田实体
+  cesium_viewer.entities.add({
+    id: "weizhou_oil_field",
+    position: Cesium.Cartesian3.fromDegrees(108.8, 20.8, 10),
     point: {
       pixelSize: 10,
       color: Cesium.Color.RED,
@@ -56,7 +56,7 @@ onMounted(async () => {
       outlineWidth: 2,
     },
     label: {
-      text: "SK10海上油气田",
+      text: "涠洲海上油田",
       font: "16px sans-serif",
       fillColor: Cesium.Color.WHITE,
       outlineColor: Cesium.Color.BLACK,
@@ -67,7 +67,7 @@ onMounted(async () => {
     },
   });
   cesium_viewer.camera.flyTo({
-    destination: Cesium.Cartesian3.fromDegrees(113.45, 4.784, 650000),
+    destination: Cesium.Cartesian3.fromDegrees(108.8, 20.8, 650000),
     duration: 2,
   });
 
@@ -79,9 +79,9 @@ onMounted(async () => {
     const pickedObject = cesium_viewer.scene.pick(movement.position);
     if (
       Cesium.defined(pickedObject) &&
-      pickedObject.id?.id === "sk10_oil_gas_field"
+      pickedObject.id?.id === "weizhou_oil_field"
     ) {
-      router.push("page_sk10_platform"); // 跳转到 page2.vue
+      router.push("page_weizhou_platform"); // 跳转到 page2.vue
     }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 });

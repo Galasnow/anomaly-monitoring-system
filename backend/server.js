@@ -619,22 +619,22 @@ app.get("/api/files_txt_bishengjiao", async (req, res) => {
   return res.status(result.statusCode).json(result);
 });
 
-const SK10_OUTPUT_PATH = "../public/sk10_platform/output";
-const TIF_FOLDER_SK10_S1 = "../public/sk10_platform/output/predict";
-const TIF_FOLDER_SK10_GAOFEN = "../public/sk10_platform/gaofen";
+const WeiZhou_OUTPUT_PATH = "../public/WeiZhou_platform/output";
+const TIF_FOLDER_WeiZhou_S1 = "../public/WeiZhou_platform/output/predict";
+// const TIF_FOLDER_SK10_GAOFEN = "../public/WeiZhou_platform/gaofen";
 const OFFSHORE_PLATFORM_MAIN_PY_PATH = "./predict_platform/all_in_one.py";
 
 // 获取文件夹中的.tif文件
-app.get("/api/files_sk10_sentinel-1", async (req, res) => {
-  const result = await getFolderFiles(TIF_FOLDER_SK10_S1, ".tif");
+app.get("/api/files_weizhou_sentinel-1", async (req, res) => {
+  const result = await getFolderFiles(TIF_FOLDER_WeiZhou_S1, ".tif");
   return res.status(result.statusCode).json(result);
 });
 
-// 获取文件夹中的.tif文件
-app.get("/api/files_sk10_gaofen", async (req, res) => {
-  const result = await getFolderFiles(TIF_FOLDER_SK10_GAOFEN, ".tif");
-  return res.status(result.statusCode).json(result);
-});
+// // 获取文件夹中的.tif文件
+// app.get("/api/files_sk10_gaofen", async (req, res) => {
+//   const result = await getFolderFiles(TIF_FOLDER_SK10_GAOFEN, ".tif");
+//   return res.status(result.statusCode).json(result);
+// });
 
 // 运行 main.py，返回任务ID
 app.get("/api/run_main_offshore_platform", async (req, res) => {
@@ -651,8 +651,8 @@ app.get("/api/run_main_offshore_platform", async (req, res) => {
 });
 
 // 获取文件夹中的.txt文件
-app.get("/api/files_txt_sk10_platform", async (req, res) => {
-  const result = await getFolderFiles(SK10_OUTPUT_PATH, ".txt");
+app.get("/api/files_txt_weizhou_platform", async (req, res) => {
+  const result = await getFolderFiles(WeiZhou_OUTPUT_PATH, ".txt");
   return res.status(result.statusCode).json(result);
 });
 

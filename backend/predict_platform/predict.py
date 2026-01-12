@@ -181,13 +181,35 @@ def load_and_preprocess_image(image_path, input_size=(1024, 1024), gap_size=64):
     if suffix in ['.tif', '.tiff'] :
         with gdal.Open(image_path) as tiff_file:
             img = tiff_file.ReadAsArray().astype(np.float32)
+            # img = cv2.cvtColor(tiff_file.ReadAsArray().astype(np.float32), cv2.COLOR_GRAY2RGB)
+            # print(f'{img.shape = }')
+            if img.ndim == 3:
+                img = np.transpose(img, (1, 2, 0))
+            else:
+                img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+            if img.shape[-1] == 2:
+                if img.ndim == 3:
+                    # img = np.transpose(img, (1, 2, 0))
+                    if img.shape[-1] == 2:
+                        # warnings.warn('2 channel image to 3 channel')
+                        new_img = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.float32)
+                        new_img[:, :, 0] = img[:, :, 0]
+                        new_img[:, :, 1] = img[:, :, 1]
+                        new_img[:, :, 2] = img[:, :, 1]
+                        img = new_img
+                else:
+                    new_img = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.float32)
+                    new_img[:, :, 0] = img[:, :, 0]
+                    new_img[:, :, 1] = img[:, :, 0]
+                    new_img[:, :, 2] = img[:, :, 0]
+                    img = new_img
     else:
         img = cv2.imread(image_path).astype(np.float32)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     img = img / 255.0
     if img.shape[1] != input_size[0] and img.shape[0] != input_size[1]:
         if img.shape[1] < input_size[0] and img.shape[0] < input_size[1]:
-            img_new = np.zeros((input_size[0], input_size[1], 3), dtype=np.float32)
+            img_new = np.zeros((input_size, 3), dtype=np.float32)
             img_new[0: img.shape[1], 0: img.shape[0], :] = img
             img = img_new
 

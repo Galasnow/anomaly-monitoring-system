@@ -535,12 +535,12 @@ export const constantRoutes: RouteRecordRaw[] = [
         },
       },
       {
-        path: "page_sk10_platform",
-        name: "page_sk10_platform",
+        path: "page_weizhou_platform",
+        name: "page_weizhou_platform",
         component: () =>
-          import("@/views/offshore_platform/page_sk10_platform.vue"),
+          import("@/views/offshore_platform/page_weizhou_platform.vue"),
         meta: {
-          title: "Sk10海上钻井平台异常动态监测",
+          title: "涠洲油田海上钻井平台异常动态监测",
         },
       },
     ],

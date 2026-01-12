@@ -1,3 +1,4 @@
+import datetime
 import cv2
 from osgeo import gdal
 from ultralytics.utils.ops import clip_boxes
@@ -18,6 +19,13 @@ torch.manual_seed(42)
 np.random.seed(42)
 
 
+def round_day(dt: datetime.timedelta | None = None):
+    if dt.seconds >= 12 * 3600:
+        return dt.days + 1
+    else:
+        return dt.days
+    
+    
 def valid_box_on_2_images(annotation_array_1, annotation_array_2, max_platform_id, iou_min = 0.00001, pixel_size=(10, 10), area_min = 500):
     boxes_1 = annotation_array_1[..., 1:5]
     boxes_2 = annotation_array_2[..., 1:5]
@@ -118,6 +126,39 @@ def draw_box_on_one_image(output_path, annotations_list: np.ndarray, ori_image, 
 
             # Write the data to disk
             out_tiff.FlushCache()
+
+
+def calculate_size_score(size):
+    # 300: 1
+    if size >= 0:
+        if size <= 60:
+            score = size / 60
+        else:
+            score = 1.0
+    else:
+        raise RuntimeError('size must >= 0')
+    return score
+
+
+def calculate_time_score(days: int):
+    # 0: 0.02, 50: 1
+    if days >= 0:
+        if days <= 9:
+            score = days / 9.0
+        else:
+            score = 1.0
+    else:
+        score = 0
+        # raise RuntimeError('stay days must >= 0')
+    return score
+
+
+def calculate_iou_score(iou_list: Sequence | np.ndarray):
+    if any(iou_list) < 0:
+        raise RuntimeError('IOU must >= 0')
+    exponent = 1 / 2.0
+    score = np.mean(np.pow(iou_list, exponent))
+    return score
 
 
 if __name__ == "__main__":

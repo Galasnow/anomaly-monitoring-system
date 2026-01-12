@@ -413,7 +413,7 @@ def get_platform_ship_coordinates_by_day(result_list, ori_list):
     platform_coordinates_by_day = [[] for _ in range(len(result_list))]
     ship_coordinates_by_day = [[] for _ in range(len(result_list))]
     for i in range(len(result_list)):
-        geo_transform = ori_list[i]['geo_transform']
+        geo_transform = ori_list[i].geo_transform
         result_day_i = result_list[i]
         for result in result_day_i:
             obj_id = result[-1]
@@ -425,14 +425,14 @@ def get_platform_ship_coordinates_by_day(result_list, ori_list):
             geo_x_min, geo_y_min = image_coordinates_2_latitude_longitude(geo_transform, (image_x_min, image_y_min))
             geo_x_max, geo_y_max = image_coordinates_2_latitude_longitude(geo_transform, (image_x_max, image_y_max))
             if obj_id != 0:
-                platform_coordinates_by_day[i].append([ori_list[i]['acquire_time'], obj_id,
+                platform_coordinates_by_day[i].append([ori_list[i].acquire_time, obj_id,
                                                        (image_x_min + image_x_max) / 2, (image_y_min + image_y_max) / 2,
                                                        image_x_min, image_y_min, image_x_max, image_y_max,
                                                        (geo_x_min + geo_x_max) / 2, (geo_y_min + geo_y_max) / 2,
                                                        geo_x_min, geo_y_min, geo_x_max, geo_y_max,
                                                        ])
             else:
-                ship_coordinates_by_day[i].append([ori_list[i]['acquire_time'], obj_id,
+                ship_coordinates_by_day[i].append([ori_list[i].acquire_time, obj_id,
                                                    (image_x_min + image_x_max) / 2, (image_y_min + image_y_max) / 2,
                                                    image_x_min, image_y_min, image_x_max, image_y_max,
                                                    (geo_x_min + geo_x_max) / 2, (geo_y_min + geo_y_max) / 2,
@@ -447,8 +447,8 @@ def get_platform_ship_coordinates_by_day(result_list, ori_list):
 
 def get_platform_ship_coordinates_by_id(result_list, ori_list, max_platform_id):
     platform_coordinates_by_id = [{} for _ in range(max_platform_id)]
-    full_acquire_time_list = [ori_list_item['acquire_time'] for ori_list_item in ori_list]
-    full_geo_transform_list = [ori_list_item['geo_transform'] for ori_list_item in ori_list]
+    full_acquire_time_list = [ori_list_item.acquire_time for ori_list_item in ori_list]
+    full_geo_transform_list = [ori_list_item.geo_transform for ori_list_item in ori_list]
     for i in range(max_platform_id):
         time_geo_transform_record_list = [[acquire_time, geo_transform, record]
                                           for acquire_time, geo_transform, record_day_i in

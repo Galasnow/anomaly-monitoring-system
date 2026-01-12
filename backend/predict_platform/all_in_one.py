@@ -17,11 +17,10 @@ from tqdm import tqdm
 
 from config import DEVICE, NUM_CLASSES, support_file_list, NMS_THRESHOLD
 from model import create_model
-from modify_type import valid_box_on_2_images, draw_box_on_one_image
+from modify_type import round_day, valid_box_on_2_images, draw_box_on_one_image, calculate_iou_score, calculate_size_score, calculate_time_score
 from predict import read_grid_image_list, get_boxes_per_image, read_original_image_list, generate_cluster, build_mask
 from auto_crop import batch_crop_image_by_grid
-from summarize_platform import calculate_iou_score, search_special_events, write_csv, calculate_time_score, \
-    calculate_size_score
+from summarize_platform import write_csv
 from util.image_io import read_image_as_ndarray
 from util.labels import number2yolo, write_txt_label, arange_label, convert_boxes, remove_invalid_tensor_by_mask, \
     read_txt_label, yolo2number, image_coordinates_2_latitude_longitude
@@ -29,7 +28,7 @@ from utils import create_folder, initial_logging_formatter, get_platform_ship_co
     get_platform_ship_coordinates_by_day, get_platform_coordinates, get_platform_sizes, calculate_iou, write_shp_file, \
     generate_trend_by_date, build_sorted_sentinel_1_list
 
-stem_path = '../public/sk10_platform'
+stem_path = '../public/WeiZhou_platform'
 
 if __name__ == "__main__":
     current_file_path = os.path.abspath(__file__)
@@ -47,11 +46,12 @@ if __name__ == "__main__":
     modified_label_path = f'{output_stem_path}/labels/modified'
 
     # input_shp_path = os.path.join(current_path, f'/malaysia_range_for_test/malaysia_range_for_test.shp')
-    input_shp_path = f'./malaysia_range_for_test/malaysia_range_for_test.shp'
-    output_shp_path_stable = f'{output_stem_path}/shapefile_stable'
-    output_shp_path_occur = f'{output_stem_path}/shapefile_occur'
-    output_shp_path_disappear = f'{output_stem_path}/shapefile_disappear'
-    output_shp_path_occur_and_disappear = f'{output_stem_path}/shapefile_occur_and_disappear'
+    # input_shp_path = f'./malaysia_range_for_test/malaysia_range_for_test.shp'
+    input_shp_path = f'./study_area_1/study_area_1.shp'
+    # output_shp_path_stable = f'{output_stem_path}/shapefile_stable'
+    # output_shp_path_occur = f'{output_stem_path}/shapefile_occur'
+    # output_shp_path_disappear = f'{output_stem_path}/shapefile_disappear'
+    # output_shp_path_occur_and_disappear = f'{output_stem_path}/shapefile_occur_and_disappear'
     output_shp_path_by_day = f'{output_stem_path}/by_day'
     # print(f'{output_stem_path}/finish.txt')
 
@@ -59,10 +59,10 @@ if __name__ == "__main__":
     create_folder(output_path)
     create_folder(output_combine_label_path)
     create_folder(modified_label_path)
-    create_folder(output_shp_path_stable)
-    create_folder(output_shp_path_occur)
-    create_folder(output_shp_path_disappear)
-    create_folder(output_shp_path_occur_and_disappear)
+    # create_folder(output_shp_path_stable)
+    # create_folder(output_shp_path_occur)
+    # create_folder(output_shp_path_disappear)
+    # create_folder(output_shp_path_occur_and_disappear)
     create_folder(output_shp_path_by_day)
 
     crop_size = (1024, 1024)
@@ -75,7 +75,7 @@ if __name__ == "__main__":
     use_onnxruntime_inference = False
     print('Use pytorch inference')
     model = create_model(num_classes=NUM_CLASSES)
-    model_path = os.path.join(current_path, f'./run/2025-03-27_16-08-11/best_model.pth')
+    model_path = os.path.join(current_path, f'./run/2025-06-14_13-56-02/best_model.pth')
     model.load_state_dict(
         torch.load(model_path, map_location=DEVICE,
                     weights_only=True))
@@ -83,163 +83,187 @@ if __name__ == "__main__":
     model.to(DEVICE)
 
     original_list = build_sorted_sentinel_1_list(original_image_path)
-    logging.info(f'{original_list = }')
-    pbar = tqdm(range(len(original_list)))
-    pbar.set_description(f'Predicting')
-    for i in pbar:
-        geo_transform = original_list[i].geo_transform
-        modified_input_shp_path = os.path.join(current_path, input_shp_path)
-        mask = build_mask(list(reversed(original_list[i].shape)), geo_transform, modified_input_shp_path)
-        annotations_list = get_boxes_per_image(model, f'{original_image_path}/{original_list[i].filename}',
-                                               use_onnxruntime_inference)
-        valid_annotations_list = remove_invalid_tensor_by_mask(annotations_list, mask)
-        # valid_annotations_list = all_annotations_list
-        # logging.info(f'{valid_annotation_list = }')
-        nms_index = nms(valid_annotations_list[..., 1:5], valid_annotations_list[..., 5], NMS_THRESHOLD)
-        out_annotations_list = valid_annotations_list[nms_index].cpu().numpy()
-        ids = np.zeros((len(out_annotations_list), 1))
-        out_annotations_list = np.concatenate((out_annotations_list, ids), axis=1)
-        out_annotations_list[..., 1:5] = number2yolo(original_list[i].shape, out_annotations_list[..., 1:5])
-        write_txt_label(f'{output_combine_label_path}/{original_list[i].filename_stem}.txt', out_annotations_list)
+    existing_combine_label_list = os.listdir(output_combine_label_path)
+    if len(original_list) != len(existing_combine_label_list):
+        logging.info(f'{original_list = }')
+        pbar = tqdm(range(len(original_list)))
+        pbar.set_description(f'Predicting')
+        for i in pbar:
+            geo_transform = original_list[i].geo_transform
+            modified_input_shp_path = os.path.join(current_path, input_shp_path)
+            mask = build_mask(list(reversed(original_list[i].shape)), geo_transform, modified_input_shp_path)
+            annotations_list = get_boxes_per_image(model, f'{original_image_path}/{original_list[i].filename}',
+                                                use_onnxruntime_inference)
+            valid_annotations_list = remove_invalid_tensor_by_mask(annotations_list, mask)
+            # valid_annotations_list = all_annotations_list
+            # logging.info(f'{valid_annotation_list = }')
+            nms_index = nms(valid_annotations_list[..., 1:5], valid_annotations_list[..., 5], NMS_THRESHOLD)
+            out_annotations_list = valid_annotations_list[nms_index].cpu().numpy()
+            ids = np.zeros((len(out_annotations_list), 1))
+            out_annotations_list = np.concatenate((out_annotations_list, ids), axis=1)
+            out_annotations_list[..., 1:5] = number2yolo(original_list[i].shape, out_annotations_list[..., 1:5])
+            write_txt_label(f'{output_combine_label_path}/{original_list[i].filename_stem}.txt', out_annotations_list)
 
     ##
     ori_list = build_sorted_sentinel_1_list(original_image_path)
     original_name_list = [file.filename for file in ori_list]
-
+    print(f'{original_name_list = }')
     annotations_name_list = [os.path.splitext(annotation_name)[0]
                              for annotation_name in natsorted(os.listdir(output_combine_label_path))
                              if os.path.splitext(annotation_name)[1] == '.txt']
+    existing_modified_label_list = os.listdir(modified_label_path)
+    if len(annotations_name_list) != len(existing_modified_label_list):
+        out_annotations_list = [arange_label(f'{output_combine_label_path}/{annotations_name}.txt',
+                                            ori_list[i].shape)
+                                for i, annotations_name in enumerate(annotations_name_list)]
+        acquire_time_list = [item.acquire_time for item in ori_list]
+        platform_count_list = np.zeros(len(ori_list) - 2)
+        ship_count_list = np.zeros(len(ori_list) - 2)
+        max_platform_id = 0
 
-    out_annotations_list = [arange_label(f'{output_combine_label_path}/{annotations_name}.txt',
-                                          ori_list[i].shape)
-                            for i, annotations_name in enumerate(annotations_name_list)]
-    acquire_time_list = [item.acquire_time for item in ori_list]
-    platform_count_list = np.zeros(len(ori_list) - 2)
-    ship_count_list = np.zeros(len(ori_list) - 2)
-    max_platform_id = 0
+        for i in tqdm(range(len(ori_list) - 1)):
+            out_annotations_list[i], out_annotations_list[i + 1], _, max_platform_id = (
+                valid_box_on_2_images(out_annotations_list[i], out_annotations_list[i + 1], max_platform_id))
 
-    for i in tqdm(range(len(ori_list) - 1)):
-        out_annotations_list[i], out_annotations_list[i + 1], _, max_platform_id = (
-            valid_box_on_2_images(out_annotations_list[i], out_annotations_list[i + 1], max_platform_id))
+        remove_ids = []
+        # filter IOU and time
+        for i in tqdm(range(1, max_platform_id + 1)):
+            annotations_i = []
+            acquire_time_i = []
+            for acquire_time, annotations in zip(acquire_time_list, out_annotations_list):
+                for annotation in annotations:
+                    if annotation[-1] == i:
+                        annotations_i.append(annotation)
+                        acquire_time_i.append(acquire_time)
+                        break
+                # annotations_i = [annotation for annotations in out_annotations_list for annotation in annotations if annotation[-1] == i]
+            # if i == 123:
+            #     logging.info(f'{annotations_i = }')
+            #     logging.info(f'{acquire_time_i = }')
 
-    remove_ids = []
-    # filter IOU and time
-    for i in tqdm(range(1, max_platform_id + 1)):
-        annotations_i = []
-        acquire_time_i = []
-        for acquire_time, annotations in zip(acquire_time_list, out_annotations_list):
-            for annotation in annotations:
-                if annotation[-1] == i:
-                    annotations_i.append(annotation)
-                    acquire_time_i.append(acquire_time)
-                    break
+            platform_ious = np.zeros(len(annotations_i) - 1, dtype=np.float32)
+            platform_i_bboxes_array = np.asarray(
+                [item[..., 1:5] for item in annotations_i]).squeeze()
 
-        platform_ious = np.zeros(len(annotations_i) - 1, dtype=np.float32)
-        platform_i_bboxes_array = np.asarray(
-            [item[..., 1:5] for item in annotations_i]).squeeze()
+            if platform_i_bboxes_array.ndim < 2:
+                platform_i_bboxes_array = np.concatenate(
+                    (np.reshape(platform_i_bboxes_array, (1, 4)), np.reshape(platform_i_bboxes_array, (1, 4))), axis=0)
+            platform_ious = [calculate_iou(platform_i_bboxes_array[i], platform_i_bboxes_array[i + 1]) for i in
+                                range(len(platform_i_bboxes_array) - 1)]
+            platform_size = np.mean([(item[2] - item[0]) * (item[3] - item[1]) for item in platform_i_bboxes_array])
+            # logging.info(f'{platform_size = }')
+            # if i == 123:
+            #     logging.info(f'{platform_ious = }')
 
-        if platform_i_bboxes_array.ndim < 2:
-            platform_i_bboxes_array = np.concatenate(
-                (np.reshape(platform_i_bboxes_array, (1, 4)), np.reshape(platform_i_bboxes_array, (1, 4))), axis=0)
-        platform_ious = [calculate_iou(platform_i_bboxes_array[i], platform_i_bboxes_array[i + 1]) for i in
-                            range(len(platform_i_bboxes_array) - 1)]
-        platform_size = np.mean([(item[2] - item[0]) * (item[3] - item[1]) for item in platform_i_bboxes_array])
+            iou_score = calculate_iou_score(platform_ious)
+            time_score = calculate_time_score(round_day(acquire_time_i[-1] - acquire_time_i[0]))
+            p1 = iou_score * time_score
+            if p1 < 0.5 or calculate_size_score(platform_size) < 0.5:
+                remove_ids.append(i)
 
-        iou_score = calculate_iou_score(platform_ious)
-        time_score = calculate_time_score((acquire_time_i[-1] - acquire_time_i[0]).days)
-        p1 = iou_score * time_score
-        if p1 < 0.5 or calculate_size_score(platform_size) < 0.5:
-            remove_ids.append(i)
+        logging.info(f'{remove_ids = }')
+        logging.info(f'{len(remove_ids) = }')
+        if len(remove_ids) > 0:
+            remove_index = np.asarray(remove_ids) - 1
+            print(f'{max_platform_id = }')
+            map_list = np.zeros((max_platform_id - len(remove_ids), 2), dtype=np.intp)
+            print(f'{len(map_list) = }')
+            map_list[..., 0] = np.reshape(np.delete(range(1, max_platform_id + 1), remove_index), -1)
+            modified_map_list = map_list.copy()
+            for i, item in enumerate(map_list):
+                j = item[0]
+                index = np.searchsorted(remove_ids, j)
+                modified_map_list[i, 1] = index
 
-    remove_index = np.asarray(remove_ids) - 1
+            print(f'{modified_map_list = }')
+            # filter IOU and time
+            for i in tqdm(range(1, len(ori_list) - 1)):
+                pass
 
-    map_list = np.zeros((max_platform_id - len(remove_ids), 2), dtype=np.intp)
-    map_list[..., 0] = np.reshape(np.delete(range(1, max_platform_id + 1), remove_index), -1)
-    modified_map_list = map_list.copy()
-    for i, item in enumerate(map_list):
-        j = item[0]
-        index = np.searchsorted(remove_ids, j)
-        modified_map_list[i, 1] = index
+            # filter size
+            for i in tqdm(range(1, len(ori_list) - 1)):
+                pass
+            print(f'{out_annotations_list[1] = }')
+            modified_out_annotations_list = out_annotations_list.copy()
+            # refresh ids
+            for i in tqdm(range(len(ori_list))):
+                for j in range(len(out_annotations_list[i])):
+                    item = out_annotations_list[i][j]
 
-    modified_out_annotations_list = out_annotations_list.copy()
+                    if item[0] == 2:
+                        id = int(item[-1])
+                        if id in remove_ids:
+                            modified_out_annotations_list[i][j][0] = 1
+                            modified_out_annotations_list[i][j][-1] = 0
+                        else:
+                            index = np.searchsorted(modified_map_list[..., 0], id)
+                            modified_out_annotations_list[i][j][-1] -= modified_map_list[index, 1]
 
-    # refresh ids
-    for i in tqdm(range(len(ori_list))):
-        for j in range(len(out_annotations_list[i])):
-            item = out_annotations_list[i][j]
+        else:
+            modified_out_annotations_list = out_annotations_list
+        # print(f'{modified_out_annotations_list[1] = }')
+        pbar = tqdm(range(1, len(ori_list) - 1))
+        pbar.set_description(f'writing images')
+        for i in pbar:
+            ori_image_stem = os.path.splitext(ori_list[i].filename)[0]
+            ori_image_name = ori_list[i].filename
+            info = modified_out_annotations_list[i].copy()
+            info[..., 1:5] = number2yolo(ori_list[i].shape, info[..., 1:5])
+            # logging.info(f'{info = }')
+            write_txt_label(f'{modified_label_path}/{ori_image_stem}.txt', info)
 
-            if item[0] == 2:
-                id = int(item[-1])
-                if id in remove_ids:
-                    modified_out_annotations_list[i][j][0] = 1
-                    modified_out_annotations_list[i][j][-1] = 0
-                else:
-                    index = np.searchsorted(modified_map_list[..., 0], id)
-                    modified_out_annotations_list[i][j][-1] -= modified_map_list[index, 1]
-                    
-    pbar = tqdm(range(1, len(ori_list) - 1))
-    pbar.set_description(f'writing images')
-    for i in pbar:
-        ori_image_stem = os.path.splitext(ori_list[i].filename)[0]
-        ori_image_name = ori_list[i].filename
-        info = modified_out_annotations_list[i].copy()
-        info[..., 1:5] = number2yolo(ori_list[i].shape, info[..., 1:5])
-        # logging.info(f'{info = }')
-        write_txt_label(f'{modified_label_path}/{ori_image_stem}.txt', info)
-
-        _, suffix = os.path.splitext(ori_image_name)
-        ori_image = read_image_as_ndarray(f'{original_image_path}/{ori_image_name}',
+            ori_image = read_image_as_ndarray(f'{original_image_path}/{ori_image_name}',
                                             as_rgb=True, channel_combination=(0,0,0), ndarray_dtype=np.uint8)
-
-        geo_transform = ori_list[i].geo_transform
-        projection = ori_list[i].projection
-        draw_box_on_one_image(output_path, modified_out_annotations_list[i], ori_image, ori_image_stem, geo_transform,
-                              projection, write_tif=True)
+            # logging.info(f'{ori_image.shape = }')
+            geo_transform = ori_list[i].geo_transform
+            projection = ori_list[i].projection
+            draw_box_on_one_image(output_path, modified_out_annotations_list[i], ori_image, ori_image_stem,
+                                geo_transform, projection, write_tif=True)
 
     ###############################################################################################################
     initial_logging_formatter()
 
-    ori_list = []
+    # ori_list = []
     original_image_names = [image_name for image_name in natsorted(os.listdir(original_image_path))
                             if os.path.splitext(image_name)[-1].replace('.', '') in support_file_list]
 
     pattern = r'1SDV_(.*)T(.*)T'
 
-    for original_image_name in original_image_names:
-        stem, _ = os.path.splitext(original_image_name)
-        acquire_time_select = re.search(pattern, stem)
-        geo_transform = None
-        # projection = None
-        if acquire_time_select:
-            acquire_time = str(acquire_time_select.group(1))
-            year = int(acquire_time[:4])
-            month = int(acquire_time[4:6])
-            day = int(acquire_time[6:8])
-        else:
-            raise RuntimeError('acquire time not found !')
+    # for original_image_name in original_image_names:
+    #     stem, _ = os.path.splitext(original_image_name)
+    #     acquire_time_select = re.search(pattern, stem)
+    #     geo_transform = None
+    #     # projection = None
+    #     if acquire_time_select:
+    #         acquire_time = str(acquire_time_select.group(1))
+    #         year = int(acquire_time[:4])
+    #         month = int(acquire_time[4:6])
+    #         day = int(acquire_time[6:8])
+    #     else:
+    #         raise RuntimeError('acquire time not found !')
 
-        if os.path.splitext(original_image_name)[-1] in ['.tif', '.tiff']:
+    #     if os.path.splitext(original_image_name)[-1] in ['.tif', '.tiff']:
 
-            with gdal.Open(f'{original_image_path}/{original_image_name}') as tiff_file:
-                geo_transform = tiff_file.GetGeoTransform()
-                # projection = tiff_file.GetProjection()
-        ori_list.append({'image_original_stem': stem,
-                         # 'image_original_name': original_image_name,
-                         'shape': imagesize.get(f'{original_image_path}/{original_image_name}'),
-                         'geo_transform': geo_transform,
-                         # 'projection': projection,
-                         'acquire_time': datetime.date(year, month, day)
-                         })
-    logging.info(len(ori_list))
+    #         with gdal.Open(f'{original_image_path}/{original_image_name}') as tiff_file:
+    #             geo_transform = tiff_file.GetGeoTransform()
+    #             # projection = tiff_file.GetProjection()
+    #     ori_list.append({'image_original_stem': stem,
+    #                      # 'image_original_name': original_image_name,
+    #                      'shape': imagesize.get(f'{original_image_path}/{original_image_name}'),
+    #                      'geo_transform': geo_transform,
+    #                      # 'projection': projection,
+    #                      'acquire_time': datetime.date(year, month, day)
+    #                      })
+    # logging.info(len(ori_list))
     ori_list.pop(0)
     ori_list.pop(-1)
-    acquire_time_list = [ori_list_item['acquire_time'] for ori_list_item in ori_list]
+    acquire_time_list = [ori_list_item.acquire_time for ori_list_item in ori_list]
 
     result_list = []
     max_platform_id = 0
     for i in range(len(ori_list)):
-        result = read_txt_label(f'{modified_label_path}/{ori_list[i]['image_original_stem']}.txt')
-        result[..., 1:5] = yolo2number(ori_list[i]['shape'], result[..., 1:5])
+        result = read_txt_label(f'{modified_label_path}/{ori_list[i].filename_stem}.txt')
+        result[..., 1:5] = yolo2number(ori_list[i].shape, result[..., 1:5])
 
         max_platform_id = int(np.max((np.max(result[..., -1]), max_platform_id)))
 
@@ -253,7 +277,7 @@ if __name__ == "__main__":
     platform_coordinates = get_platform_coordinates(result_list, max_platform_id)
     # logging.info(f'platform_coordinates = {platform_coordinates}')
 
-    geo_transform_list = [item['geo_transform'] for item in ori_list]
+    geo_transform_list = [item.geo_transform for item in ori_list]
     ##########
     platform_geo_location = platform_coordinates.copy()
     platform_geo_location[..., 1:] = image_coordinates_2_latitude_longitude(geo_transform_list,
@@ -338,27 +362,27 @@ if __name__ == "__main__":
     logging.info(f'occur_array = {np.array(occur_array)}')
     logging.info(f'platform_geo_location_occur = {platform_geo_location_occur}')
 
-    special_array = search_special_events(occur_array, disappear_array, platform_geo_location)
+    # special_array = search_special_events(occur_array, disappear_array, platform_geo_location)
 
-    output_shp_path = output_shp_path_stable
-    csv_path = f'{output_shp_path}/points.csv'
-    layer_name = f'points_stable'
-    write_shp_file(csv_path, platform_geo_location_stable, output_shp_path, layer_name)
+    # output_shp_path = output_shp_path_stable
+    # csv_path = f'{output_shp_path}/points.csv'
+    # layer_name = f'points_stable'
+    # write_shp_file(csv_path, platform_geo_location_stable, output_shp_path, layer_name)
 
-    output_shp_path = output_shp_path_occur
-    csv_path = f'{output_shp_path}/points.csv'
-    layer_name = f'points_occur'
-    write_shp_file(csv_path, platform_geo_location_occur, output_shp_path, layer_name)
+    # output_shp_path = output_shp_path_occur
+    # csv_path = f'{output_shp_path}/points.csv'
+    # layer_name = f'points_occur'
+    # write_shp_file(csv_path, platform_geo_location_occur, output_shp_path, layer_name)
 
-    output_shp_path = output_shp_path_disappear
-    csv_path = f'{output_shp_path}/points.csv'
-    layer_name = f'points_disappear'
-    write_shp_file(csv_path, platform_geo_location_disappear, output_shp_path, layer_name)
+    # output_shp_path = output_shp_path_disappear
+    # csv_path = f'{output_shp_path}/points.csv'
+    # layer_name = f'points_disappear'
+    # write_shp_file(csv_path, platform_geo_location_disappear, output_shp_path, layer_name)
 
-    output_shp_path = output_shp_path_occur_and_disappear
-    csv_path = f'{output_shp_path}/points.csv'
-    layer_name = f'points_occur_and_disappear'
-    write_shp_file(csv_path, platform_geo_location_occur_and_disappear, output_shp_path, layer_name)
+    # output_shp_path = output_shp_path_occur_and_disappear
+    # csv_path = f'{output_shp_path}/points.csv'
+    # layer_name = f'points_occur_and_disappear'
+    # write_shp_file(csv_path, platform_geo_location_occur_and_disappear, output_shp_path, layer_name)
 
     time_table: List[list[datetime.date | None]] = [[None, None] for _ in range(max_platform_id)]
     print(f'time_table = {time_table}')
@@ -453,206 +477,206 @@ if __name__ == "__main__":
                        }
                 writer.writerow(row)
 
-    output_shapefile = f'{output_stem_path}/occur_events'
-    create_folder(output_shapefile)
-    target_epsg = 4326
-    driver = ogr.GetDriverByName('ESRI Shapefile')
-    if os.path.exists(output_shapefile):
-        driver.DeleteDataSource(output_shapefile)
-    data_source = driver.CreateDataSource(output_shapefile)
-    spatial_ref = osr.SpatialReference()
-    spatial_ref.ImportFromEPSG(target_epsg)  # 使用WGS84坐标系（EPSG:4326）#renaijiao 50N xijiao 49N
+    # output_shapefile = f'{output_stem_path}/occur_events'
+    # create_folder(output_shapefile)
+    # target_epsg = 4326
+    # driver = ogr.GetDriverByName('ESRI Shapefile')
+    # if os.path.exists(output_shapefile):
+    #     driver.DeleteDataSource(output_shapefile)
+    # data_source = driver.CreateDataSource(output_shapefile)
+    # spatial_ref = osr.SpatialReference()
+    # spatial_ref.ImportFromEPSG(target_epsg)  # 使用WGS84坐标系（EPSG:4326）#renaijiao 50N xijiao 49N
 
-    # 创建图层
-    layer_name = 'occur_events'
-    layer = data_source.CreateLayer(layer_name, spatial_ref, ogr.wkbPoint)
-    layer_defn = layer.GetLayerDefn()
-    # logging.info(layer_defn)
-    fieldDefn = ogr.FieldDefn('DATE', ogr.OFTString)
-    # fieldDefn.SetWidth(10)
-    layer.CreateField(fieldDefn)
+    # # 创建图层
+    # layer_name = 'occur_events'
+    # layer = data_source.CreateLayer(layer_name, spatial_ref, ogr.wkbPoint)
+    # layer_defn = layer.GetLayerDefn()
+    # # logging.info(layer_defn)
+    # fieldDefn = ogr.FieldDefn('DATE', ogr.OFTString)
+    # # fieldDefn.SetWidth(10)
+    # layer.CreateField(fieldDefn)
 
-    fieldDefn = ogr.FieldDefn('PLATFORM', ogr.OFTString)
-    layer.CreateField(fieldDefn)
+    # fieldDefn = ogr.FieldDefn('PLATFORM', ogr.OFTString)
+    # layer.CreateField(fieldDefn)
 
-    # 添加点要素
-    for date, lon, lat, platform in occur_array:
-        point = ogr.Geometry(ogr.wkbPoint)
-        point.AddPoint(lon, lat)
-        feature = ogr.Feature(layer_defn)
+    # # 添加点要素
+    # for date, lon, lat, platform in occur_array:
+    #     point = ogr.Geometry(ogr.wkbPoint)
+    #     point.AddPoint(lon, lat)
+    #     feature = ogr.Feature(layer_defn)
 
-        date_str = datetime.datetime.strftime(date, '%Y-%m-%d')
+    #     date_str = datetime.datetime.strftime(date, '%Y-%m-%d')
 
-        feature.SetField('DATE', date_str)  # 设置属性字段
-        feature.SetField('PLATFORM', platform)  # 设置属性字段
-        feature.SetGeometry(point)
-        layer.CreateFeature(feature)
+    #     feature.SetField('DATE', date_str)  # 设置属性字段
+    #     feature.SetField('PLATFORM', platform)  # 设置属性字段
+    #     feature.SetGeometry(point)
+    #     layer.CreateFeature(feature)
 
-    output_summary_csv_file = f'{output_stem_path}/disappear.csv'
-    with open(output_summary_csv_file, mode='w', newline='') as csv_file:
-        writer = csv.DictWriter(csv_file, fieldnames=['type', 'date', 'geo_x_center', 'geo_y_center', 'id'])
-        writer.writeheader()
-        for item in disappear_array:
-            row = {'type': "disappear",
-                   'date': item[0],
-                   'geo_x_center': item[1],
-                   'geo_y_center': item[2],
-                   'id': item[3]
-                   }
-            writer.writerow(row)
+    # output_summary_csv_file = f'{output_stem_path}/disappear.csv'
+    # with open(output_summary_csv_file, mode='w', newline='') as csv_file:
+    #     writer = csv.DictWriter(csv_file, fieldnames=['type', 'date', 'geo_x_center', 'geo_y_center', 'id'])
+    #     writer.writeheader()
+    #     for item in disappear_array:
+    #         row = {'type': "disappear",
+    #                'date': item[0],
+    #                'geo_x_center': item[1],
+    #                'geo_y_center': item[2],
+    #                'id': item[3]
+    #                }
+    #         writer.writerow(row)
 
-    output_shapefile = f'{output_stem_path}/disappear_events'
-    create_folder(output_shapefile)
-    target_epsg = 4326
-    driver = ogr.GetDriverByName('ESRI Shapefile')
-    if os.path.exists(output_shapefile):
-        driver.DeleteDataSource(output_shapefile)
-    data_source = driver.CreateDataSource(output_shapefile)
-    spatial_ref = osr.SpatialReference()
-    spatial_ref.ImportFromEPSG(target_epsg)  # 使用WGS84坐标系（EPSG:4326）#renaijiao 50N xijiao 49N\
+    # output_shapefile = f'{output_stem_path}/disappear_events'
+    # create_folder(output_shapefile)
+    # target_epsg = 4326
+    # driver = ogr.GetDriverByName('ESRI Shapefile')
+    # if os.path.exists(output_shapefile):
+    #     driver.DeleteDataSource(output_shapefile)
+    # data_source = driver.CreateDataSource(output_shapefile)
+    # spatial_ref = osr.SpatialReference()
+    # spatial_ref.ImportFromEPSG(target_epsg)  # 使用WGS84坐标系（EPSG:4326）#renaijiao 50N xijiao 49N\
 
-    # 创建图层
-    layer_name = 'disappear_events'
-    layer = data_source.CreateLayer(layer_name, spatial_ref, ogr.wkbPoint)
-    layer_defn = layer.GetLayerDefn()
-    # logging.info(layer_defn)
-    fieldDefn = ogr.FieldDefn('DATE', ogr.OFTString)
-    # fieldDefn.SetWidth(10)
-    layer.CreateField(fieldDefn)
+    # # 创建图层
+    # layer_name = 'disappear_events'
+    # layer = data_source.CreateLayer(layer_name, spatial_ref, ogr.wkbPoint)
+    # layer_defn = layer.GetLayerDefn()
+    # # logging.info(layer_defn)
+    # fieldDefn = ogr.FieldDefn('DATE', ogr.OFTString)
+    # # fieldDefn.SetWidth(10)
+    # layer.CreateField(fieldDefn)
 
-    fieldDefn = ogr.FieldDefn('PLATFORM', ogr.OFTString)
-    layer.CreateField(fieldDefn)
+    # fieldDefn = ogr.FieldDefn('PLATFORM', ogr.OFTString)
+    # layer.CreateField(fieldDefn)
 
-    # 添加点要素
-    for date, lon, lat, platform in disappear_array:
-        point = ogr.Geometry(ogr.wkbPoint)
-        point.AddPoint(lon, lat)
-        feature = ogr.Feature(layer_defn)
+    # # 添加点要素
+    # for date, lon, lat, platform in disappear_array:
+    #     point = ogr.Geometry(ogr.wkbPoint)
+    #     point.AddPoint(lon, lat)
+    #     feature = ogr.Feature(layer_defn)
 
-        date_str = datetime.datetime.strftime(date, '%Y-%m-%d')
+    #     date_str = datetime.datetime.strftime(date, '%Y-%m-%d')
 
-        feature.SetField('DATE', date_str)  # 设置属性字段
-        feature.SetField('PLATFORM', platform)  # 设置属性字段
-        feature.SetGeometry(point)
-        layer.CreateFeature(feature)
+    #     feature.SetField('DATE', date_str)  # 设置属性字段
+    #     feature.SetField('PLATFORM', platform)  # 设置属性字段
+    #     feature.SetGeometry(point)
+    #     layer.CreateFeature(feature)
 
-    output_summary_csv_file = f'{output_stem_path}/special.csv'
-    with open(output_summary_csv_file, mode='w', newline='') as csv_file:
-        writer = csv.DictWriter(csv_file,
-                                fieldnames=['date_occur', 'date_disappear', 'geo_x_center', 'geo_y_center', 'id'])
-        writer.writeheader()
-        ############## filter area
-        for item in special_array:
-            row = {'date_occur': item[0], 'date_disappear': item[1],
-                   'geo_x_center': item[2],
-                   'geo_y_center': item[3],
-                   'id': item[4]
-                   }
-            writer.writerow(row)
+    # output_summary_csv_file = f'{output_stem_path}/special.csv'
+    # with open(output_summary_csv_file, mode='w', newline='') as csv_file:
+    #     writer = csv.DictWriter(csv_file,
+    #                             fieldnames=['date_occur', 'date_disappear', 'geo_x_center', 'geo_y_center', 'id'])
+    #     writer.writeheader()
+    #     ############## filter area
+    #     for item in special_array:
+    #         row = {'date_occur': item[0], 'date_disappear': item[1],
+    #                'geo_x_center': item[2],
+    #                'geo_y_center': item[3],
+    #                'id': item[4]
+    #                }
+    #         writer.writerow(row)
 
-    output_shapefile = f'{output_stem_path}/special_events'
-    create_folder(output_shapefile)
-    target_epsg = 4326
-    driver = ogr.GetDriverByName('ESRI Shapefile')
-    if os.path.exists(output_shapefile):
-        driver.DeleteDataSource(output_shapefile)
-    data_source = driver.CreateDataSource(output_shapefile)
-    spatial_ref = osr.SpatialReference()
-    spatial_ref.ImportFromEPSG(target_epsg)  # 使用WGS84坐标系（EPSG:4326）#renaijiao 50N xijiao 49N\
+    # output_shapefile = f'{output_stem_path}/special_events'
+    # create_folder(output_shapefile)
+    # target_epsg = 4326
+    # driver = ogr.GetDriverByName('ESRI Shapefile')
+    # if os.path.exists(output_shapefile):
+    #     driver.DeleteDataSource(output_shapefile)
+    # data_source = driver.CreateDataSource(output_shapefile)
+    # spatial_ref = osr.SpatialReference()
+    # spatial_ref.ImportFromEPSG(target_epsg)  # 使用WGS84坐标系（EPSG:4326）#renaijiao 50N xijiao 49N\
 
-    # 创建图层
-    layer_name = 'special_events'
-    layer = data_source.CreateLayer(layer_name, spatial_ref, ogr.wkbPoint)
-    layer_defn = layer.GetLayerDefn()
-    # logging.info(layer_defn)
-    fieldDefn = ogr.FieldDefn('DATE_1', ogr.OFTString)
-    # fieldDefn.SetWidth(10)
-    layer.CreateField(fieldDefn)
-    fieldDefn = ogr.FieldDefn('DATE_2', ogr.OFTString)
-    # fieldDefn.SetWidth(10)
-    layer.CreateField(fieldDefn)
+    # # 创建图层
+    # layer_name = 'special_events'
+    # layer = data_source.CreateLayer(layer_name, spatial_ref, ogr.wkbPoint)
+    # layer_defn = layer.GetLayerDefn()
+    # # logging.info(layer_defn)
+    # fieldDefn = ogr.FieldDefn('DATE_1', ogr.OFTString)
+    # # fieldDefn.SetWidth(10)
+    # layer.CreateField(fieldDefn)
+    # fieldDefn = ogr.FieldDefn('DATE_2', ogr.OFTString)
+    # # fieldDefn.SetWidth(10)
+    # layer.CreateField(fieldDefn)
 
-    fieldDefn = ogr.FieldDefn('PLATFORM', ogr.OFTString)
-    layer.CreateField(fieldDefn)
+    # fieldDefn = ogr.FieldDefn('PLATFORM', ogr.OFTString)
+    # layer.CreateField(fieldDefn)
 
-    # 添加点要素
-    for date_occur, date_disappear, lon, lat, platform in special_array:
-        point = ogr.Geometry(ogr.wkbPoint)
-        point.AddPoint(lon, lat)
-        feature = ogr.Feature(layer_defn)
+    # # 添加点要素
+    # for date_occur, date_disappear, lon, lat, platform in special_array:
+    #     point = ogr.Geometry(ogr.wkbPoint)
+    #     point.AddPoint(lon, lat)
+    #     feature = ogr.Feature(layer_defn)
 
-        date_occur_str = datetime.datetime.strftime(date_occur, '%Y-%m-%d')
-        date_disappear_str = datetime.datetime.strftime(date_disappear, '%Y-%m-%d')
+    #     date_occur_str = datetime.datetime.strftime(date_occur, '%Y-%m-%d')
+    #     date_disappear_str = datetime.datetime.strftime(date_disappear, '%Y-%m-%d')
 
-        feature.SetField('DATE_1', date_occur_str)  # 设置属性字段
-        feature.SetField('DATE_2', date_disappear_str)  # 设置属性字段
-        feature.SetField('PLATFORM', platform)  # 设置属性字段
-        feature.SetGeometry(point)
-        layer.CreateFeature(feature)
+    #     feature.SetField('DATE_1', date_occur_str)  # 设置属性字段
+    #     feature.SetField('DATE_2', date_disappear_str)  # 设置属性字段
+    #     feature.SetField('PLATFORM', platform)  # 设置属性字段
+    #     feature.SetGeometry(point)
+    #     layer.CreateFeature(feature)
 
-    output_summary_csv_file = f'{output_stem_path}/platform_frequency.csv'
-    with open(output_summary_csv_file, mode='w', newline='') as csv_file:
-        writer = csv.DictWriter(csv_file,
-                                fieldnames=['id', 'geo_x_center', 'geo_y_center', 'frequency', 'days', 'first_time',
-                                            'last_time', 'size', 'score'])
-        writer.writeheader()
-        ############## filter area
-        for i, item in enumerate(platform_geo_location):
-            row = {'id': item[0],
-                   'geo_x_center': item[1],
-                   'geo_y_center': item[2],
-                   'frequency': np.sum(platform_lifetime[i]),
-                   'days': (time_table[i][1] - time_table[i][0]).days,
-                   'first_time': time_table[i][0],
-                   'last_time': time_table[i][1],
-                   'size': platform_sizes[i][1] * platform_sizes[i][2],
-                   'score': calculate_time_score((time_table[i][1] - time_table[i][0]).days) * calculate_size_score(
-                       platform_sizes[i][1] * platform_sizes[i][2] * iou_scores[i])
-                   }
-            writer.writerow(row)
+    # output_summary_csv_file = f'{output_stem_path}/platform_frequency.csv'
+    # with open(output_summary_csv_file, mode='w', newline='') as csv_file:
+    #     writer = csv.DictWriter(csv_file,
+    #                             fieldnames=['id', 'geo_x_center', 'geo_y_center', 'frequency', 'days', 'first_time',
+    #                                         'last_time', 'size', 'score'])
+    #     writer.writeheader()
+    #     ############## filter area
+    #     for i, item in enumerate(platform_geo_location):
+    #         row = {'id': item[0],
+    #                'geo_x_center': item[1],
+    #                'geo_y_center': item[2],
+    #                'frequency': np.sum(platform_lifetime[i]),
+    #                'days': (time_table[i][1] - time_table[i][0]).days,
+    #                'first_time': time_table[i][0],
+    #                'last_time': time_table[i][1],
+    #                'size': platform_sizes[i][1] * platform_sizes[i][2],
+    #                'score': calculate_time_score((time_table[i][1] - time_table[i][0]).days) * calculate_size_score(
+    #                    platform_sizes[i][1] * platform_sizes[i][2] * iou_scores[i])
+    #                }
+    #         writer.writerow(row)
 
-    output_shapefile = f'{output_stem_path}/platform_frequency'
-    create_folder(output_shapefile)
-    target_epsg = 4326
-    driver = ogr.GetDriverByName('ESRI Shapefile')
-    if os.path.exists(output_shapefile):
-        driver.DeleteDataSource(output_shapefile)
-    data_source = driver.CreateDataSource(output_shapefile)
-    spatial_ref = osr.SpatialReference()
-    spatial_ref.ImportFromEPSG(target_epsg)
+    # output_shapefile = f'{output_stem_path}/platform_frequency'
+    # create_folder(output_shapefile)
+    # target_epsg = 4326
+    # driver = ogr.GetDriverByName('ESRI Shapefile')
+    # if os.path.exists(output_shapefile):
+    #     driver.DeleteDataSource(output_shapefile)
+    # data_source = driver.CreateDataSource(output_shapefile)
+    # spatial_ref = osr.SpatialReference()
+    # spatial_ref.ImportFromEPSG(target_epsg)
 
-    # 创建图层
-    layer_name = 'platform_frequency'
-    layer = data_source.CreateLayer(layer_name, spatial_ref, ogr.wkbPoint)
-    layer_defn = layer.GetLayerDefn()
-    # logging.info(layer_defn)
-    fieldDefn = ogr.FieldDefn('Frequency', ogr.OFTInteger)
-    layer.CreateField(fieldDefn)
-    fieldDefn = ogr.FieldDefn('First_time', ogr.OFTDate)
-    layer.CreateField(fieldDefn)
-    fieldDefn = ogr.FieldDefn('Last_time', ogr.OFTDate)
-    layer.CreateField(fieldDefn)
-    fieldDefn = ogr.FieldDefn('Days', ogr.OFTInteger)
-    layer.CreateField(fieldDefn)
-    fieldDefn = ogr.FieldDefn('Size', ogr.OFTReal)
-    layer.CreateField(fieldDefn)
-    fieldDefn = ogr.FieldDefn('Score', ogr.OFTReal)
-    layer.CreateField(fieldDefn)
-    # 添加点要素
-    for i, [id, lon, lat] in enumerate(platform_geo_location):
-        point = ogr.Geometry(ogr.wkbPoint)
-        point.AddPoint(lon, lat)
-        feature = ogr.Feature(layer_defn)
-        feature.SetField('Frequency', int(np.sum(platform_lifetime[i])))  # 设置属性字段
-        feature.SetField('First_time', time_table[i][0].strftime("%Y-%m-%d"))  # 设置属性字段
-        feature.SetField('Last_time', time_table[i][1].strftime("%Y-%m-%d"))  # 设置属性字段
-        feature.SetField('Days', (time_table[i][1] - time_table[i][0]).days)  # 设置属性字段
-        feature.SetField('Size', platform_sizes[i][1] * platform_sizes[i][2])  # 设置属性字段
-        feature.SetField('Score',
-                         calculate_time_score((time_table[i][1] - time_table[i][0]).days) * calculate_size_score(
-                             platform_sizes[i][1] * platform_sizes[i][2]) * iou_scores[i])  # 设置属性字段
-        feature.SetGeometry(point)
-        layer.CreateFeature(feature)
+    # # 创建图层
+    # layer_name = 'platform_frequency'
+    # layer = data_source.CreateLayer(layer_name, spatial_ref, ogr.wkbPoint)
+    # layer_defn = layer.GetLayerDefn()
+    # # logging.info(layer_defn)
+    # fieldDefn = ogr.FieldDefn('Frequency', ogr.OFTInteger)
+    # layer.CreateField(fieldDefn)
+    # fieldDefn = ogr.FieldDefn('First_time', ogr.OFTDate)
+    # layer.CreateField(fieldDefn)
+    # fieldDefn = ogr.FieldDefn('Last_time', ogr.OFTDate)
+    # layer.CreateField(fieldDefn)
+    # fieldDefn = ogr.FieldDefn('Days', ogr.OFTInteger)
+    # layer.CreateField(fieldDefn)
+    # fieldDefn = ogr.FieldDefn('Size', ogr.OFTReal)
+    # layer.CreateField(fieldDefn)
+    # fieldDefn = ogr.FieldDefn('Score', ogr.OFTReal)
+    # layer.CreateField(fieldDefn)
+    # # 添加点要素
+    # for i, [id, lon, lat] in enumerate(platform_geo_location):
+    #     point = ogr.Geometry(ogr.wkbPoint)
+    #     point.AddPoint(lon, lat)
+    #     feature = ogr.Feature(layer_defn)
+    #     feature.SetField('Frequency', int(np.sum(platform_lifetime[i])))  # 设置属性字段
+    #     feature.SetField('First_time', time_table[i][0].strftime("%Y-%m-%d"))  # 设置属性字段
+    #     feature.SetField('Last_time', time_table[i][1].strftime("%Y-%m-%d"))  # 设置属性字段
+    #     feature.SetField('Days', (time_table[i][1] - time_table[i][0]).days)  # 设置属性字段
+    #     feature.SetField('Size', platform_sizes[i][1] * platform_sizes[i][2])  # 设置属性字段
+    #     feature.SetField('Score',
+    #                      calculate_time_score((time_table[i][1] - time_table[i][0]).days) * calculate_size_score(
+    #                          platform_sizes[i][1] * platform_sizes[i][2]) * iou_scores[i])  # 设置属性字段
+    #     feature.SetGeometry(point)
+    #     layer.CreateFeature(feature)
 
     days_list = np.asarray([int((time_table[i][1] - time_table[i][0]).days) for i in range(max_platform_id)])
     time_score_list = [calculate_time_score((time_table[i][1] - time_table[i][0]).days) for i in range(max_platform_id)]

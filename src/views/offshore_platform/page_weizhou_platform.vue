@@ -1,10 +1,10 @@
-<!-- SK10海上钻井平台异常出现与消失动态监测 -->
+<!-- 涠洲海上钻井平台异常出现与消失动态监测 -->
 <template>
   <div class="container">
     <div class="top-panel">
       <!-- 左上角的截止时间选择框 -->
       <div class="time-selector-box">
-        <h2 class="title">SK10海上钻井平台异常出现与消失动态监测</h2>
+        <h2 class="title">涠洲海上钻井平台异常出现与消失动态监测</h2>
         <h3>开始日期</h3>
         <input v-model="firstDate" type="date" @change="onDateChange" />
         <h3>截止日期</h3>
@@ -14,12 +14,12 @@
 
       <!-- 选择影像文件的独立窗体 -->
       <div v-if="isImageSelectorVisible" class="image-selector-box">
-        <h2 class="title">SK10海上钻井平台提取结果</h2>
+        <h2 class="title">涠洲海上钻井平台提取结果</h2>
         <Calendar
           ref="calendarRef"
           transparent
           borderless
-          :min-date="new Date(2017, 0, 1)"
+          :min-date="new Date(2015, 1, 27)"
           :max-date="new Date()"
           :attributes="attributes"
           @dayclick="onDayClickHandler"
@@ -45,7 +45,7 @@
     <!-- 右侧内容容器 -->
     <div v-if="isChartModalVisible" class="modal">
       <div class="modal-content">
-        <h2 class="title">SK10海上钻井平台数量监测曲线</h2>
+        <h2 class="title">涠洲海上钻井平台数量监测曲线</h2>
         <div ref="chartContainer" style="width: 600px; height: 400px"></div>
       </div>
     </div>
@@ -77,27 +77,27 @@ const isSplit = ref(false);
 const viewer = ref(null);
 const chartInstance = ref(null);
 const tifFilesSk10Sentinel1 = ref([]);
-const tifFilesSk10Gaofen = ref([]);
+// const tifFilesSk10Gaofen = ref([]);
 const isImageSelectorVisible = ref(false);
 const markDatesSentinel1 = ref([]);
-const markDatesGaofen = ref([]);
+// const markDatesGaofen = ref([]);
 const cesiumContainer = ref(null);
 const chartContainer = ref(null);
-const firstDate = ref("2017-02-20");
-const secondDate = ref("2025-02-02");
+const firstDate = ref("2015-02-27");
+const secondDate = ref("2025-04-21");
 const calendarDate = ref(null);
 const selectedDate = defineModel({ type: Date });
 const calendarRef = ref(null);
 const isLoading = ref(false);
 const isChartModalVisible = ref(false);
 
-const tiffRootPathSentinel1 = "/sk10_platform/output/predict/";
-const tiffRootPathGaofen = "/sk10_platform/gaofen/";
-const csvPath = "/sk10_platform/output/platform_number.csv";
-const tiffApiUrlSentinel1 = `${backendUrlPrefix}/files_sk10_sentinel-1`;
-const tiffApiUrlGaofen = `${backendUrlPrefix}/files_sk10_Gaofen`;
+const tiffRootPathSentinel1 = "/WeiZhou_platform/output/predict/";
+// const tiffRootPathGaofen = "/WeiZhou_platform/gaofen/";
+const csvPath = "/WeiZhou_platform/output/platform_number.csv";
+const tiffApiUrlSentinel1 = `${backendUrlPrefix}/files_weizhou_sentinel-1`;
+// const tiffApiUrlGaofen = `${backendUrlPrefix}/files_weizhou_Gaofen`;
 const mainScriptUrl = `${backendUrlPrefix}/run_main_offshore_platform`;
-const finishResponseUrl = `${backendUrlPrefix}/files_txt_sk10_platform`;
+const finishResponseUrl = `${backendUrlPrefix}/files_txt_weizhou_platform`;
 
 // 计算属性
 const attributes = computed(() => {
@@ -110,14 +110,14 @@ const attributes = computed(() => {
       },
       dates: markDatesSentinel1.value,
     },
-    {
-      key: "tif-dates_gaofen",
-      highlight: {
-        fillMode: "light",
-        color: "red",
-      },
-      dates: markDatesGaofen.value,
-    },
+    // {
+    //   key: "tif-dates_gaofen",
+    //   highlight: {
+    //     fillMode: "light",
+    //     color: "red",
+    //   },
+    //   dates: markDatesGaofen.value,
+    // },
   ];
 });
 
@@ -145,16 +145,16 @@ async function initCesium() {
 
   // 设置初始视角
   viewer.value.camera.setView({
-    destination: Cesium.Cartesian3.fromDegrees(113.45, 4.78, 200000),
+    destination: Cesium.Cartesian3.fromDegrees(108.8, 20.8, 200000),
   });
 }
 
-// 获取TIFF文件列表
-async function fetchTiffFiles_Gaofen() {
-  const { files, markDates } = await fetchTiffFiles(tiffApiUrlGaofen, 4);
-  tifFilesSk10Gaofen.value = files;
-  markDatesGaofen.value = markDates;
-}
+// // 获取TIFF文件列表
+// async function fetchTiffFiles_Gaofen() {
+//   const { files, markDates } = await fetchTiffFiles(tiffApiUrlGaofen, 4);
+//   tifFilesSk10Gaofen.value = files;
+//   markDatesGaofen.value = markDates;
+// }
 
 async function analyzeData() {
   try {
@@ -244,7 +244,7 @@ async function onDayClickHandler(day) {
     tiffRootPathSentinel1,
     viewer
   );
-  loadSelectTiff(tifFilesSk10Gaofen, date_str, tiffRootPathGaofen, viewer);
+  // loadSelectTiff(tifFilesSk10Gaofen, date_str, tiffRootPathGaofen, viewer);
 }
 
 // 加载点数据
@@ -388,12 +388,12 @@ function initChart() {
           tiffRootPathSentinel1,
           viewer
         );
-        loadSelectTiff(
-          tifFilesSk10Gaofen,
-          date_str,
-          tiffRootPathGaofen,
-          viewer
-        );
+        // loadSelectTiff(
+        //   tifFilesSk10Gaofen,
+        //   date_str,
+        //   tiffRootPathGaofen,
+        //   viewer
+        // );
       });
       chartInstance.value = myChart;
     })
@@ -418,7 +418,7 @@ function handleResize() {
 // 生命周期钩子
 onMounted(() => {
   initCesium();
-  fetchTiffFiles_Gaofen();
+  // fetchTiffFiles_Gaofen();
   window.addEventListener("resize", handleResize);
 });
 
