@@ -63,7 +63,7 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
           // 接口地址
           target: env.VITE_APP_API_URL,
           rewrite: (path) =>
-            path.replace(new RegExp("^" + env.VITE_APP_BASE_API), ""),
+            path.replace(new RegExp("^" + env.VITE_APP_BASE_API), "/api"),
         },
       },
     },
